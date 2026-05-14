@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Estoque Audiovisual</title>
+<title>Take Vision Imagem</title>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -67,7 +67,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 
 <div class="auth" id="authScreen">
   <div class="auth-card">
-    <div class="auth-title">Estoque Audiovisual</div>
+    <div class="auth-title">Take Vision Imagem</div>
     <div class="auth-sub" id="authSub">Entre com sua conta</div>
     <div id="authMsg"></div>
     <div class="field" id="nomeField" style="display:none">
@@ -91,7 +91,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 
 <div class="app" id="appScreen">
   <header>
-    <div class="header-title">Estoque Audiovisual</div>
+    <div class="header-title">Take Vision Imagem</div>
     <div class="header-user">
       <span id="userNome"></span>
       <span id="userPapel"></span>
@@ -118,16 +118,21 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         <div class="row">
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="eqNome" placeholder="Ex: Canon R5"/></div>
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Categoria</label>
-            <select id="eqCat">
-              <option>Câmeras</option><option>Lentes</option><option>Iluminação</option>
-              <option>Áudio</option><option>Tripés/Suportes</option><option>Cabos/Acessórios</option><option>Outros</option>
-            </select>
+            <select id="eqCat"></select>
           </div>
           <div style="width:90px"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Qtd</label><input id="eqQtd" type="number" min="1" value="1"/></div>
         </div>
         <div class="row">
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de série</label><input id="eqSerie" placeholder="Opcional"/></div>
           <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" onclick="cadastrarEq()">+ Cadastrar</button></div>
+        </div>
+      </div>
+      <div class="card card-dashed">
+        <div class="section-title">Gerenciar categorias</div>
+        <div id="listaCategorias" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nova categoria</label><input id="catNome" placeholder="Ex: Drones"/></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" onclick="criarCategoria()">+ Adicionar</button></div>
         </div>
       </div>
     </div>
@@ -191,7 +196,271 @@ const SUPA_KEY = "sb_publishable_5aUMGeFFGjEh5lQWpUDBRA_YtfDyy7T";
 const { createClient } = supabase;
 const sb = createClient(SUPA_URL, SUPA_KEY);
 
-let usuario = null, perfil = null, equipamentos = [], projetos = [], filtroAtivo = "Todas";
+let usuario = null, perfil = null, equipamentos = [], projetos = [], categorias = [], filtroAtivo = "Todas";
+
+// AUTH
+let modoLogin = true;
+function toggleAuthMode() {
+  modoLogin = !modoLogin;
+  document.getElementById("authSub").textContent = modoLogin ? "Entre com sua conta" : "Crie sua conta";
+  document.getElementById("authBtn").textContent = modoLogin ? "Entrar" : "Cadastrar";
+  document.getElementById("toggleBtn").textContent = modoLogin ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar";
+  document.getElementById("nomeField").style.display = modoLogin ? "none" : "block";
+}
+
+async function handleAuth() {
+  const email = document.getElementById("emailInput").value.trim();
+  const senha = document.getElementById("senhaInput").value;
+  const nome = document.getElementById("nomeInput").value.trim();
+  const msgEl = document.getElementById("authMsg");
+  msgEl.innerHTML = "";
+  if (!email || !senha) { msgEl.innerHTML = '<div class="err">Preencha e-mail e senha.</div>'; return; }
+  if (modoLogin) {
+    const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+    if (error) { msgEl.innerHTML = `<div class="err">E-mail ou senha incorretos.</div>`; }
+  } else {
+    if (!nome) { msgEl.innerHTML = '<div class="err">Informe seu nome.</div>'; return; }
+    const { data, error } = await sb.auth.signUp({ email, password: senha });
+    if (error) { msgEl.innerHTML = `<div class="err">${error.message}</div>`; return; }
+    if (data.user) {
+      await sb.from("perfis").update({ nome }).eq("id", data.user.id);
+      msgEl.innerHTML = '<div class="ok">Conta criada! Verifique seu e-mail para confirmar.</div>';
+    }
+  }
+}
+
+async function sair() { await sb.auth.signOut(); location.reload(); }
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    usuario = session.user;
+    const { data } = await sb.from("perfis").select("*").eq("id", usuario.id).single();
+    perfil = data;
+    document.getElementById("authScreen").style.display = "none";
+    document.getElementById("appScreen").style.display = "block";
+    document.getElementById("userNome").textContent = perfil?.nome || usuario.email;
+    if (perfil?.papel === "admin") {
+      document.getElementById("userPapel").innerHTML = '<span class="admin-badge">Admin</span>';
+      document.getElementById("tabAdmin").style.display = "inline-block";
+    }
+    document.getElementById("movData").value = new Date().toISOString().split("T")[0];
+    await carregarTudo();
+  }
+});
+
+async function carregarTudo() {
+  await Promise.all([carregarEquipamentos(), carregarProjetos(), carregarCategorias()]);
+  renderMetrics(); renderEquipamentos(); renderProjetos(); renderHistorico();
+  preencherSelects();
+  if (perfil?.papel === "admin") carregarUsuarios();
+}
+
+async function carregarEquipamentos() {
+  const { data } = await sb.from("equipamentos").select("*").order("id");
+  equipamentos = data || [];
+}
+
+async function carregarProjetos() {
+  const { data } = await sb.from("projetos").select("*").order("id");
+  projetos = data || [];
+}
+
+async function carregarCategorias() {
+  const { data } = await sb.from("categorias").select("*").order("nome");
+  categorias = data || [];
+  renderCategorias();
+}
+
+function renderCategorias() {
+  const select = document.getElementById("eqCat");
+  if (select) select.innerHTML = categorias.map(c => `<option value="${c.nome}">${c.nome}</option>`).join("");
+  const lista = document.getElementById("listaCategorias");
+  if (lista) lista.innerHTML = categorias.map(c => `
+    <div style="display:flex;align-items:center;gap:6px;background:#f1efe8;border-radius:8px;padding:5px 10px">
+      <span style="font-size:13px">${c.nome}</span>
+      <button onclick="excluirCategoria(${c.id},'${c.nome}')" style="background:none;border:none;color:#a32d2d;cursor:pointer;font-size:15px;line-height:1">×</button>
+    </div>`).join("");
+  const movCat = document.getElementById("movEq");
+  if (movCat) preencherSelects();
+}
+
+async function criarCategoria() {
+  const nome = document.getElementById("catNome").value.trim();
+  if (!nome) return;
+  const { error } = await sb.from("categorias").insert({ nome });
+  if (error) { showMsg("Categoria já existe ou erro ao criar.", true); return; }
+  document.getElementById("catNome").value = "";
+  await carregarCategorias();
+  showMsg("Categoria adicionada!");
+}
+
+async function excluirCategoria(id, nome) {
+  const usada = equipamentos.some(e => e.categoria === nome);
+  if (usada) { showMsg(`A categoria "${nome}" está em uso e não pode ser excluída.`, true); return; }
+  if (!confirm(`Excluir a categoria "${nome}"?`)) return;
+  await sb.from("categorias").delete().eq("id", id);
+  await carregarCategorias();
+  showMsg("Categoria excluída.");
+}
+
+function renderMetrics() {
+  const total = equipamentos.reduce((a, e) => a + e.qtd_total, 0);
+  const disp = equipamentos.reduce((a, e) => a + e.qtd_disponivel, 0);
+  const aloc = total - disp;
+  const ativos = projetos.filter(p => p.status === "ativo").length;
+  document.getElementById("metricsArea").innerHTML = `
+    <div class="metric"><div class="metric-label">Total de itens</div><div class="metric-value">${total}</div></div>
+    <div class="metric"><div class="metric-label" style="color:#3b6d11">Disponíveis</div><div class="metric-value" style="color:#3b6d11">${disp}</div></div>
+    <div class="metric"><div class="metric-label" style="color:#854f0b">Alocados</div><div class="metric-value" style="color:#854f0b">${aloc}</div></div>
+    <div class="metric"><div class="metric-label" style="color:#185fa5">Projetos ativos</div><div class="metric-value" style="color:#185fa5">${ativos}</div></div>`;
+}
+
+function renderEquipamentos() {
+  const cats = ["Todas", ...new Set(equipamentos.map(e => e.categoria))];
+  document.getElementById("filtrosArea").innerHTML = cats.map(c =>
+    `<button class="filter-btn${filtroAtivo===c?' active':''}" onclick="setFiltro('${c}')">${c}</button>`).join("");
+  const lista = filtroAtivo === "Todas" ? equipamentos : equipamentos.filter(e => e.categoria === filtroAtivo);
+  document.getElementById("listaEquipamentos").innerHTML = lista.map(eq => {
+    const aloc = eq.qtd_total - eq.qtd_disponivel;
+    const pct = Math.round((eq.qtd_disponivel / eq.qtd_total) * 100);
+    const cor = eq.qtd_disponivel === 0 ? "#e24b4a" : aloc > 0 ? "#EF9F27" : "#639922";
+    return `<div class="card">
+      <div class="eq-row">
+        <div><div class="eq-name">${eq.nome}</div><div class="eq-sub">${eq.categoria} · Série: ${eq.numero_serie||"—"}</div></div>
+        <div class="badges-row">
+          <span class="badge badge-ok">${eq.qtd_disponivel} disp.</span>
+          ${aloc>0?`<span class="badge badge-warn">${aloc} aloc.</span>`:""}
+          ${perfil?.papel==="admin"?`<button class="btn btn-sm btn-danger" style="margin-left:6px" onclick="excluirEq(${eq.id})">Excluir</button>`:""}
+        </div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${cor}"></div></div>
+    </div>`;}).join("") || '<div class="empty">Nenhum equipamento cadastrado.</div>';
+}
+
+function setFiltro(c) { filtroAtivo = c; renderEquipamentos(); }
+
+function renderProjetos() {
+  document.getElementById("listaProjetos").innerHTML = projetos.map(p => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-weight:500;font-size:15px">${p.nome}</div><div style="font-size:12px;color:#888;margin-top:2px">${new Date(p.criado_em).toLocaleDateString("pt-BR")}</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge ${p.status==='ativo'?'badge-info':'badge-gray'}">${p.status}</span>
+          ${p.status==='ativo'?`<button class="btn btn-sm btn-outline" onclick="encerrarProjeto(${p.id})">Encerrar</button>`:""}
+        </div>
+      </div>
+    </div>`).join("") || '<div class="empty">Nenhum projeto criado.</div>';
+}
+
+async function renderHistorico() {
+  const { data } = await sb.from("movimentacoes").select("*, equipamentos(nome), projetos(nome)").order("criado_em", { ascending: false }).limit(50);
+  document.getElementById("listaHistorico").innerHTML = (data||[]).map(m => `
+    <div class="card">
+      <div class="mov-row">
+        <div><div class="mov-name">${m.equipamentos?.nome||"—"}</div>
+        <div class="mov-sub">${m.projetos?.nome||"—"} · ${m.responsavel} · ${m.data}</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:14px;font-weight:500">x${m.quantidade}</span>
+          <span class="badge ${m.tipo==='saída'?'badge-warn':'badge-ok'}">${m.tipo}</span>
+        </div>
+      </div>
+    </div>`).join("") || '<div class="empty">Nenhuma movimentação registrada.</div>';
+}
+
+function preencherSelects() {
+  const se = document.getElementById("movEq");
+  se.innerHTML = '<option value="">Selecione...</option>' + equipamentos.map(e => `<option value="${e.id}">${e.nome} (${e.qtd_disponivel} disp.)</option>`).join("");
+  const sp = document.getElementById("movProj");
+  sp.innerHTML = '<option value="">Selecione...</option>' + projetos.filter(p=>p.status==="ativo").map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+}
+
+async function cadastrarEq() {
+  const nome = document.getElementById("eqNome").value.trim();
+  const cat = document.getElementById("eqCat").value;
+  const qtd = parseInt(document.getElementById("eqQtd").value);
+  const serie = document.getElementById("eqSerie").value.trim();
+  if (!nome) return;
+  await sb.from("equipamentos").insert({ nome, categoria: cat, qtd_total: qtd, qtd_disponivel: qtd, numero_serie: serie||null });
+  document.getElementById("eqNome").value = ""; document.getElementById("eqSerie").value = ""; document.getElementById("eqQtd").value = 1;
+  await carregarEquipamentos(); renderMetrics(); renderEquipamentos(); preencherSelects();
+  showMsg("Equipamento cadastrado!");
+}
+
+async function excluirEq(id) {
+  if (!confirm("Excluir este equipamento?")) return;
+  await sb.from("equipamentos").delete().eq("id", id);
+  await carregarEquipamentos(); renderMetrics(); renderEquipamentos(); preencherSelects();
+  showMsg("Equipamento excluído.");
+}
+
+async function criarProjeto() {
+  const nome = document.getElementById("projNome").value.trim();
+  if (!nome) return;
+  await sb.from("projetos").insert({ nome });
+  document.getElementById("projNome").value = "";
+  await carregarProjetos(); renderProjetos(); preencherSelects();
+  showMsg("Projeto criado!");
+}
+
+async function encerrarProjeto(id) {
+  await sb.from("projetos").update({ status: "encerrado" }).eq("id", id);
+  await carregarProjetos(); renderProjetos(); preencherSelects();
+  showMsg("Projeto encerrado.");
+}
+
+async function registrarMov() {
+  const tipo = document.getElementById("movTipo").value;
+  const eqId = parseInt(document.getElementById("movEq").value);
+  const projId = parseInt(document.getElementById("movProj").value);
+  const qtd = parseInt(document.getElementById("movQtd").value);
+  const resp = document.getElementById("movResp").value.trim();
+  const data = document.getElementById("movData").value;
+  if (!eqId || !projId || !resp) { showMsg("Preencha todos os campos.", true); return; }
+  const eq = equipamentos.find(e => e.id === eqId);
+  if (tipo === "saída" && eq.qtd_disponivel < qtd) { showMsg("Quantidade insuficiente!", true); return; }
+  const novaQtd = tipo === "saída" ? eq.qtd_disponivel - qtd : Math.min(eq.qtd_total, eq.qtd_disponivel + qtd);
+  await sb.from("movimentacoes").insert({ tipo, equipamento_id: eqId, projeto_id: projId, quantidade: qtd, responsavel: resp, data, criado_por: usuario.id });
+  await sb.from("equipamentos").update({ qtd_disponivel: novaQtd }).eq("id", eqId);
+  await carregarEquipamentos(); renderMetrics(); renderEquipamentos(); preencherSelects(); renderHistorico();
+  showMsg(tipo === "saída" ? "Saída registrada!" : "Entrada registrada!");
+}
+
+async function carregarUsuarios() {
+  const { data } = await sb.from("perfis").select("*").order("criado_em");
+  document.getElementById("listaUsuarios").innerHTML = (data||[]).map(u => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-weight:500;font-size:15px">${u.nome}</div><div style="font-size:12px;color:#888;margin-top:2px">${u.id}</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge ${u.papel==='admin'?'admin-badge':'badge-gray'}">${u.papel}</span>
+          ${u.id!==usuario.id?`<button class="btn btn-sm btn-outline" onclick="alterarPapel('${u.id}','${u.papel}')">${u.papel==='admin'?'Tornar usuário':'Tornar admin'}</button>`:"(você)"}
+        </div>
+      </div>
+    </div>`).join("") || '<div class="empty">Nenhum usuário.</div>';
+}
+
+async function alterarPapel(id, papelAtual) {
+  const novo = papelAtual === "admin" ? "usuario" : "admin";
+  await sb.from("perfis").update({ papel: novo }).eq("id", id);
+  carregarUsuarios();
+  showMsg("Papel atualizado!");
+}
+
+function mudarTab(nome, el) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  ["estoque","projetos","movimentar","historico","admin"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = t===nome?"block":"none";
+  });
+  if (nome === "historico") renderHistorico();
+  if (nome === "admin") carregarUsuarios();
+}
+
+function showMsg(txt, erro=false) {
+  const el = document.getElementById("appMsg");
+  el.innerHTML = `<div class="${erro?'err':'ok'}">${txt}</div>`;
+  setTimeout(() => el.innerHTML = "", 3000);
+}
 
 // AUTH
 let modoLogin = true;
