@@ -86,7 +86,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <div class="field" id="nomeField" style="display:none"><label>Nome</label><input type="text" id="nomeInput" placeholder="Seu nome"/></div>
     <div class="field"><label>E-mail</label><input type="email" id="emailInput" placeholder="seu@email.com"/></div>
     <div class="field"><label>Senha</label><input type="password" id="senhaInput" placeholder="••••••••"/></div>
-    <button class="btn" onclick="handleAuth()">Entrar</button>
+    <button class="btn" id="authBtn" onclick="handleAuth()">Entrar</button>
     <div style="text-align:center;margin-top:14px">
       <button onclick="toggleAuthMode()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer" id="toggleBtn">Não tem conta? Cadastre-se</button>
     </div>
@@ -318,19 +318,29 @@ async function handleAuth(){
   const senha=document.getElementById("senhaInput").value;
   const nome=document.getElementById("nomeInput").value.trim();
   const msg=document.getElementById("authMsg");
+  const btn=document.getElementById("authBtn");
   msg.innerHTML="";
   if(!email||!senha){msg.innerHTML='<div class="err">Preencha e-mail e senha.</div>';return;}
-  if(modoLogin){
-    const {error}=await sb.auth.signInWithPassword({email,password:senha});
-    if(error)msg.innerHTML='<div class="err">E-mail ou senha incorretos.</div>';
-  } else {
-    if(!nome){msg.innerHTML='<div class="err">Informe seu nome.</div>';return;}
-    const {data,error}=await sb.auth.signUp({email,password:senha});
-    if(error){msg.innerHTML=`<div class="err">${error.message}</div>`;return;}
-    if(data.user){
-      await sb.from("perfis").update({nome}).eq("id",data.user.id);
-      msg.innerHTML='<div class="ok">Conta criada! Verifique seu e-mail.</div>';
+  btn.disabled=true;btn.textContent="Aguarde...";
+  try {
+    if(modoLogin){
+      const {data,error}=await sb.auth.signInWithPassword({email,password:senha});
+      if(error){msg.innerHTML=`<div class="err">Erro: ${error.message}</div>`;}
+      else if(!data.session){msg.innerHTML='<div class="err">Login falhou. Verifique se o e-mail foi confirmado ou tente novamente.</div>';}
+    } else {
+      if(!nome){msg.innerHTML='<div class="err">Informe seu nome.</div>';return;}
+      const {data,error}=await sb.auth.signUp({email,password:senha});
+      if(error){msg.innerHTML=`<div class="err">${error.message}</div>`;return;}
+      if(data.user){
+        await sb.from("perfis").update({nome}).eq("id",data.user.id);
+        if(data.session){msg.innerHTML='<div class="ok">Conta criada com sucesso!</div>';}
+        else{msg.innerHTML='<div class="ok">Conta criada! Verifique seu e-mail para confirmar antes de entrar.</div>';}
+      }
     }
+  } catch(e){
+    msg.innerHTML=`<div class="err">Erro inesperado. Tente novamente.</div>`;
+  } finally {
+    btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";
   }
 }
 async function sair(){await sb.auth.signOut();location.reload();}
