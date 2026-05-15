@@ -16,7 +16,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .auth-sub{font-size:14px;color:#666;margin-bottom:24px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
-input,select,textarea{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:8px 12px;font-size:14px;background:#fff;color:#1a1a1a;outline:none}
+input,select{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:8px 12px;font-size:14px;background:#fff;color:#1a1a1a;outline:none}
 input:focus,select:focus{border-color:#888}
 .btn{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:9px 18px;font-size:14px;background:#1a1a1a;color:#fff;cursor:pointer;font-weight:500;transition:opacity .2s}
 .btn:hover{opacity:.85}
@@ -56,7 +56,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .filter-btn{border:0.5px solid #d0d0c8;border-radius:8px;padding:5px 12px;font-size:12px;background:transparent;cursor:pointer}
 .filter-btn.active{background:#f1efe8}
 .section-title{font-size:16px;font-weight:500;margin-bottom:14px}
-.section-sub{font-size:13px;font-weight:500;color:#555;margin:16px 0 10px;padding-bottom:6px;border-bottom:0.5px solid #e0e0d8}
+.section-sub{font-size:13px;font-weight:600;color:#444;margin:20px 0 10px;padding-bottom:6px;border-bottom:0.5px solid #e0e0d8;text-transform:uppercase;letter-spacing:.4px}
 .empty{color:#888;font-size:14px;padding:2rem 0;text-align:center}
 .tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .tag-item{display:flex;align-items:center;gap:6px;background:#f1efe8;border-radius:8px;padding:5px 10px;font-size:13px}
@@ -70,12 +70,9 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .check-item input[type=checkbox]{width:auto}
 .search-bar{display:flex;gap:8px;margin-bottom:14px}
 .search-bar input{flex:1}
-/* Movimentar lista */
-.mov-lista{border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px}
-.mov-lista-item{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:0.5px solid #f1efe8;flex-wrap:wrap}
+.mov-lista-item{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:0.5px solid #f1efe8;flex-wrap:wrap}
 .mov-lista-item:last-child{border-bottom:none}
-.mov-lista-item select,.mov-lista-item input{flex:1;min-width:120px}
-/* Modal */
+.hist-filtros{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
 .modal-box{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;margin:1rem}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
@@ -106,14 +103,12 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <div class="app" id="appScreen">
   <header>
     <div class="header-title">Take Vision Imagem</div>
-    <div class="header-user">
-      <span id="userNome"></span><span id="userPapel"></span>
+    <div class="header-user"><span id="userNome"></span><span id="userPapel"></span>
       <button class="btn btn-outline btn-sm" onclick="sair()">Sair</button>
     </div>
   </header>
   <div class="tabs">
     <button class="tab active" onclick="mudarTab('estoque',this)">Estoque</button>
-    <button class="tab" onclick="mudarTab('gerenciar',this)">Gerenciar</button>
     <button class="tab" onclick="mudarTab('projetos',this)">Projetos</button>
     <button class="tab" onclick="mudarTab('freelancers',this)">Freelancers</button>
     <button class="tab" onclick="mudarTab('movimentar',this)">Movimentar</button>
@@ -128,11 +123,8 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
       <div class="metrics" id="metricsArea"></div>
       <div class="filters" id="filtrosArea"></div>
       <div id="listaEquipamentos"></div>
-    </div>
 
-    <!-- GERENCIAR -->
-    <div id="tab-gerenciar" style="display:none">
-      <div class="section-sub">Equipamentos</div>
+      <div class="section-sub">Gerenciar equipamentos</div>
       <div id="gerenciarEquipamentos"></div>
       <div class="card card-dashed">
         <div class="section-title">Adicionar equipamento</div>
@@ -146,7 +138,8 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
           <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" onclick="cadastrarEq()">+ Adicionar</button></div>
         </div>
       </div>
-      <div class="section-sub">Categorias</div>
+
+      <div class="section-sub">Gerenciar categorias</div>
       <div class="tag-list" id="listaCategorias"></div>
       <div class="card card-dashed">
         <div class="section-title">Adicionar categoria</div>
@@ -163,7 +156,10 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
       <div class="card card-dashed">
         <div class="section-title">Criar projeto</div>
         <div class="row">
-          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="projNome" placeholder="Ex: Clip Musical Março"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome do projeto</label><input id="projNome" placeholder="Ex: Clip Musical Março"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Cliente</label><input id="projCliente" placeholder="Ex: Empresa XYZ"/></div>
+        </div>
+        <div class="row">
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data</label><input id="projData" type="date"/></div>
         </div>
         <button class="btn btn-sm btn-outline" onclick="criarProjeto()">+ Criar projeto</button>
@@ -173,10 +169,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <!-- FREELANCERS -->
     <div id="tab-freelancers" style="display:none">
       <div class="section-sub">Buscar freelancer</div>
-      <div class="search-bar">
-        <input id="buscaFl" placeholder="Digite o nome..." oninput="buscarFreelancer()"/>
-        <button class="btn btn-sm btn-outline" onclick="limparBusca()">Limpar</button>
-      </div>
+      <div class="search-bar"><input id="buscaFl" placeholder="Digite o nome..." oninput="buscarFreelancer()"/><button class="btn btn-sm btn-outline" onclick="limparBusca()">Limpar</button></div>
       <div id="resultadoBusca" style="display:none"></div>
 
       <div class="section-sub">Freelancers cadastrados</div>
@@ -193,6 +186,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         </div>
         <button class="btn btn-sm btn-outline" onclick="cadastrarFreelancer()">+ Cadastrar</button>
       </div>
+
       <div class="section-sub">Funções</div>
       <div class="tag-list" id="listaFuncoes"></div>
       <div class="card card-dashed">
@@ -206,27 +200,54 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 
     <!-- MOVIMENTAR -->
     <div id="tab-movimentar" style="display:none">
-      <div class="card">
-        <div class="section-title">Registrar movimentação em lote</div>
+      <!-- SAÍDA -->
+      <div class="card" id="painelSaida">
+        <div class="section-title">Saída de equipamentos</div>
         <div class="row">
-          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Tipo</label>
-            <select id="movTipo"><option value="saída">Saída (retirada)</option><option value="entrada">Entrada (devolução)</option></select></div>
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label><select id="movProj"><option value="">Selecione...</option></select></div>
-        </div>
-        <div class="row">
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Responsável</label><input id="movResp" placeholder="Nome"/></div>
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data</label><input id="movData" type="date"/></div>
         </div>
         <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
-        <div class="mov-lista" id="movLista"></div>
-        <button class="btn btn-sm btn-outline" onclick="adicionarLinhaEq()" style="margin-bottom:14px">+ Adicionar equipamento</button>
-        <br/>
-        <button class="btn btn-sm btn-green" onclick="registrarMovLote()">✓ Registrar tudo</button>
+        <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px" id="movLista"></div>
+        <button class="btn btn-sm btn-outline" onclick="adicionarLinhaEq()" style="margin-bottom:14px">+ Adicionar equipamento</button><br/>
+        <button class="btn btn-sm btn-green" onclick="registrarMovLote('saída')">✓ Registrar saída</button>
+      </div>
+
+      <!-- DEVOLUÇÃO -->
+      <div class="card" style="margin-top:16px" id="painelDevolucao">
+        <div class="section-title">Devolução de equipamentos</div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label>
+            <select id="devProj" onchange="carregarEqProjeto()"><option value="">Selecione...</option></select>
+          </div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Responsável</label><input id="devResp" placeholder="Nome"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data</label><input id="devData" type="date"/></div>
+        </div>
+        <div id="devLista" style="margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-outline" onclick="devolverTodos()">↩ Devolver todos</button>
+          <button class="btn btn-sm btn-green" onclick="registrarDevolucao()">✓ Registrar devolução</button>
+        </div>
       </div>
     </div>
 
     <!-- HISTÓRICO -->
-    <div id="tab-historico" style="display:none"><div id="listaHistorico"></div></div>
+    <div id="tab-historico" style="display:none">
+      <div class="hist-filtros">
+        <select id="histFiltroTipo" onchange="renderHistorico()" style="width:auto;min-width:160px">
+          <option value="">Todos os tipos</option>
+          <option value="saída">Saída</option>
+          <option value="entrada">Entrada/Devolução</option>
+        </select>
+        <select id="histFiltroProjeto" onchange="renderHistorico()" style="width:auto;min-width:180px">
+          <option value="">Todos os projetos</option>
+        </select>
+        <input id="histFiltroResp" placeholder="Filtrar por pessoa..." oninput="renderHistorico()" style="width:auto;min-width:180px;flex:1"/>
+        <button class="btn btn-sm btn-outline" onclick="limparFiltrosHist()">Limpar</button>
+      </div>
+      <div id="listaHistorico"></div>
+    </div>
 
     <!-- ADMIN -->
     <div id="tab-admin" style="display:none"><div id="listaUsuarios"></div></div>
@@ -236,10 +257,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAL PROJETO -->
 <div class="modal-bg" id="modalProj">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modalProjTitulo"></div>
-      <button class="modal-close" onclick="fecharModal('modalProj')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title" id="modalProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalProj')">×</button></div>
     <div id="modalProjConteudo"></div>
     <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
       <button class="btn btn-sm btn-blue" onclick="gerarPDF()">⬇ Baixar PDF</button>
@@ -251,13 +269,11 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAL EDITAR PROJETO -->
 <div class="modal-bg" id="modalEditProj">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">Editar projeto</div>
-      <button class="modal-close" onclick="fecharModal('modalEditProj')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Editar projeto</div><button class="modal-close" onclick="fecharModal('modalEditProj')">×</button></div>
     <div class="field"><label>Nome</label><input id="editProjNome"/></div>
+    <div class="field"><label>Cliente</label><input id="editProjCliente"/></div>
     <div class="field"><label>Data</label><input id="editProjData" type="date"/></div>
-    <div style="display:flex;gap:8px;margin-top:4px">
+    <div style="display:flex;gap:8px">
       <button class="btn btn-sm btn-outline" onclick="salvarProjeto()">Salvar</button>
       <button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditProj')">Cancelar</button>
     </div>
@@ -267,10 +283,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAL EDITAR EQUIPAMENTO -->
 <div class="modal-bg" id="modalEq">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">Editar equipamento</div>
-      <button class="modal-close" onclick="fecharModal('modalEq')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" onclick="fecharModal('modalEq')">×</button></div>
     <div class="field"><label>Nome</label><input id="editEqNome"/></div>
     <div class="field"><label>Categoria</label><select id="editEqCat"></select></div>
     <div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div>
@@ -285,10 +298,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAL EDITAR CATEGORIA -->
 <div class="modal-bg" id="modalCat">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">Editar categoria</div>
-      <button class="modal-close" onclick="fecharModal('modalCat')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" onclick="fecharModal('modalCat')">×</button></div>
     <div class="field"><label>Nome</label><input id="editCatNome"/></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-sm btn-outline" onclick="salvarCategoria()">Salvar</button>
@@ -300,10 +310,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAL EDITAR FREELANCER -->
 <div class="modal-bg" id="modalFl">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">Editar freelancer</div>
-      <button class="modal-close" onclick="fecharModal('modalFl')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Editar freelancer</div><button class="modal-close" onclick="fecharModal('modalFl')">×</button></div>
     <div class="field"><label>Nome</label><input id="editFlNome"/></div>
     <div class="field"><label>Função</label><select id="editFlFuncao"></select></div>
     <div class="field"><label>Telefone</label><input id="editFlTel"/></div>
@@ -318,10 +325,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAL EDITAR FUNÇÃO -->
 <div class="modal-bg" id="modalFuncao">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">Editar função</div>
-      <button class="modal-close" onclick="fecharModal('modalFuncao')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Editar função</div><button class="modal-close" onclick="fecharModal('modalFuncao')">×</button></div>
     <div class="field"><label>Nome</label><input id="editFuncaoNome"/></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-sm btn-outline" onclick="salvarFuncao()">Salvar</button>
@@ -330,13 +334,10 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
   </div>
 </div>
 
-<!-- MODAL FREELANCER DO PROJETO -->
+<!-- MODAL EQUIPE DO PROJETO -->
 <div class="modal-bg" id="modalFlProj">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modalFlProjTitulo">Freelancers do projeto</div>
-      <button class="modal-close" onclick="fecharModal('modalFlProj')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title" id="modalFlProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalFlProj')">×</button></div>
     <div id="modalFlProjConteudo"></div>
     <div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFlProj')">Fechar</button></div>
   </div>
@@ -345,10 +346,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAL BUSCA FREELANCER -->
 <div class="modal-bg" id="modalBuscaFl">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modalBuscaFlTitulo"></div>
-      <button class="modal-close" onclick="fecharModal('modalBuscaFl')">×</button>
-    </div>
+    <div class="modal-header"><div class="modal-title" id="modalBuscaFlTitulo"></div><button class="modal-close" onclick="fecharModal('modalBuscaFl')">×</button></div>
     <div id="modalBuscaFlConteudo"></div>
     <div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalBuscaFl')">Fechar</button></div>
   </div>
@@ -360,8 +358,8 @@ const SUPA_KEY="sb_publishable_5aUMGeFFGjEh5lQWpUDBRA_YtfDyy7T";
 const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
 
-let usuario=null,perfil=null,equipamentos=[],projetos=[],categorias=[],freelancers=[],funcoes=[],filtroAtivo="Todas",modalProjAtual=null;
-let editEqId=null,editCatId=null,editFlId=null,editFuncaoId=null,editProjId=null;
+let usuario=null,perfil=null,equipamentos=[],projetos=[],categorias=[],freelancers=[],funcoes=[],todasMovs=[],filtroAtivo="Todas",modalProjAtual=null;
+let editEqId=null,editCatId=null,editFlId=null,editFuncaoId=null,editProjId=null,linhasEq=[];
 
 // ── AUTH ──────────────────────────────────────────────
 let modoLogin=true;
@@ -376,26 +374,22 @@ async function handleAuth(){
   const email=document.getElementById("emailInput").value.trim();
   const senha=document.getElementById("senhaInput").value;
   const nome=document.getElementById("nomeInput").value.trim();
-  const msg=document.getElementById("authMsg");
-  const btn=document.getElementById("authBtn");
+  const msg=document.getElementById("authMsg"),btn=document.getElementById("authBtn");
   msg.innerHTML="";
   if(!email||!senha){msg.innerHTML='<div class="err">Preencha e-mail e senha.</div>';return;}
   btn.disabled=true;btn.textContent="Aguarde...";
   try{
     if(modoLogin){
       const {data,error}=await sb.auth.signInWithPassword({email,password:senha});
-      if(error){msg.innerHTML=`<div class="err">Erro: ${error.message}</div>`;}
-      else if(!data.session){msg.innerHTML='<div class="err">Login falhou. Verifique se o e-mail foi confirmado.</div>';}
+      if(error)msg.innerHTML=`<div class="err">Erro: ${error.message}</div>`;
+      else if(!data.session)msg.innerHTML='<div class="err">Login falhou. Verifique o e-mail confirmado.</div>';
     } else {
       if(!nome){msg.innerHTML='<div class="err">Informe seu nome.</div>';return;}
       const {data,error}=await sb.auth.signUp({email,password:senha});
       if(error){msg.innerHTML=`<div class="err">${error.message}</div>`;return;}
-      if(data.user){
-        await sb.from("perfis").update({nome}).eq("id",data.user.id);
-        msg.innerHTML='<div class="ok">Conta criada com sucesso!</div>';
-      }
+      if(data.user){await sb.from("perfis").update({nome}).eq("id",data.user.id);msg.innerHTML='<div class="ok">Conta criada!</div>';}
     }
-  }catch(e){msg.innerHTML='<div class="err">Erro inesperado. Tente novamente.</div>';}
+  }catch(e){msg.innerHTML='<div class="err">Erro inesperado.</div>';}
   finally{btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";}
 }
 async function sair(){await sb.auth.signOut();location.reload();}
@@ -412,8 +406,10 @@ sb.auth.onAuthStateChange(async(event,session)=>{
       document.getElementById("userPapel").innerHTML='<span class="admin-badge">Admin</span>';
       document.getElementById("tabAdmin").style.display="inline-block";
     }
-    document.getElementById("movData").value=new Date().toISOString().split("T")[0];
-    document.getElementById("projData").value=new Date().toISOString().split("T")[0];
+    const hoje=new Date().toISOString().split("T")[0];
+    document.getElementById("movData").value=hoje;
+    document.getElementById("devData").value=hoje;
+    document.getElementById("projData").value=hoje;
     await carregarTudo();
     iniciarMovLista();
   }
@@ -421,40 +417,37 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 
 // ── CARREGAR ──────────────────────────────────────────
 async function carregarTudo(){
-  await Promise.all([carregarEquipamentos(),carregarProjetos(),carregarCategorias(),carregarFreelancers(),carregarFuncoes()]);
+  await Promise.all([carregarEquipamentos(),carregarProjetos(),carregarCategorias(),carregarFreelancers(),carregarFuncoes(),carregarTodasMovs()]);
   renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderProjetos();renderFreelancers();renderHistorico();
-  preencherSelects();
+  preencherSelects();preencherSelectHistorico();
   if(perfil?.papel==="admin")carregarUsuarios();
 }
-async function carregarEquipamentos(){const {data}=await sb.from("equipamentos").select("*").order("id");equipamentos=data||[];}
+async function carregarEquipamentos(){const {data}=await sb.from("equipamentos").select("*").order("nome");equipamentos=data||[];}
 async function carregarProjetos(){const {data}=await sb.from("projetos").select("*").order("id");projetos=data||[];}
 async function carregarCategorias(){const {data}=await sb.from("categorias").select("*").order("nome");categorias=data||[];renderCategorias();}
 async function carregarFreelancers(){const {data}=await sb.from("freelancers").select("*").order("nome");freelancers=data||[];}
 async function carregarFuncoes(){const {data}=await sb.from("funcoes").select("*").order("nome");funcoes=data||[];renderFuncoes();}
+async function carregarTodasMovs(){const {data}=await sb.from("movimentacoes").select("*,equipamentos(nome),projetos(nome)").order("criado_em",{ascending:false}).limit(200);todasMovs=data||[];}
 
 // ── MODAIS ────────────────────────────────────────────
 function abrirModal(id){document.getElementById(id).style.display="flex";}
 function fecharModal(id){document.getElementById(id).style.display="none";}
+function esc(s){return(s||"").replace(/'/g,"\\'");}
 
 // ── CATEGORIAS ────────────────────────────────────────
 function renderCategorias(){
-  ["eqCat","editEqCat"].forEach(id=>{
-    const s=document.getElementById(id);
-    if(s)s.innerHTML=categorias.map(c=>`<option value="${c.nome}">${c.nome}</option>`).join("");
-  });
+  ["eqCat","editEqCat"].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=categorias.map(c=>`<option value="${c.nome}">${c.nome}</option>`).join("");});
   const lista=document.getElementById("listaCategorias");
-  if(lista)lista.innerHTML=categorias.map(c=>`
-    <div class="tag-item">${c.nome}
-      <button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarCategoria(${c.id},'${esc(c.nome)}')">✏</button>
-      <button class="tag-x" onclick="excluirCategoria(${c.id},'${esc(c.nome)}')">×</button>
-    </div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma categoria.</span>";
+  if(lista)lista.innerHTML=categorias.map(c=>`<div class="tag-item">${c.nome}
+    <button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarCategoria(${c.id},'${esc(c.nome)}')">✏</button>
+    <button class="tag-x" onclick="excluirCategoria(${c.id},'${esc(c.nome)}')">×</button>
+  </div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma categoria.</span>";
 }
 async function criarCategoria(){
   const nome=document.getElementById("catNome").value.trim();if(!nome)return;
   const {error}=await sb.from("categorias").insert({nome});
   if(error){showMsg("Categoria já existe.",true);return;}
-  document.getElementById("catNome").value="";
-  await carregarCategorias();showMsg("Categoria adicionada!");
+  document.getElementById("catNome").value="";await carregarCategorias();showMsg("Categoria adicionada!");
 }
 function abrirEditarCategoria(id,nome){editCatId=id;document.getElementById("editCatNome").value=nome;abrirModal("modalCat");}
 async function salvarCategoria(){
@@ -465,8 +458,7 @@ async function salvarCategoria(){
 async function excluirCategoria(id,nome){
   if(equipamentos.some(e=>e.categoria===nome)){showMsg(`Categoria "${nome}" está em uso.`,true);return;}
   if(!confirm(`Excluir "${nome}"?`))return;
-  await sb.from("categorias").delete().eq("id",id);
-  await carregarCategorias();showMsg("Categoria excluída.");
+  await sb.from("categorias").delete().eq("id",id);await carregarCategorias();showMsg("Categoria excluída.");
 }
 
 // ── EQUIPAMENTOS ──────────────────────────────────────
@@ -497,12 +489,12 @@ function renderGerenciarEquipamentos(){
   document.getElementById("gerenciarEquipamentos").innerHTML=equipamentos.map(eq=>{
     const aloc=eq.qtd_total-eq.qtd_disponivel;
     return `<div class="card"><div class="item-row">
-      <div><div class="item-name">${eq.nome}</div><div class="item-sub">${eq.categoria} · Série: ${eq.numero_serie||"—"} · Qtd: ${eq.qtd_total}</div></div>
+      <div><div class="item-name">${eq.nome}</div><div class="item-sub">${eq.categoria} · Série: ${eq.numero_serie||"—"} · Qtd total: ${eq.qtd_total}</div></div>
       <div class="actions">${aloc>0?`<span class="badge badge-warn">${aloc} aloc.</span>`:""}
         <button class="btn btn-sm btn-edit" onclick="abrirEditarEq(${eq.id})">Editar</button>
         <button class="btn btn-sm btn-danger" onclick="excluirEq(${eq.id})">Excluir</button>
       </div></div></div>`;
-  }).join("")||'<div class="empty">Nenhum equipamento cadastrado.</div>';
+  }).join("")||'<div class="empty">Nenhum equipamento.</div>';
 }
 function setFiltro(c){filtroAtivo=c;renderEquipamentos();}
 async function cadastrarEq(){
@@ -541,16 +533,12 @@ async function excluirEq(id){
 
 // ── FREELANCERS ───────────────────────────────────────
 function renderFuncoes(){
-  ["flFuncao","editFlFuncao"].forEach(id=>{
-    const s=document.getElementById(id);
-    if(s)s.innerHTML=funcoes.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join("");
-  });
+  ["flFuncao","editFlFuncao"].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=funcoes.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join("");});
   const lista=document.getElementById("listaFuncoes");
-  if(lista)lista.innerHTML=funcoes.map(f=>`
-    <div class="tag-item">${f.nome}
-      <button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarFuncao(${f.id},'${esc(f.nome)}')">✏</button>
-      <button class="tag-x" onclick="excluirFuncao(${f.id},'${esc(f.nome)}')">×</button>
-    </div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma função.</span>";
+  if(lista)lista.innerHTML=funcoes.map(f=>`<div class="tag-item">${f.nome}
+    <button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarFuncao(${f.id},'${esc(f.nome)}')">✏</button>
+    <button class="tag-x" onclick="excluirFuncao(${f.id},'${esc(f.nome)}')">×</button>
+  </div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma função.</span>";
 }
 async function criarFuncao(){
   const nome=document.getElementById("funcaoNome").value.trim();if(!nome)return;
@@ -573,11 +561,10 @@ function renderFreelancers(){
   document.getElementById("listaFreelancers").innerHTML=freelancers.map(f=>`
     <div class="card"><div class="item-row">
       <div><div class="item-name">${f.nome}</div><div class="item-sub">${f.funcao} · Tel: ${f.telefone||"—"} · RG: ${f.rg||"—"}</div></div>
-      <div class="actions">
-        <span class="badge badge-info">${f.funcao}</span>
+      <div class="actions"><span class="badge badge-info">${f.funcao}</span>
         <button class="btn btn-sm btn-edit" onclick="abrirEditarFreelancer(${f.id})">Editar</button>
         <button class="btn btn-sm btn-danger" onclick="excluirFreelancer(${f.id})">Excluir</button>
-      </div></div></div>`).join("")||'<div class="empty">Nenhum freelancer cadastrado.</div>';
+      </div></div></div>`).join("")||'<div class="empty">Nenhum freelancer.</div>';
 }
 async function cadastrarFreelancer(){
   const nome=document.getElementById("flNome").value.trim();
@@ -607,8 +594,7 @@ async function salvarFreelancer(){
 }
 async function excluirFreelancer(id){
   if(!confirm("Excluir este freelancer?"))return;
-  await sb.from("freelancers").delete().eq("id",id);
-  await carregarFreelancers();renderFreelancers();showMsg("Freelancer excluído.");
+  await sb.from("freelancers").delete().eq("id",id);await carregarFreelancers();renderFreelancers();showMsg("Freelancer excluído.");
 }
 
 // ── BUSCA FREELANCER ──────────────────────────────────
@@ -616,20 +602,15 @@ function buscarFreelancer(){
   const q=document.getElementById("buscaFl").value.trim().toLowerCase();
   const res=document.getElementById("resultadoBusca");
   if(!q){res.style.display="none";return;}
-  const encontrados=freelancers.filter(f=>f.nome.toLowerCase().includes(q));
+  const enc=freelancers.filter(f=>f.nome.toLowerCase().includes(q));
   res.style.display="block";
-  res.innerHTML=encontrados.length?encontrados.map(f=>`
-    <div class="card" style="cursor:pointer" onclick="verProjetosDo(${f.id})">
-      <div class="item-row">
-        <div><div class="item-name">${f.nome}</div><div class="item-sub">${f.funcao} · ${f.telefone||"—"} · RG: ${f.rg||"—"}</div></div>
-        <button class="btn btn-sm btn-blue">Ver projetos</button>
-      </div></div>`).join("")
-    :'<div class="empty">Nenhum freelancer encontrado.</div>';
+  res.innerHTML=enc.length?enc.map(f=>`<div class="card" style="cursor:pointer" onclick="verProjetosDo(${f.id})">
+    <div class="item-row">
+      <div><div class="item-name">${f.nome}</div><div class="item-sub">${f.funcao} · ${f.telefone||"—"} · RG: ${f.rg||"—"}</div></div>
+      <button class="btn btn-sm btn-blue">Ver projetos</button>
+    </div></div>`).join(""):'<div class="empty">Nenhum resultado.</div>';
 }
-function limparBusca(){
-  document.getElementById("buscaFl").value="";
-  document.getElementById("resultadoBusca").style.display="none";
-}
+function limparBusca(){document.getElementById("buscaFl").value="";document.getElementById("resultadoBusca").style.display="none";}
 async function verProjetosDo(flId){
   const fl=freelancers.find(f=>f.id===flId);
   const {data:links}=await sb.from("projeto_freelancers").select("projeto_id").eq("freelancer_id",flId);
@@ -641,7 +622,7 @@ async function verProjetosDo(flId){
     ${projsDo.length?projsDo.map(p=>{
       const dt=p.data_projeto?new Date(p.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"—";
       return `<div class="card"><div class="item-row">
-        <div><div class="item-name">${p.nome}</div><div class="item-sub">Data: ${dt}</div></div>
+        <div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · Data: ${dt}</div></div>
         <span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span>
       </div></div>`;}).join(""):'<div class="empty">Nenhum projeto vinculado.</div>'}`;
   abrirModal("modalBuscaFl");
@@ -652,54 +633,54 @@ function renderProjetos(){
   document.getElementById("listaProjetos").innerHTML=projetos.map(p=>{
     const dt=p.data_projeto?new Date(p.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"—";
     return `<div class="card"><div class="item-row">
-      <div><div class="item-name">${p.nome}</div><div class="item-sub">Data: ${dt}</div></div>
+      <div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · Data: ${dt}</div></div>
       <div class="actions">
         <span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span>
         <button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver / PDF</button>
         <button class="btn btn-sm btn-outline" onclick="abrirFreelancersProj(${p.id})">Equipe</button>
         ${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="abrirEditarProjeto(${p.id})">Editar</button><button class="btn btn-sm btn-outline" onclick="encerrarProjeto(${p.id})">Encerrar</button>`:""}
       </div></div></div>`;
-  }).join("")||'<div class="empty">Nenhum projeto criado.</div>';
+  }).join("")||'<div class="empty">Nenhum projeto.</div>';
 }
 async function criarProjeto(){
   const nome=document.getElementById("projNome").value.trim();
+  const cliente=document.getElementById("projCliente").value.trim();
   const data_projeto=document.getElementById("projData").value||null;
   if(!nome)return;
-  await sb.from("projetos").insert({nome,data_projeto});
-  document.getElementById("projNome").value="";
-  await carregarProjetos();renderProjetos();preencherSelects();showMsg("Projeto criado!");
+  await sb.from("projetos").insert({nome,cliente:cliente||null,data_projeto});
+  document.getElementById("projNome").value="";document.getElementById("projCliente").value="";
+  await carregarProjetos();renderProjetos();preencherSelects();preencherSelectHistorico();showMsg("Projeto criado!");
 }
 function abrirEditarProjeto(id){
   const p=projetos.find(x=>x.id===id);editProjId=id;
   document.getElementById("editProjNome").value=p.nome;
+  document.getElementById("editProjCliente").value=p.cliente||"";
   document.getElementById("editProjData").value=p.data_projeto||"";
   abrirModal("modalEditProj");
 }
 async function salvarProjeto(){
   const nome=document.getElementById("editProjNome").value.trim();
+  const cliente=document.getElementById("editProjCliente").value.trim()||null;
   const data_projeto=document.getElementById("editProjData").value||null;
   if(!nome)return;
-  await sb.from("projetos").update({nome,data_projeto}).eq("id",editProjId);
-  fecharModal("modalEditProj");await carregarProjetos();renderProjetos();preencherSelects();showMsg("Projeto atualizado!");
+  await sb.from("projetos").update({nome,cliente,data_projeto}).eq("id",editProjId);
+  fecharModal("modalEditProj");await carregarProjetos();renderProjetos();preencherSelects();preencherSelectHistorico();showMsg("Projeto atualizado!");
 }
 async function encerrarProjeto(id){
   await sb.from("projetos").update({status:"encerrado"}).eq("id",id);
   await carregarProjetos();renderProjetos();preencherSelects();showMsg("Projeto encerrado.");
 }
-
-// ── FREELANCERS DO PROJETO ────────────────────────────
 async function abrirFreelancersProj(projId){
   const proj=projetos.find(p=>p.id===projId);
   document.getElementById("modalFlProjTitulo").textContent=`Equipe — ${proj.nome}`;
   const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);
   const vinculados=new Set((links||[]).map(l=>l.freelancer_id));
-  document.getElementById("modalFlProjConteudo").innerHTML=`
-    <div class="check-list">
-      ${freelancers.map(f=>`<label class="check-item">
-        <input type="checkbox" ${vinculados.has(f.id)?"checked":""} onchange="toggleFreelancer(${projId},${f.id},this.checked)"/>
-        <span>${f.nome} <span style="color:#888;font-size:12px">· ${f.funcao} · ${f.telefone||"—"}</span></span>
-      </label>`).join("")||"<div style='color:#888;font-size:13px'>Nenhum freelancer cadastrado.</div>"}
-    </div>`;
+  document.getElementById("modalFlProjConteudo").innerHTML=`<div class="check-list">
+    ${freelancers.map(f=>`<label class="check-item">
+      <input type="checkbox" ${vinculados.has(f.id)?"checked":""} onchange="toggleFreelancer(${projId},${f.id},this.checked)"/>
+      <span>${f.nome} <span style="color:#888;font-size:12px">· ${f.funcao} · ${f.telefone||"—"}</span></span>
+    </label>`).join("")||"<div style='color:#888;font-size:13px'>Nenhum freelancer.</div>"}
+  </div>`;
   abrirModal("modalFlProj");
 }
 async function toggleFreelancer(projId,flId,checked){
@@ -707,22 +688,19 @@ async function toggleFreelancer(projId,flId,checked){
   else await sb.from("projeto_freelancers").delete().eq("projeto_id",projId).eq("freelancer_id",flId);
 }
 
-// ── MODAL PROJETO (VER / PDF) ─────────────────────────
+// ── MODAL PROJETO (VER) ───────────────────────────────
 async function abrirModalProjeto(projId){
-  const proj=projetos.find(p=>p.id===projId);
-  modalProjAtual=proj;
+  const proj=projetos.find(p=>p.id===projId);modalProjAtual=proj;
   document.getElementById("modalProjTitulo").textContent=proj.nome;
   const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);
   const vinculados=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);
   const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
   const alocMap={};
-  (movs||[]).forEach(m=>{
-    if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;
-    alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);
-  });
+  (movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
   const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);
   const dt=proj.data_projeto?new Date(proj.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"Não definida";
   document.getElementById("modalProjConteudo").innerHTML=`
+    <div style="font-size:13px;color:#888;margin-bottom:4px">Cliente: <strong style="color:#1a1a1a">${proj.cliente||"—"}</strong></div>
     <div style="font-size:13px;color:#888;margin-bottom:1rem">Data: <strong style="color:#1a1a1a">${dt}</strong> · Status: <strong>${proj.status}</strong></div>
     <div style="font-weight:500;margin-bottom:8px">Equipe</div>
     ${vinculados.length?vinculados.map(f=>`<div style="font-size:14px;padding:4px 0;border-bottom:0.5px solid #f1efe8">${f.nome} <span style="color:#888;font-size:12px">· ${f.funcao} · ${f.telefone||"—"}</span></div>`).join(""):"<div style='color:#888;font-size:13px;margin-bottom:8px'>Nenhum freelancer vinculado.</div>"}
@@ -735,78 +713,58 @@ async function abrirModalProjeto(projId){
 async function gerarPDF(){
   if(!modalProjAtual)return;
   const proj=modalProjAtual;
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF();
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();
   const dt=proj.data_projeto?new Date(proj.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"Não definida";
   let y=20;
   doc.setFontSize(18);doc.setFont("helvetica","bold");doc.text("Take Vision Imagem",14,y);y+=8;
   doc.setFontSize(12);doc.setFont("helvetica","normal");doc.setTextColor(100);doc.text("Relatório de Projeto",14,y);y+=10;
   doc.setDrawColor(200);doc.line(14,y,196,y);y+=8;
   doc.setTextColor(0);doc.setFontSize(14);doc.setFont("helvetica","bold");doc.text(proj.nome,14,y);y+=7;
-  doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(80);doc.text(`Data: ${dt}    Status: ${proj.status}`,14,y);y+=12;
+  doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(80);
+  doc.text(`Cliente: ${proj.cliente||"—"}`,14,y);y+=6;
+  doc.text(`Data: ${dt}    Status: ${proj.status}`,14,y);y+=12;
   const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",proj.id);
-  const vinculados=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);
+  const vinc=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);
   doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipe (Freelancers)",14,y);y+=6;
   doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
-  if(vinculados.length){
-    vinculados.forEach(f=>{
-      doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(f.nome,16,y);
-      doc.setTextColor(120);doc.text(`${f.funcao}   Tel: ${f.telefone||"—"}   RG: ${f.rg||"—"}`,75,y);y+=7;
-      if(y>270){doc.addPage();y=20;}
-    });
-  }else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum freelancer vinculado.",16,y);y+=7;}
-  y+=5;
+  if(vinc.length){vinc.forEach(f=>{doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(f.nome,16,y);doc.setTextColor(120);doc.text(`${f.funcao}   Tel: ${f.telefone||"—"}   RG: ${f.rg||"—"}`,72,y);y+=7;if(y>270){doc.addPage();y=20;}});}
+  else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum freelancer vinculado.",16,y);y+=7;}
+  y+=4;
   const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",proj.id);
-  const alocMap={};
-  (movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
+  const alocMap={};(movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
   const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);
   doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipamentos Alocados",14,y);y+=6;
   doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
-  if(eqsAloc.length){
-    eqsAloc.forEach(({eq,qtd})=>{
-      doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(eq.nome,16,y);
-      doc.setTextColor(120);doc.text(`${eq.categoria}   × ${qtd}`,110,y);y+=7;
-      if(y>270){doc.addPage();y=20;}
-    });
-  }else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum equipamento alocado.",16,y);y+=7;}
-  y+=5;doc.setFontSize(9);doc.setTextColor(180);doc.text(`Gerado em ${new Date().toLocaleString("pt-BR")}`,14,y);
+  if(eqsAloc.length){eqsAloc.forEach(({eq,qtd})=>{doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(eq.nome,16,y);doc.setTextColor(120);doc.text(`${eq.categoria}   × ${qtd}`,110,y);y+=7;if(y>270){doc.addPage();y=20;}});}
+  else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum equipamento alocado.",16,y);y+=7;}
+  y+=4;doc.setFontSize(9);doc.setTextColor(180);doc.text(`Gerado em ${new Date().toLocaleString("pt-BR")}`,14,y);
   doc.save(`${proj.nome.replace(/\s+/g,"-")}.pdf`);
 }
 
-// ── MOVIMENTAR EM LOTE ────────────────────────────────
-let linhasEq=[];
-function iniciarMovLista(){linhasEq=[];adicionarLinhaEq();}
+// ── MOVIMENTAR — SAÍDA EM LOTE ────────────────────────
+function iniciarMovLista(){linhasEq=[];document.getElementById("movLista").innerHTML="";adicionarLinhaEq();}
 function adicionarLinhaEq(){
-  const id=Date.now();
-  linhasEq.push(id);
-  const div=document.createElement("div");
-  div.className="mov-lista-item";div.id=`linha-${id}`;
+  const id=Date.now();linhasEq.push(id);
+  const div=document.createElement("div");div.className="mov-lista-item";div.id=`linha-${id}`;
   div.innerHTML=`
     <select id="eq-${id}" style="flex:2;min-width:160px"><option value="">Equipamento...</option>${equipamentos.map(e=>`<option value="${e.id}">${e.nome} (${e.qtd_disponivel} disp.)</option>`).join("")}</select>
     <input id="qtd-${id}" type="number" min="1" value="1" style="width:70px;flex:none"/>
     <button class="btn btn-sm btn-danger" onclick="removerLinhaEq(${id})">×</button>`;
   document.getElementById("movLista").appendChild(div);
 }
-function removerLinhaEq(id){
-  linhasEq=linhasEq.filter(x=>x!==id);
-  const el=document.getElementById(`linha-${id}`);
-  if(el)el.remove();
-}
+function removerLinhaEq(id){linhasEq=linhasEq.filter(x=>x!==id);const el=document.getElementById(`linha-${id}`);if(el)el.remove();}
 function atualizarSelectsMovimentar(){
   linhasEq.forEach(id=>{
     const sel=document.getElementById(`eq-${id}`);
-    if(sel){
-      const val=sel.value;
-      sel.innerHTML=`<option value="">Equipamento...</option>${equipamentos.map(e=>`<option value="${e.id}">${e.nome} (${e.qtd_disponivel} disp.)</option>`).join("")}`;
-      sel.value=val;
-    }
+    if(sel){const val=sel.value;sel.innerHTML=`<option value="">Equipamento...</option>${equipamentos.map(e=>`<option value="${e.id}">${e.nome} (${e.qtd_disponivel} disp.)</option>`).join("")}`;sel.value=val;}
   });
 }
 function preencherSelects(){
-  document.getElementById("movProj").innerHTML='<option value="">Selecione...</option>'+projetos.filter(p=>p.status==="ativo").map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+  const opts=projetos.filter(p=>p.status==="ativo").map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+  document.getElementById("movProj").innerHTML='<option value="">Selecione...</option>'+opts;
+  document.getElementById("devProj").innerHTML='<option value="">Selecione...</option>'+opts;
 }
-async function registrarMovLote(){
-  const tipo=document.getElementById("movTipo").value;
+async function registrarMovLote(tipo){
   const projId=parseInt(document.getElementById("movProj").value);
   const resp=document.getElementById("movResp").value.trim();
   const data=document.getElementById("movData").value;
@@ -822,25 +780,97 @@ async function registrarMovLote(){
     itens.push({eqId,qtd,eq});
   }
   for(const {eqId,qtd,eq} of itens){
-    const novaQtd=tipo==="saída"?eq.qtd_disponivel-qtd:Math.min(eq.qtd_total,eq.qtd_disponivel+qtd);
+    const novaQtd=eq.qtd_disponivel-qtd;
     await sb.from("movimentacoes").insert({tipo,equipamento_id:eqId,projeto_id:projId,quantidade:qtd,responsavel:resp,data,criado_por:usuario.id});
     await sb.from("equipamentos").update({qtd_disponivel:novaQtd}).eq("id",eqId);
   }
-  await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderHistorico();
-  iniciarMovLista();
-  showMsg(`${itens.length} equipamento(s) registrado(s) com sucesso!`);
+  await carregarEquipamentos();await carregarTodasMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderHistorico();atualizarSelectsMovimentar();
+  iniciarMovLista();showMsg(`${itens.length} equipamento(s) registrado(s)!`);
+}
+
+// ── MOVIMENTAR — DEVOLUÇÃO ────────────────────────────
+async function carregarEqProjeto(){
+  const projId=parseInt(document.getElementById("devProj").value);
+  const lista=document.getElementById("devLista");
+  if(!projId){lista.innerHTML="";return;}
+  const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
+  const alocMap={};
+  (movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
+  const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),alocado:q})).filter(x=>x.eq);
+  if(!eqsAloc.length){lista.innerHTML='<div class="empty">Nenhum equipamento alocado neste projeto.</div>';return;}
+  lista.innerHTML=`<div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden">
+    ${eqsAloc.map(({eq,alocado})=>`<div class="mov-lista-item">
+      <span style="flex:2;font-size:14px;font-weight:500">${eq.nome}</span>
+      <span style="font-size:12px;color:#888;white-space:nowrap">Total: ${eq.qtd_total} · Disp: ${eq.qtd_disponivel}</span>
+      <input id="dev-qtd-${eq.id}" type="number" min="0" max="${alocado}" value="${alocado}" style="width:70px;flex:none"/>
+    </div>`).join("")}
+  </div>`;
+}
+async function devolverTodos(){
+  const projId=parseInt(document.getElementById("devProj").value);
+  if(!projId){showMsg("Selecione um projeto.",true);return;}
+  const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
+  const alocMap={};
+  (movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
+  const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eqId:parseInt(id),qtd:q}));
+  if(!eqsAloc.length){showMsg("Nenhum equipamento alocado neste projeto.",true);return;}
+  const inputs=eqsAloc.map(({eqId})=>document.getElementById(`dev-qtd-${eqId}`));
+  inputs.forEach((inp,i)=>{if(inp)inp.value=eqsAloc[i].qtd;});
+}
+async function registrarDevolucao(){
+  const projId=parseInt(document.getElementById("devProj").value);
+  const resp=document.getElementById("devResp").value.trim();
+  const data=document.getElementById("devData").value;
+  if(!projId||!resp){showMsg("Preencha projeto e responsável.",true);return;}
+  const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
+  const alocMap={};
+  (movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
+  const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eqId:parseInt(id),maxDev:q}));
+  if(!eqsAloc.length){showMsg("Nenhum equipamento para devolver.",true);return;}
+  let count=0;
+  for(const {eqId,maxDev} of eqsAloc){
+    const inp=document.getElementById(`dev-qtd-${eqId}`);
+    const qtd=inp?parseInt(inp.value)||0:0;
+    if(qtd<=0)continue;
+    if(qtd>maxDev){showMsg("Quantidade maior que o alocado.",true);return;}
+    const eq=equipamentos.find(e=>e.id===eqId);
+    const novaQtd=Math.min(eq.qtd_total,eq.qtd_disponivel+qtd);
+    await sb.from("movimentacoes").insert({tipo:"entrada",equipamento_id:eqId,projeto_id:projId,quantidade:qtd,responsavel:resp,data,criado_por:usuario.id});
+    await sb.from("equipamentos").update({qtd_disponivel:novaQtd}).eq("id",eqId);
+    count++;
+  }
+  await carregarEquipamentos();await carregarTodasMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderHistorico();atualizarSelectsMovimentar();
+  document.getElementById("devProj").value="";document.getElementById("devLista").innerHTML="";
+  showMsg(`${count} equipamento(s) devolvido(s)!`);
 }
 
 // ── HISTÓRICO ─────────────────────────────────────────
+function preencherSelectHistorico(){
+  const sel=document.getElementById("histFiltroProjeto");
+  if(sel)sel.innerHTML='<option value="">Todos os projetos</option>'+projetos.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+}
+function limparFiltrosHist(){
+  document.getElementById("histFiltroTipo").value="";
+  document.getElementById("histFiltroProjeto").value="";
+  document.getElementById("histFiltroResp").value="";
+  renderHistorico();
+}
 async function renderHistorico(){
-  const {data}=await sb.from("movimentacoes").select("*, equipamentos(nome), projetos(nome)").order("criado_em",{ascending:false}).limit(100);
-  document.getElementById("listaHistorico").innerHTML=(data||[]).map(m=>`
+  if(!todasMovs.length)await carregarTodasMovs();
+  const tipo=document.getElementById("histFiltroTipo")?.value||"";
+  const projId=document.getElementById("histFiltroProjeto")?.value||"";
+  const resp=(document.getElementById("histFiltroResp")?.value||"").toLowerCase();
+  let movs=todasMovs;
+  if(tipo)movs=movs.filter(m=>m.tipo===tipo);
+  if(projId)movs=movs.filter(m=>m.projeto_id===parseInt(projId));
+  if(resp)movs=movs.filter(m=>(m.responsavel||"").toLowerCase().includes(resp));
+  document.getElementById("listaHistorico").innerHTML=movs.map(m=>`
     <div class="card"><div class="item-row">
       <div><div class="item-name">${m.equipamentos?.nome||"—"}</div>
       <div class="item-sub">${m.projetos?.nome||"—"} · ${m.responsavel} · ${m.data}</div></div>
       <div class="actions"><span style="font-size:14px;font-weight:500">×${m.quantidade}</span>
         <span class="badge ${m.tipo==="saída"?"badge-warn":"badge-ok"}">${m.tipo}</span>
-      </div></div></div>`).join("")||'<div class="empty">Nenhuma movimentação.</div>';
+      </div></div></div>`).join("")||'<div class="empty">Nenhuma movimentação encontrada.</div>';
 }
 
 // ── USUÁRIOS ──────────────────────────────────────────
@@ -855,15 +885,13 @@ async function carregarUsuarios(){
 }
 async function alterarPapel(id,papelAtual){
   const novo=papelAtual==="admin"?"usuario":"admin";
-  await sb.from("perfis").update({papel:novo}).eq("id",id);
-  carregarUsuarios();showMsg("Papel atualizado!");
+  await sb.from("perfis").update({papel:novo}).eq("id",id);carregarUsuarios();showMsg("Papel atualizado!");
 }
 
 // ── UI ────────────────────────────────────────────────
 function mudarTab(nome,el){
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  el.classList.add("active");
-  ["estoque","gerenciar","projetos","freelancers","movimentar","historico","admin"].forEach(t=>{
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");
+  ["estoque","projetos","freelancers","movimentar","historico","admin"].forEach(t=>{
     document.getElementById("tab-"+t).style.display=t===nome?"block":"none";
   });
   if(nome==="historico")renderHistorico();
@@ -874,7 +902,6 @@ function showMsg(txt,erro=false){
   el.innerHTML=`<div class="${erro?"err":"ok"}">${txt}</div>`;
   setTimeout(()=>el.innerHTML="",3500);
 }
-function esc(s){return s.replace(/'/g,"\\'");}
 </script>
 </body>
 </html>
