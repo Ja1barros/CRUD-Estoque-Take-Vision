@@ -255,11 +255,18 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
           <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Descrição do serviço</label>
           <textarea id="orcDescricao" placeholder="Descreva o serviço que a Take Vision vai realizar..."></textarea>
         </div>
-        <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos e preços</div>
+        <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
         <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="orcItensLista"></div>
-        <button class="btn btn-sm btn-outline" onclick="adicionarItemOrc()" style="margin-bottom:16px">+ Adicionar item</button>
+        <button class="btn btn-sm btn-outline" onclick="adicionarItemOrc()" style="margin-bottom:16px">+ Adicionar equipamento</button>
+
+        <div style="font-weight:500;font-size:14px;margin:8px 0 10px">Provedores de serviço</div>
+        <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="orcProvedoresLista"></div>
+        <button class="btn btn-sm btn-outline" onclick="adicionarProvedor()" style="margin-bottom:16px">+ Adicionar provedor</button>
+
         <div class="orc-subtotal" id="orcSubtotalPreview">
-          <div style="font-size:13px;color:#888">Subtotal: <strong id="previewSubtotal">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:2px">Equipamentos: <strong id="previewSubtotalEq">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:2px">Provedores: <strong id="previewSubtotalProv">R$ 0,00</strong></div>
+          <div style="font-size:14px;color:#1a1a1a;margin-top:6px;border-top:0.5px solid #d0d0c8;padding-top:6px">Subtotal total: <strong id="previewSubtotal">R$ 0,00</strong></div>
         </div>
         <div style="margin-top:14px">
           <button class="btn btn-sm btn-purple" onclick="finalizarOrcamento()">✓ Finalizar orçamento</button>
@@ -743,7 +750,174 @@ async function renderHistorico(){
 }
 
 // ── ORÇAMENTOS ────────────────────────────────────────
-let orcDadosTemp=null;
+let orcDadosTemp=null,orcProvedoresLinhas=[];
+function iniciarOrcLista(){
+  orcLinhas=[];orcProvedoresLinhas=[];
+  document.getElementById("orcItensLista").innerHTML="";
+  document.getElementById("orcProvedoresLista").innerHTML="";
+  adicionarItemOrc();adicionarProvedor();atualizarSubtotal();
+}
+function adicionarItemOrc(){
+  const id=Date.now();orcLinhas.push(id);
+  const div=document.createElement("div");div.className="orc-item-row";div.id=`orc-linha-${id}`;
+  const eqOpts=equipamentos.map(e=>`<option value="${e.nome}">${e.nome}</option>`).join("");
+  div.innerHTML=`
+    <select id="orc-desc-${id}" style="flex:3;min-width:160px" onchange="atualizarSubtotal()">
+      <option value="">Selecione o equipamento...</option>${eqOpts}
+    </select>
+    <input id="orc-preco-${id}" type="number" min="0" step="0.01" value="0" placeholder="R$ aluguel" style="width:120px;flex:none" oninput="atualizarSubtotal()"/>
+    <button class="btn btn-sm btn-danger" onclick="removerItemOrc(${id})">×</button>`;
+  document.getElementById("orcItensLista").appendChild(div);
+}
+function removerItemOrc(id){orcLinhas=orcLinhas.filter(x=>x!==id);const el=document.getElementById(`orc-linha-${id}`);if(el)el.remove();atualizarSubtotal();}
+
+function adicionarProvedor(){
+  const id=Date.now();orcProvedoresLinhas.push(id);
+  const div=document.createElement("div");div.className="orc-item-row";div.id=`orc-prov-${id}`;
+  const funcOpts=funcoes.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join("");
+  div.innerHTML=`
+    <select id="orc-pfunc-${id}" style="flex:2;min-width:140px" onchange="atualizarSubtotal()">
+      <option value="">Função...</option>${funcOpts}
+    </select>
+    <input id="orc-pqtd-${id}" type="number" min="1" value="1" style="width:60px;flex:none" placeholder="Qtd" oninput="atualizarSubtotal()"/>
+    <input id="orc-ppreco-${id}" type="number" min="0" step="0.01" value="0" placeholder="R$ cada" style="width:110px;flex:none" oninput="atualizarSubtotal()"/>
+    <button class="btn btn-sm btn-danger" onclick="removerProvedor(${id})">×</button>`;
+  document.getElementById("orcProvedoresLista").appendChild(div);
+}
+function removerProvedor(id){orcProvedoresLinhas=orcProvedoresLinhas.filter(x=>x!==id);const el=document.getElementById(`orc-prov-${id}`);if(el)el.remove();atualizarSubtotal();}
+
+function calcSubtotalEq(){return orcLinhas.reduce((s,id)=>{const preco=parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0;return s+preco;},0);}
+function calcSubtotalProv(){return orcProvedoresLinhas.reduce((s,id)=>{const qtd=parseFloat(document.getElementById(`orc-pqtd-${id}`)?.value)||0,preco=parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0;return s+qtd*preco;},0);}
+function calcSubtotal(){return calcSubtotalEq()+calcSubtotalProv();}
+function atualizarSubtotal(){
+  const eq=calcSubtotalEq(),prov=calcSubtotalProv();
+  const eqEl=document.getElementById("previewSubtotalEq"),provEl=document.getElementById("previewSubtotalProv"),totEl=document.getElementById("previewSubtotal");
+  if(eqEl)eqEl.textContent=brl(eq);if(provEl)provEl.textContent=brl(prov);if(totEl)totEl.textContent=brl(eq+prov);
+}
+function finalizarOrcamento(){
+  const titulo=document.getElementById("orcTitulo").value.trim();
+  if(!titulo){showMsg("Informe o título do orçamento.",true);return;}
+  const sub=calcSubtotal();
+  document.getElementById("descontoValor").value=0;
+  document.getElementById("descontoPreview").innerHTML=`Subtotal: <strong>${brl(sub)}</strong>`;
+  orcDadosTemp={titulo,cliente:document.getElementById("orcCliente").value.trim(),descricao:document.getElementById("orcDescricao").value.trim()};
+  abrirModal("modalDesconto");
+}
+function atualizarPreviewDesconto(){
+  const pct=parseFloat(document.getElementById("descontoValor").value)||0,sub=calcSubtotal(),desc=sub*(pct/100),total=sub-desc;
+  document.getElementById("descontoPreview").innerHTML=`Subtotal: <strong>${brl(sub)}</strong> · Desconto (${pct}%): <strong>-${brl(desc)}</strong> · Total: <strong>${brl(total)}</strong>`;
+}
+async function confirmarOrcamento(comDesconto){
+  const pct=comDesconto?parseFloat(document.getElementById("descontoValor").value)||0:0;
+  const {titulo,cliente,descricao}=orcDadosTemp;
+  const {data:orc,error}=await sb.from("orcamentos").insert({titulo,cliente:cliente||null,descricao_servico:descricao||null,desconto:pct,criado_por:usuario.id}).select().single();
+  if(error){showMsg("Erro ao salvar orçamento.",true);return;}
+  // itens de equipamento
+  const itensEq=orcLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-desc-${id}`)?.value||"",quantidade:1,preco_unitario:parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0,tipo:"equipamento"})).filter(i=>i.descricao);
+  // itens de provedor
+  const itensProv=orcProvedoresLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-pfunc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-pqtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0,tipo:"provedor"})).filter(i=>i.descricao);
+  const todosItens=[...itensEq,...itensProv];
+  if(todosItens.length)await sb.from("orcamento_itens").insert(todosItens);
+  fecharModal("modalDesconto");await carregarOrcamentos();renderOrcamentos();
+  document.getElementById("orcTitulo").value="";document.getElementById("orcCliente").value="";document.getElementById("orcDescricao").value="";
+  iniciarOrcLista();showMsg("Orçamento salvo!");
+}
+function renderOrcamentos(){
+  if(!isSupremo())return;
+  document.getElementById("listaOrcamentos").innerHTML=orcamentos.map(o=>{
+    const itens=o.orcamento_itens||[];
+    const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
+    const desc=sub*(o.desconto/100),total=sub-desc;
+    const dt=new Date(o.criado_em).toLocaleDateString("pt-BR");
+    return `<div class="card"><div class="item-row">
+      <div><div class="item-name">${o.titulo}</div><div class="item-sub">Cliente: ${o.cliente||"—"} · ${dt} · ${itens.length} item(s)</div></div>
+      <div class="actions">
+        <span style="font-size:13px;font-weight:500;color:#3b6d11">${brl(total)}</span>
+        ${o.desconto>0?`<span class="badge badge-warn">${o.desconto}% desc.</span>`:""}
+        <button class="btn btn-sm btn-outline" onclick="verOrcamento(${o.id})">Ver / PDF</button>
+        <button class="btn btn-sm btn-danger" onclick="excluirOrcamento(${o.id})">Excluir</button>
+      </div></div></div>`;}).join("")||'<div class="empty">Nenhum orçamento.</div>';
+}
+async function verOrcamento(id){
+  const o=orcamentos.find(x=>x.id===id);orcAtual=o;
+  const itens=o.orcamento_itens||[];
+  const eqItens=itens.filter(i=>i.tipo==="equipamento"||!i.tipo);
+  const provItens=itens.filter(i=>i.tipo==="provedor");
+  const subEq=eqItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
+  const subProv=provItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
+  const sub=subEq+subProv,desc=sub*(o.desconto/100),total=sub-desc;
+  const dt=new Date(o.criado_em).toLocaleDateString("pt-BR");
+  document.getElementById("modalVerOrcTitulo").textContent=o.titulo;
+  document.getElementById("modalVerOrcConteudo").innerHTML=`
+    <div style="font-size:13px;color:#888;margin-bottom:4px">Cliente: <strong style="color:#1a1a1a">${o.cliente||"—"}</strong> · Data: ${dt}</div>
+    ${o.descricao_servico?`<div style="background:#f5f5f0;border-radius:8px;padding:10px 14px;margin:12px 0;font-size:14px;line-height:1.6"><div style="font-weight:500;margin-bottom:4px">Descrição do serviço</div>${o.descricao_servico}</div>`:""}
+    ${eqItens.length?`
+    <div style="font-weight:500;margin-bottom:8px">Equipamentos</div>
+    <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:3fr 1fr;gap:8px;padding:8px 12px;background:#f5f5f0;font-size:12px;font-weight:600;color:#666"><span>EQUIPAMENTO</span><span style="text-align:right">VALOR ALUGUEL</span></div>
+      ${eqItens.map(i=>`<div style="display:grid;grid-template-columns:3fr 1fr;gap:8px;padding:8px 12px;border-top:0.5px solid #f1efe8;font-size:14px"><span>${i.descricao}</span><span style="text-align:right">${brl(i.preco_unitario)}</span></div>`).join("")}
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-top:0.5px solid #e0e0d8;font-size:13px;color:#888"><span>Subtotal equipamentos</span><strong>${brl(subEq)}</strong></div>
+    </div>`:""}
+    ${provItens.length?`
+    <div style="font-weight:500;margin-bottom:8px">Provedores de serviço</div>
+    <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;padding:8px 12px;background:#f5f5f0;font-size:12px;font-weight:600;color:#666"><span>FUNÇÃO</span><span style="text-align:center">QTD</span><span style="text-align:right">UNIT.</span><span style="text-align:right">TOTAL</span></div>
+      ${provItens.map(i=>`<div style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;padding:8px 12px;border-top:0.5px solid #f1efe8;font-size:14px"><span>${i.descricao}</span><span style="text-align:center">${i.quantidade}</span><span style="text-align:right">${brl(i.preco_unitario)}</span><span style="text-align:right">${brl(i.quantidade*i.preco_unitario)}</span></div>`).join("")}
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-top:0.5px solid #e0e0d8;font-size:13px;color:#888"><span>Subtotal provedores</span><strong>${brl(subProv)}</strong></div>
+    </div>`:""}
+    <div class="orc-subtotal">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;color:#666"><span>Equipamentos</span><span>${brl(subEq)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;color:#666"><span>Provedores</span><span>${brl(subProv)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><span>Subtotal</span><strong>${brl(sub)}</strong></div>
+      ${o.desconto>0?`<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;color:#854f0b"><span>Desconto (${o.desconto}%)</span><strong>-${brl(desc)}</strong></div>`:""}
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:600;border-top:0.5px solid #d0d0c8;padding-top:8px;margin-top:4px"><span>Total</span><span style="color:#3b6d11">${brl(total)}</span></div>
+    </div>`;
+  abrirModal("modalVerOrc");
+}
+async function excluirOrcamento(id){if(!confirm("Excluir este orçamento?"))return;await sb.from("orcamentos").delete().eq("id",id);await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento excluído.");}
+async function gerarPDFOrcamento(){
+  if(!orcAtual)return;
+  const o=orcAtual,{jsPDF}=window.jspdf,doc=new jsPDF();
+  const itens=o.orcamento_itens||[];
+  const eqItens=itens.filter(i=>i.tipo==="equipamento"||!i.tipo);
+  const provItens=itens.filter(i=>i.tipo==="provedor");
+  const subEq=eqItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
+  const subProv=provItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
+  const sub=subEq+subProv,desc=sub*(o.desconto/100),total=sub-desc;
+  const dt=new Date(o.criado_em).toLocaleDateString("pt-BR");
+  let y=20;
+  doc.setFontSize(18);doc.setFont("helvetica","bold");doc.setTextColor(0);doc.text("Take Vision Imagem",14,y);y+=8;
+  doc.setFontSize(12);doc.setFont("helvetica","normal");doc.setTextColor(100);doc.text("Orçamento",14,y);y+=10;
+  doc.setDrawColor(200);doc.line(14,y,196,y);y+=8;
+  doc.setTextColor(0);doc.setFontSize(15);doc.setFont("helvetica","bold");doc.text(o.titulo,14,y);y+=7;
+  doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(80);doc.text(`Cliente: ${o.cliente||"—"}   Data: ${dt}`,14,y);y+=12;
+  if(o.descricao_servico){
+    doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Descrição do Serviço",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
+    doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(60);
+    const lines=doc.splitTextToSize(o.descricao_servico,178);lines.forEach(l=>{doc.text(l,14,y);y+=6;if(y>270){doc.addPage();y=20;}});y+=4;
+  }
+  if(eqItens.length){
+    doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipamentos",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
+    doc.setFillColor(245,245,240);doc.rect(14,y-4,182,8,"F");
+    doc.setFontSize(10);doc.setFont("helvetica","bold");doc.setTextColor(80);doc.text("EQUIPAMENTO",16,y);doc.text("VALOR ALUGUEL",192,y,{align:"right"});y+=8;
+    eqItens.forEach(i=>{doc.setFont("helvetica","normal");doc.setTextColor(0);doc.setFontSize(11);doc.text(i.descricao.substring(0,60),16,y);doc.text(brl(i.preco_unitario),192,y,{align:"right"});y+=7;if(y>270){doc.addPage();y=20;}});
+    doc.setFontSize(11);doc.setTextColor(80);doc.text("Subtotal equipamentos",130,y);doc.text(brl(subEq),192,y,{align:"right"});y+=10;
+  }
+  if(provItens.length){
+    doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Provedores de Serviço",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
+    doc.setFillColor(245,245,240);doc.rect(14,y-4,182,8,"F");
+    doc.setFontSize(10);doc.setFont("helvetica","bold");doc.setTextColor(80);doc.text("FUNÇÃO",16,y);doc.text("QTD",130,y);doc.text("UNIT.",158,y);doc.text("TOTAL",192,y,{align:"right"});y+=8;
+    provItens.forEach(i=>{doc.setFont("helvetica","normal");doc.setTextColor(0);doc.setFontSize(11);doc.text(i.descricao,16,y);doc.text(String(i.quantidade),134,y,{align:"right"});doc.text(brl(i.preco_unitario),166,y,{align:"right"});doc.text(brl(i.quantidade*i.preco_unitario),192,y,{align:"right"});y+=7;if(y>270){doc.addPage();y=20;}});
+    doc.setFontSize(11);doc.setTextColor(80);doc.text("Subtotal provedores",130,y);doc.text(brl(subProv),192,y,{align:"right"});y+=10;
+  }
+  doc.setDrawColor(200);doc.line(14,y,196,y);y+=6;
+  doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(80);doc.text("Subtotal",122,y);doc.text(brl(sub),192,y,{align:"right"});y+=7;
+  if(o.desconto>0){doc.setTextColor(180,80,0);doc.text(`Desconto (${o.desconto}%)`,122,y);doc.text(`-${brl(desc)}`,192,y,{align:"right"});y+=7;}
+  doc.setDrawColor(200);doc.line(120,y,196,y);y+=6;
+  doc.setFontSize(13);doc.setFont("helvetica","bold");doc.setTextColor(0);doc.text("TOTAL",122,y);doc.setTextColor(60,140,30);doc.text(brl(total),192,y,{align:"right"});
+  y+=12;doc.setFontSize(9);doc.setTextColor(180);doc.setFont("helvetica","normal");doc.text(`Gerado em ${new Date().toLocaleString("pt-BR")}`,14,y);
+  doc.save(`Orcamento-${o.titulo.replace(/\s+/g,"-")}.pdf`);
+}
 function iniciarOrcLista(){orcLinhas=[];document.getElementById("orcItensLista").innerHTML="";adicionarItemOrc();atualizarSubtotal();}
 function adicionarItemOrc(){
   const id=Date.now();orcLinhas.push(id);
