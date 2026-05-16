@@ -760,7 +760,9 @@ function iniciarOrcLista(){
 function adicionarItemOrc(){
   const id=Date.now();orcLinhas.push(id);
   const div=document.createElement("div");div.className="orc-item-row";div.id=`orc-linha-${id}`;
-  const eqOpts=equipamentos.map(e=>`<option value="${e.nome}">${e.nome}</option>`).join("");
+  const eqOpts=equipamentos.length
+    ? equipamentos.map(e=>`<option value="${e.nome}">${e.nome}</option>`).join("")
+    : `<option value="">Nenhum equipamento cadastrado</option>`;
   div.innerHTML=`
     <select id="orc-desc-${id}" style="flex:3;min-width:160px" onchange="atualizarSubtotal()">
       <option value="">Selecione o equipamento...</option>${eqOpts}
