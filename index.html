@@ -421,19 +421,44 @@ async function handleAuth(){
   msg.innerHTML="";
   if(!email||!senha){msg.innerHTML='<div class="err">Preencha e-mail e senha.</div>';return;}
   btn.disabled=true;btn.textContent="Aguarde...";
+
+  // timeout de 10 segundos
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000));
+
   try{
     if(modoLogin){
-      const {data,error}=await sb.auth.signInWithPassword({email,password:senha});
-      if(error)msg.innerHTML=`<div class="err">Erro: ${error.message}</div>`;
-      else if(!data.session)msg.innerHTML='<div class="err">Login falhou.</div>';
+      const {data,error}=await Promise.race([
+        sb.auth.signInWithPassword({email,password:senha}),
+        timeout
+      ]);
+      if(error){
+        if(error.message==="Invalid login credentials")msg.innerHTML='<div class="err">E-mail ou senha incorretos.</div>';
+        else msg.innerHTML=`<div class="err">Erro: ${error.message}</div>`;
+      } else if(!data?.session){
+        msg.innerHTML='<div class="err">Login falhou. Tente novamente.</div>';
+      }
+      // se deu certo, o onAuthStateChange cuida do resto
     } else {
-      if(!nome){msg.innerHTML='<div class="err">Informe seu nome.</div>';return;}
-      const {data,error}=await sb.auth.signUp({email,password:senha});
+      if(!nome){msg.innerHTML='<div class="err">Informe seu nome.</div>';btn.disabled=false;btn.textContent="Cadastrar";return;}
+      const {data,error}=await Promise.race([
+        sb.auth.signUp({email,password:senha}),
+        timeout
+      ]);
       if(error){msg.innerHTML=`<div class="err">${error.message}</div>`;return;}
-      if(data.user){await sb.from("perfis").update({nome}).eq("id",data.user.id);msg.innerHTML='<div class="ok">Conta criada!</div>';}
+      if(data?.user){
+        await sb.from("perfis").update({nome}).eq("id",data.user.id);
+        msg.innerHTML='<div class="ok">Conta criada! Já pode entrar.</div>';
+      }
     }
-  }catch(e){msg.innerHTML='<div class="err">Erro inesperado.</div>';}
-  finally{btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";}
+  } catch(e){
+    if(e.message==="timeout"){
+      msg.innerHTML='<div class="err">Conexão demorou demais. Verifique sua internet e tente novamente.</div>';
+    } else {
+      msg.innerHTML='<div class="err">Erro inesperado. Tente novamente.</div>';
+    }
+  } finally{
+    btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";
+  }
 }
 async function sair(){await sb.auth.signOut();location.reload();}
 
