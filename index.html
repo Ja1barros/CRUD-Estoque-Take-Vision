@@ -394,19 +394,23 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 
 <script>
 const SUPA_URL="https://wikmeymvknuujbnwmfjx.supabase.co";
-const SUPA_KEY="sb_publishable_5aUMGeFFGjEh5lQWpUDBRA_YtfDyy7T";
-const SUPA_LEGACY_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa21leW12a251dWpibndtZmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzI5MDEsImV4cCI6MjA5MTg0ODkwMX0.GaOJArnrhjsJ2gCs0dLNGvaLuIuekINW1VNfmdPdIgU";
+const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa21leW12a251dWpibndtZmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzI5MDEsImV4cCI6MjA5MTg0ODkwMX0.GaOJArnrhjsJ2gCs0dLNGvaLuIuekINW1VNfmdPdIgU";
 const {createClient}=supabase;
-const sb=createClient(SUPA_URL,SUPA_LEGACY_KEY,{
-  auth:{
-    autoRefreshToken:true,
-    persistSession:true,
-    detectSessionInUrl:false
-  },
-  global:{
-    headers:{"apikey":SUPA_LEGACY_KEY}
-  }
-});
+const sb=createClient(SUPA_URL,SUPA_KEY);
+
+// login direto via fetch sem depender da biblioteca
+async function loginDireto(email,senha){
+  const res=await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "apikey":SUPA_KEY,
+      "Authorization":`Bearer ${SUPA_KEY}`
+    },
+    body:JSON.stringify({email,password:senha})
+  });
+  return res.json();
+}
 
 let usuario=null,perfil=null,equipamentos=[],projetos=[],categorias=[],freelancers=[],funcoes=[],todasMovs=[],orcamentos=[],filtroAtivo="Todas",modalProjAtual=null,orcAtual=null;
 let editEqId=null,editCatId=null,editFlId=null,editFuncaoId=null,editProjId=null,linhasEq=[],orcLinhas=[];
@@ -433,12 +437,18 @@ async function handleAuth(){
   btn.disabled=true;btn.textContent="Aguarde...";
   try{
     if(modoLogin){
-      const {data,error}=await sb.auth.signInWithPassword({email,password:senha});
-      if(error){
-        if(error.message==="Invalid login credentials")msg.innerHTML='<div class="err">E-mail ou senha incorretos.</div>';
-        else msg.innerHTML=`<div class="err">Erro: ${error.message}</div>`;
-      } else if(!data?.session){
-        msg.innerHTML='<div class="err">Login falhou. Tente novamente.</div>';
+      const data=await loginDireto(email,senha);
+      if(data.error||data.error_description){
+        msg.innerHTML=`<div class="err">Erro: ${data.error_description||data.error||"Credenciais inválidas"}</div>`;
+        btn.disabled=false;btn.textContent="Entrar";
+        return;
+      }
+      if(data.access_token){
+        // seta a sessão manualmente
+        await sb.auth.setSession({access_token:data.access_token,refresh_token:data.refresh_token});
+      } else {
+        msg.innerHTML=`<div class="err">Login falhou. Tente novamente.</div>`;
+        btn.disabled=false;btn.textContent="Entrar";
       }
     } else {
       if(!nome){msg.innerHTML='<div class="err">Informe seu nome.</div>';btn.disabled=false;btn.textContent="Cadastrar";return;}
@@ -448,10 +458,10 @@ async function handleAuth(){
         await sb.from("perfis").update({nome}).eq("id",data.user.id);
         msg.innerHTML='<div class="ok">Conta criada! Já pode entrar.</div>';
       }
+      btn.disabled=false;btn.textContent="Cadastrar";
     }
-  } catch(e){
-    msg.innerHTML=`<div class="err">Erro: ${e.message}. Tente novamente.</div>`;
-  } finally{
+  }catch(e){
+    msg.innerHTML=`<div class="err">Erro: ${e.message}</div>`;
     btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";
   }
 }
