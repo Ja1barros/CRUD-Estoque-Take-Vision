@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Take Vision Imagem</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -396,7 +396,13 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 const SUPA_URL="https://wikmeymvknuujbnwmfjx.supabase.co";
 const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa21leW12a251dWpibndtZmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzI5MDEsImV4cCI6MjA5MTg0ODkwMX0.GaOJArnrhjsJ2gCs0dLNGvaLuIuekINW1VNfmdPdIgU";
 const {createClient}=supabase;
-const sb=createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+const sb=createClient(SUPA_URL,SUPA_KEY,{
+  auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    storageKey:"takevision_auth"
+  }
+});
 
 let usuario=null,perfil=null,equipamentos=[],projetos=[],categorias=[],freelancers=[],funcoes=[],todasMovs=[],orcamentos=[],filtroAtivo="Todas",modalProjAtual=null,orcAtual=null;
 let editEqId=null,editCatId=null,editFlId=null,editFuncaoId=null,editProjId=null,linhasEq=[],orcLinhas=[];
