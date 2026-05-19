@@ -447,7 +447,19 @@ async function excluirFuncao(id,nome){if(freelancers.some(f=>f.funcao===nome)){s
 
 // ── FREELANCERS ───────────────────────────────────────
 function renderFreelancers(){document.getElementById("listaFreelancers").innerHTML=freelancers.map(f=>`<div class="card"><div class="item-row"><div><div class="item-name">${f.nome}</div><div class="item-sub">${f.funcao} · Tel: ${f.telefone||"—"} · RG: ${f.rg||"—"}</div></div><div class="actions"><span class="badge badge-info">${f.funcao}</span><button class="btn btn-sm btn-edit" onclick="abrirEditarFreelancer(${f.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="excluirFreelancer(${f.id})">Excluir</button></div></div></div>`).join("")||'<div class="empty">Nenhum freelancer.</div>';}
-async function cadastrarFreelancer(){const nome=document.getElementById("flNome").value.trim(),funcao=document.getElementById("flFuncao").value,telefone=document.getElementById("flTel").value.trim(),rg=document.getElementById("flRg").value.trim();if(!nome||!funcao){showMsg("Preencha nome e função.",true);return;}await sb.from("freelancers").insert({nome,funcao,telefone:telefone||null,rg:rg||null});document.getElementById("flNome").value="";document.getElementById("flTel").value="";document.getElementById("flRg").value="";await carregarFreelancers();renderFreelancers();showMsg("Freelancer cadastrado!");}
+async function cadastrarFreelancer(){
+  const nome=document.getElementById("flNome").value.trim(),
+    funcao=document.getElementById("flFuncao").value,
+    telefone=document.getElementById("flTel").value.trim(),
+    rg=document.getElementById("flRg").value.trim();
+  if(!nome||!funcao){showMsg("Preencha nome e função.",true);return;}
+  const {error}=await sb.from("freelancers").insert({nome,funcao,telefone:telefone||null,rg:rg||null});
+  if(error){showMsg("Erro ao cadastrar: "+error.message,true);return;}
+  document.getElementById("flNome").value="";
+  document.getElementById("flTel").value="";
+  document.getElementById("flRg").value="";
+  await carregarFreelancers();renderFreelancers();showMsg("Freelancer cadastrado!");
+}
 function abrirEditarFreelancer(id){const f=freelancers.find(x=>x.id===id);editFlId=id;document.getElementById("editFlNome").value=f.nome;document.getElementById("editFlFuncao").value=f.funcao;document.getElementById("editFlTel").value=f.telefone||"";document.getElementById("editFlRg").value=f.rg||"";abrirModal("modalFl");}
 async function salvarFreelancer(){const nome=document.getElementById("editFlNome").value.trim(),funcao=document.getElementById("editFlFuncao").value,telefone=document.getElementById("editFlTel").value.trim()||null,rg=document.getElementById("editFlRg").value.trim()||null;await sb.from("freelancers").update({nome,funcao,telefone,rg}).eq("id",editFlId);fecharModal("modalFl");await carregarFreelancers();renderFreelancers();showMsg("Freelancer atualizado!");}
 async function excluirFreelancer(id){if(!confirm("Excluir?"))return;await sb.from("freelancers").delete().eq("id",id);await carregarFreelancers();renderFreelancers();showMsg("Freelancer excluído.");}
@@ -504,7 +516,13 @@ async function gerarPDFOrcamento(){if(!orcAtual)return;const o=orcAtual,{jsPDF}=
 
 // ── USUÁRIOS ──────────────────────────────────────────
 async function carregarUsuarios(){const {data}=await sb.from("perfis").select("*").order("criado_em");document.getElementById("listaUsuarios").innerHTML=(data||[]).map(u=>`<div class="card"><div class="item-row"><div><div class="item-name">${u.nome}</div><div class="item-sub">${u.id}</div></div><div class="actions"><span class="badge ${u.supremo?"badge-purple":u.papel==="admin"?"admin-badge":"badge-gray"}">${u.supremo?"★ Supremo":u.papel}</span>${!u.supremo?`<button class="btn btn-sm btn-outline" onclick="alterarPapel('${u.id}','${u.papel}')">${u.papel==="admin"?"→ Usuário":"→ Admin"}</button><button class="btn btn-sm btn-danger" onclick="bloquearUsuario('${u.id}','${u.nome}')">Remover acesso</button>`:"(conta suprema)"}</div></div></div>`).join("")||'<div class="empty">Nenhum usuário.</div>';}
-async function alterarPapel(id,papelAtual){const novo=papelAtual==="admin"?"usuario":"admin";await sb.from("perfis").update({papel:novo}).eq("id",id);carregarUsuarios();showMsg("Papel atualizado!");}
+async function alterarPapel(id,papelAtual){
+  const novo=papelAtual==="admin"?"usuario":"admin";
+  const {error}=await sb.from("perfis").update({papel:novo}).eq("id",id);
+  if(error){showMsg("Erro ao atualizar papel.",true);return;}
+  await carregarUsuarios();
+  showMsg("Papel atualizado!");
+}
 async function bloquearUsuario(id,nome){if(!confirm(`Remover acesso de "${nome}"?`))return;await sb.from("perfis").update({papel:"bloqueado"}).eq("id",id);carregarUsuarios();showMsg("Acesso removido.");}
 async function criarUsuario(){if(!isSupremo()){showMsg("Apenas a conta suprema pode criar usuários.",true);return;}const nome=document.getElementById("novoUserNome").value.trim(),email=document.getElementById("novoUserEmail").value.trim(),senha=document.getElementById("novoUserSenha").value,papel=document.getElementById("novoUserPapel").value;if(!nome||!email||!senha){showMsg("Preencha todos os campos.",true);return;}if(senha.length<6){showMsg("Senha mínima de 6 caracteres.",true);return;}const {data,error}=await sb.auth.signUp({email,password:senha});if(error){showMsg("Erro: "+error.message,true);return;}if(data?.user){await sb.from("perfis").update({nome,papel}).eq("id",data.user.id);document.getElementById("novoUserNome").value="";document.getElementById("novoUserEmail").value="";document.getElementById("novoUserSenha").value="";await carregarUsuarios();showMsg(`Usuário "${nome}" criado!`);}}
 </script>
