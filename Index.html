@@ -79,7 +79,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .orc-item-row{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:0.5px solid #f1efe8;flex-wrap:wrap}
 .orc-item-row:last-child{border-bottom:none}
 .orc-subtotal{background:#f5f5f0;border-radius:8px;padding:12px 16px;margin-top:10px}
-.pasta-card{background:#fff;border:0.5px solid #e0e0d8;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.supremo-only{display:none}
 .pasta-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
 .pasta-body{padding:0 16px 12px;border-top:0.5px solid #f1efe8}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
@@ -139,6 +139,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         </div>
         <div class="row">
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de série</label><input id="eqSerie" placeholder="Opcional"/></div>
+          <div class="col supremo-only"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Preço base (R$)</label><input id="eqPrecoBase" type="number" min="0" step="0.01" value="0" placeholder="0,00"/></div>
           <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" onclick="cadastrarEq()">+ Adicionar</button></div>
         </div>
       </div>
@@ -330,7 +331,8 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAIS -->
 <div class="modal-bg" id="modalProj"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalProj')">×</button></div><div id="modalProjConteudo"></div><div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap"><button class="btn btn-sm btn-blue" onclick="gerarPDFProjeto()">⬇ Baixar PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalProj')">Fechar</button></div></div></div>
 <div class="modal-bg" id="modalEditProj"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar projeto</div><button class="modal-close" onclick="fecharModal('modalEditProj')">×</button></div><div class="field"><label>Nome</label><input id="editProjNome"/></div><div class="field"><label>Cliente</label><input id="editProjCliente"/></div><div class="field"><label>Data</label><input id="editProjData" type="date"/></div><div class="field"><label>Pasta</label><select id="editProjPasta"><option value="">Sem pasta</option></select></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarProjeto()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditProj')">Cancelar</button></div></div></div>
-<div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" onclick="fecharModal('modalEq')">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarEq()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEq')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" onclick="fecharModal('modalEq')">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div class="field supremo-only"><label>Preço base (R$)</label><input id="editEqPrecoBase" type="number" min="0" step="0.01" value="0"/></div>
+  <div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarEq()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEq')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalCat"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" onclick="fecharModal('modalCat')">×</button></div><div class="field"><label>Nome</label><input id="editCatNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarCategoria()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalCat')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalFl"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar freelancer</div><button class="modal-close" onclick="fecharModal('modalFl')">×</button></div><div class="field"><label>Nome</label><input id="editFlNome"/></div><div class="field"><label>Funções</label><div id="editFlFuncoesCheck" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:0.5px solid #d0d0c8;border-radius:8px;min-height:42px"></div></div><div class="field"><label>Telefone</label><input id="editFlTel"/></div><div class="field"><label>RG</label><input id="editFlRg"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarFreelancer()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFl')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalFuncao"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar função</div><button class="modal-close" onclick="fecharModal('modalFuncao')">×</button></div><div class="field"><label>Nome</label><input id="editFuncaoNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarFuncao()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFuncao')">Cancelar</button></div></div></div>
@@ -411,7 +413,12 @@ async function iniciarApp(user){
   document.getElementById("authScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
   document.getElementById("userNome").textContent=perfil.nome||user.email;
-  if(isSupremo()){document.getElementById("userPapel").innerHTML='<span class="supremo-badge">★ Supremo</span>';document.getElementById("tabUsuarios").style.display="inline-block";document.getElementById("tabOrcamentos").style.display="inline-block";}
+  if(isSupremo()){
+    document.getElementById("userPapel").innerHTML='<span class="supremo-badge">★ Supremo</span>';
+    document.getElementById("tabUsuarios").style.display="inline-block";
+    document.getElementById("tabOrcamentos").style.display="inline-block";
+    document.querySelectorAll(".supremo-only").forEach(el=>el.style.display="");
+  }
   else if(isAdmin())document.getElementById("userPapel").innerHTML='<span class="admin-badge">Admin</span>';
   const hoje=new Date().toISOString().split("T")[0];
   ["movData","devData","projData"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoje;});
@@ -477,18 +484,18 @@ function renderGerenciarEquipamentos(){
 }
 function setFiltro(c){filtroAtivo=c;renderEquipamentos();}
 async function cadastrarEq(){
-  const nome=document.getElementById("eqNome").value.trim(),cat=document.getElementById("eqCat").value,qtd=parseInt(document.getElementById("eqQtd").value),serie=document.getElementById("eqSerie").value.trim();
+  const nome=document.getElementById("eqNome").value.trim(),cat=document.getElementById("eqCat").value,qtd=parseInt(document.getElementById("eqQtd").value),serie=document.getElementById("eqSerie").value.trim(),preco_base=parseFloat(document.getElementById("eqPrecoBase").value)||0;
   if(!nome)return;
-  const {error}=await sb.from("equipamentos").insert({nome,categoria:cat,qtd_total:qtd,qtd_disponivel:qtd,numero_serie:serie||null});
+  const {error}=await sb.from("equipamentos").insert({nome,categoria:cat,qtd_total:qtd,qtd_disponivel:qtd,numero_serie:serie||null,preco_base});
   if(error){showMsg("Erro: "+error.message,true);return;}
-  document.getElementById("eqNome").value="";document.getElementById("eqSerie").value="";document.getElementById("eqQtd").value=1;
+  document.getElementById("eqNome").value="";document.getElementById("eqSerie").value="";document.getElementById("eqQtd").value=1;document.getElementById("eqPrecoBase").value=0;
   await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();atualizarSelectsMovimentar();showMsg("Equipamento adicionado!");
 }
-function abrirEditarEq(id){const eq=equipamentos.find(e=>e.id===id);editEqId=id;document.getElementById("editEqNome").value=eq.nome;document.getElementById("editEqCat").value=eq.categoria;document.getElementById("editEqQtd").value=eq.qtd_total;document.getElementById("editEqSerie").value=eq.numero_serie||"";abrirModal("modalEq");}
+function abrirEditarEq(id){const eq=equipamentos.find(e=>e.id===id);editEqId=id;document.getElementById("editEqNome").value=eq.nome;document.getElementById("editEqCat").value=eq.categoria;document.getElementById("editEqQtd").value=eq.qtd_total;document.getElementById("editEqSerie").value=eq.numero_serie||"";document.getElementById("editEqPrecoBase").value=eq.preco_base||0;abrirModal("modalEq");}
 async function salvarEq(){
-  const nome=document.getElementById("editEqNome").value.trim(),categoria=document.getElementById("editEqCat").value,qtd_total=parseInt(document.getElementById("editEqQtd").value),numero_serie=document.getElementById("editEqSerie").value.trim()||null;
+  const nome=document.getElementById("editEqNome").value.trim(),categoria=document.getElementById("editEqCat").value,qtd_total=parseInt(document.getElementById("editEqQtd").value),numero_serie=document.getElementById("editEqSerie").value.trim()||null,preco_base=parseFloat(document.getElementById("editEqPrecoBase").value)||0;
   const eq=equipamentos.find(e=>e.id===editEqId),qtd_disponivel=Math.max(0,eq.qtd_disponivel+(qtd_total-eq.qtd_total));
-  const {error}=await sb.from("equipamentos").update({nome,categoria,qtd_total,qtd_disponivel,numero_serie}).eq("id",editEqId);
+  const {error}=await sb.from("equipamentos").update({nome,categoria,qtd_total,qtd_disponivel,numero_serie,preco_base}).eq("id",editEqId);
   if(error){showMsg("Erro: "+error.message,true);return;}
   fecharModal("modalEq");await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();atualizarSelectsMovimentar();showMsg("Equipamento atualizado!");
 }
