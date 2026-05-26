@@ -449,8 +449,8 @@ async function carregarOrcamentos(){if(!isSupremo())return;const {data}=await sb
 async function carregarPastas(){const {data}=await sb.from("pastas_projeto").select("*").order("nome");pastas=data||[];}
 
 // ── UTILS ─────────────────────────────────────────────
-function abrirModal(id){document.getElementById(id).style.display="flex";}
-function fecharModal(id){document.getElementById(id).style.display="none";}
+function abrirModal(id){const el=document.getElementById(id);if(el)el.style.display="flex";}
+function fecharModal(id){const el=document.getElementById(id);if(el)el.style.display="none";}
 function esc(s){return(s||"").replace(/'/g,"\\'");}
 function brl(v){return"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function showMsg(txt,erro=false){const el=document.getElementById("appMsg");el.innerHTML=`<div class="${erro?"err":"ok"}">${txt}</div>`;setTimeout(()=>el.innerHTML="",3500);}
