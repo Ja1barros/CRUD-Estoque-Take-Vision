@@ -139,7 +139,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         </div>
         <div class="row">
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de série</label><input id="eqSerie" placeholder="Opcional"/></div>
-          <div class="col supremo-only"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Preço base (R$)</label><input id="eqPrecoBase" type="number" min="0" step="0.01" value="0" placeholder="0,00"/></div>
+          <div class="col" id="eqPrecoBaseWrap" style="display:none"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Preço base (R$)</label><input id="eqPrecoBase" type="number" min="0" step="0.01" value="0" placeholder="0,00"/></div>
           <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" onclick="cadastrarEq()">+ Adicionar</button></div>
         </div>
       </div>
@@ -331,7 +331,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <!-- MODAIS -->
 <div class="modal-bg" id="modalProj"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalProj')">×</button></div><div id="modalProjConteudo"></div><div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap"><button class="btn btn-sm btn-blue" onclick="gerarPDFProjeto()">⬇ Baixar PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalProj')">Fechar</button></div></div></div>
 <div class="modal-bg" id="modalEditProj"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar projeto</div><button class="modal-close" onclick="fecharModal('modalEditProj')">×</button></div><div class="field"><label>Nome</label><input id="editProjNome"/></div><div class="field"><label>Cliente</label><input id="editProjCliente"/></div><div class="field"><label>Data</label><input id="editProjData" type="date"/></div><div class="field"><label>Pasta</label><select id="editProjPasta"><option value="">Sem pasta</option></select></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarProjeto()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditProj')">Cancelar</button></div></div></div>
-<div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" onclick="fecharModal('modalEq')">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div class="field supremo-only"><label>Preço base (R$)</label><input id="editEqPrecoBase" type="number" min="0" step="0.01" value="0"/></div>
+<div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" onclick="fecharModal('modalEq')">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div class="field" id="editEqPrecoBaseWrap" style="display:none"><label>Preço base (R$)</label><input id="editEqPrecoBase" type="number" min="0" step="0.01" value="0"/></div>
   <div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarEq()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEq')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalCat"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" onclick="fecharModal('modalCat')">×</button></div><div class="field"><label>Nome</label><input id="editCatNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarCategoria()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalCat')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalFl"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar freelancer</div><button class="modal-close" onclick="fecharModal('modalFl')">×</button></div><div class="field"><label>Nome</label><input id="editFlNome"/></div><div class="field"><label>Funções</label><div id="editFlFuncoesCheck" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:0.5px solid #d0d0c8;border-radius:8px;min-height:42px"></div></div><div class="field"><label>Telefone</label><input id="editFlTel"/></div><div class="field"><label>RG</label><input id="editFlRg"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarFreelancer()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFl')">Cancelar</button></div></div></div>
@@ -422,7 +422,12 @@ async function iniciarApp(user){
   const hoje=new Date().toISOString().split("T")[0];
   ["movData","devData","projData"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoje;});
   await carregarTudo();iniciarMovLista();iniciarOrcLista();
-  if(isSupremo())document.querySelectorAll(".supremo-only").forEach(el=>el.style.display="");
+  if(isSupremo()){
+    const wrap1=document.getElementById("eqPrecoBaseWrap");
+    const wrap2=document.getElementById("editEqPrecoBaseWrap");
+    if(wrap1)wrap1.style.display="";
+    if(wrap2)wrap2.style.display="";
+  }
 }
 async function sair(){await sb.auth.signOut();location.reload();}
 window.addEventListener("load",async()=>{const {data:{session}}=await sb.auth.getSession();if(session?.user)await iniciarApp(session.user);});
