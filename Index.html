@@ -417,12 +417,12 @@ async function iniciarApp(user){
     document.getElementById("userPapel").innerHTML='<span class="supremo-badge">★ Supremo</span>';
     document.getElementById("tabUsuarios").style.display="inline-block";
     document.getElementById("tabOrcamentos").style.display="inline-block";
-    document.querySelectorAll(".supremo-only").forEach(el=>el.style.display="");
   }
   else if(isAdmin())document.getElementById("userPapel").innerHTML='<span class="admin-badge">Admin</span>';
   const hoje=new Date().toISOString().split("T")[0];
   ["movData","devData","projData"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoje;});
   await carregarTudo();iniciarMovLista();iniciarOrcLista();
+  if(isSupremo())document.querySelectorAll(".supremo-only").forEach(el=>el.style.display="");
 }
 async function sair(){await sb.auth.signOut();location.reload();}
 window.addEventListener("load",async()=>{const {data:{session}}=await sb.auth.getSession();if(session?.user)await iniciarApp(session.user);});
