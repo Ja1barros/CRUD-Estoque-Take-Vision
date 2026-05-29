@@ -99,6 +99,15 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .cal-ev-proj{background:#e6f1fb;color:#185fa5}
 .cal-ev-cal{background:#eaf3de;color:#3b6d11}
 .cal-empty{pointer-events:none;border-color:transparent!important;background:transparent!important}
+/* ── BOTÕES NO GRID DO CALENDÁRIO ── */
+.cal-ev-cal{display:flex;align-items:center;gap:2px;padding:2px 4px}
+.cal-ev-cal span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.cal-ev-actions{display:none;gap:1px;flex-shrink:0}
+.cal-ev-cal:hover .cal-ev-actions{display:flex}
+.cal-ev-action-btn{background:none;border:none;cursor:pointer;font-size:9px;padding:0 2px;line-height:1.4;border-radius:2px;color:#2d6a1f;opacity:.7;transition:opacity .15s,background .15s}
+.cal-ev-action-btn:hover{opacity:1;background:rgba(0,0,0,.12)}
+/* ── MODAL DE CONFIRMAÇÃO ── */
+.modal-confirm-icon{font-size:36px;text-align:center;margin-bottom:12px}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
 .modal-box{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;margin:1rem}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
@@ -427,6 +436,19 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
   </div>
 </div></div>
 
+<!-- MODAL CONFIRMAÇÃO (novo) -->
+<div class="modal-bg" id="modalConfirm"><div class="modal-box" style="max-width:380px">
+  <div class="modal-confirm-icon">🗑️</div>
+  <div style="text-align:center;margin-bottom:8px">
+    <div class="modal-title" id="modalConfirmTitulo" style="justify-content:center">Confirmar exclusão</div>
+  </div>
+  <p id="modalConfirmMsg" style="font-size:14px;margin-bottom:20px;color:#555;text-align:center;line-height:1.6"></p>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button class="btn btn-sm btn-danger" id="modalConfirmOk" style="min-width:110px">Sim, excluir</button>
+    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalConfirm')" style="min-width:90px">Cancelar</button>
+  </div>
+</div></div>
+
 <script>
 const SUPA_URL="https://wikmeymvknuujbnwmfjx.supabase.co";
 const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa21leW12a251dWpibndtZmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzI5MDEsImV4cCI6MjA5MTg0ODkwMX0.GaOJArnrhjsJ2gCs0dLNGvaLuIuekINW1VNfmdPdIgU";
@@ -443,49 +465,31 @@ const isSupremo=()=>perfil?.supremo===true;
 const isAdmin=()=>perfil?.papel==="admin"||isSupremo();
 const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
+// ── MODAL CONFIRMAÇÃO ─────────────────────────────────
+function abrirConfirm(msg, onOk){
+  document.getElementById("modalConfirmMsg").textContent=msg;
+  document.getElementById("modalConfirmOk").onclick=()=>{fecharModal("modalConfirm");onOk();};
+  abrirModal("modalConfirm");
+}
+
 // ── LOGO ──────────────────────────────────────────────
 async function carregarLogo(){
   if(logoDataUrl)return logoDataUrl;
-  try{
-    const res=await fetch('/logo.png');
-    if(!res.ok)return null;
-    const blob=await res.blob();
-    return new Promise(resolve=>{const r=new FileReader();r.onloadend=()=>{logoDataUrl=r.result;resolve(logoDataUrl);};r.readAsDataURL(blob);});
-  }catch(e){return null;}
+  try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(resolve=>{const r=new FileReader();r.onloadend=()=>{logoDataUrl=r.result;resolve(logoDataUrl);};r.readAsDataURL(blob);});}
+  catch(e){return null;}
 }
 async function adicionarHeaderPDF(doc,subtitulo,dtGerado){
-  const logo=await carregarLogo();
-  const r=8,cx=14+r,cy=22;
-  if(logo){
-    try{doc.addImage(logo,'PNG',14,14,16,16);}
-    catch(e){desenharApertura(doc,cx,cy,r);}
-  } else {
-    desenharApertura(doc,cx,cy,r);
-  }
-  doc.setDrawColor(160,160,160);doc.setLineWidth(0.4);
-  doc.line(cx+r+4,cy-r*0.7,cx+r+4,cy+r*0.7);
-  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);
-  doc.text("TAKEVISION",cx+r+8,cy+1.5);
+  const logo=await carregarLogo();const r=8,cx=14+r,cy=22;
+  if(logo){try{doc.addImage(logo,'PNG',14,14,16,16);}catch(e){desenharApertura(doc,cx,cy,r);}}
+  else{desenharApertura(doc,cx,cy,r);}
+  doc.setDrawColor(160,160,160);doc.setLineWidth(0.4);doc.line(cx+r+4,cy-r*0.7,cx+r+4,cy+r*0.7);
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TAKEVISION",cx+r+8,cy+1.5);
   if(subtitulo){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(subtitulo,cx+r+8,cy+6);}
   if(dtGerado){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(dtGerado,196,cy,{align:"right"});}
-  const y=cy+r+5;
-  doc.setDrawColor(200,200,195);doc.setLineWidth(0.5);doc.line(14,y,196,y);
-  return y+8;
+  const y=cy+r+5;doc.setDrawColor(200,200,195);doc.setLineWidth(0.5);doc.line(14,y,196,y);return y+8;
 }
-function desenharApertura(doc,cx,cy,r){
-  doc.setFillColor(15,15,15);doc.circle(cx,cy,r,'F');
-  doc.setDrawColor(255,255,255);doc.setLineWidth(r*0.28);
-  for(let i=0;i<6;i++){const a1=(i*60-10)*Math.PI/180,a2=(i*60+45)*Math.PI/180;doc.line(cx+r*0.2*Math.cos(a1),cy+r*0.2*Math.sin(a1),cx+r*0.8*Math.cos(a2),cy+r*0.8*Math.sin(a2));}
-  doc.setFillColor(15,15,15);doc.circle(cx,cy,r*0.28,'F');
-}
-function rodapePDF(doc,y){
-  const fy=y+16;
-  doc.setDrawColor(130,130,125);doc.setLineWidth(0.5);
-  doc.line(14,fy,90,fy);doc.line(120,fy,196,fy);
-  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(60,60,60);
-  doc.text("Take Vision Imagem",52,fy+5,{align:"center"});
-  doc.text("Assinatura do contratante",158,fy+5,{align:"center"});
-}
+function desenharApertura(doc,cx,cy,r){doc.setFillColor(15,15,15);doc.circle(cx,cy,r,'F');doc.setDrawColor(255,255,255);doc.setLineWidth(r*0.28);for(let i=0;i<6;i++){const a1=(i*60-10)*Math.PI/180,a2=(i*60+45)*Math.PI/180;doc.line(cx+r*0.2*Math.cos(a1),cy+r*0.2*Math.sin(a1),cx+r*0.8*Math.cos(a2),cy+r*0.8*Math.sin(a2));}doc.setFillColor(15,15,15);doc.circle(cx,cy,r*0.28,'F');}
+function rodapePDF(doc,y){const fy=y+16;doc.setDrawColor(130,130,125);doc.setLineWidth(0.5);doc.line(14,fy,90,fy);doc.line(120,fy,196,fy);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(60,60,60);doc.text("Take Vision Imagem",52,fy+5,{align:"center"});doc.text("Assinatura do contratante",158,fy+5,{align:"center"});}
 
 // ── AUTH ──────────────────────────────────────────────
 let modoLogin=true;
@@ -570,43 +574,44 @@ function renderCalendario(){
     const isH=d===hd&&calMes===hm&&calAno===ha;
     const projsD=projetos.filter(p=>p.data_projeto===ds);
     const calEvsD=calEventos.filter(e=>e.data===ds);
-    let evHtml=projsD.slice(0,3).map(p=>`<div class="cal-ev cal-ev-proj" title="${p.nome}">${p.nome}</div>`).join("");
-    evHtml+=calEvsD.slice(0,3).map(e=>`<div class="cal-ev cal-ev-cal" title="${e.titulo}">${e.titulo}</div>`).join("");
-    const mais=projsD.length+calEvsD.length-3;
+    let evHtml=projsD.slice(0,2).map(p=>`<div class="cal-ev cal-ev-proj" title="${p.nome}">${p.nome}</div>`).join("");
+    // Eventos com botões de editar/excluir direto no grid
+    evHtml+=calEvsD.slice(0,2).map(e=>`
+      <div class="cal-ev cal-ev-cal" title="${e.titulo}">
+        <span>${e.titulo}</span>
+        <div class="cal-ev-actions">
+          <button class="cal-ev-action-btn" title="Editar" onclick="event.stopPropagation();abrirFormEvento('${ds}',${e.id})">✏</button>
+          <button class="cal-ev-action-btn" title="Excluir" style="color:#a32d2d" onclick="event.stopPropagation();confirmarExcluirEvento(${e.id})">×</button>
+        </div>
+      </div>`).join("");
+    const mais=projsD.length+calEvsD.length-4;
     if(mais>0)evHtml+=`<div style="font-size:9px;color:#888">+${mais} mais</div>`;
     html+=`<div class="cal-day${isH?" cal-day-hoje":""}" onclick="abrirDia('${ds}')"><div class="cal-day-num">${d}</div>${evHtml}</div>`;
   }
   grid.innerHTML=html;
 }
+
+// Confirmação elegante antes de excluir evento
+function confirmarExcluirEvento(id){
+  const ev=calEventos.find(e=>e.id===id);
+  abrirConfirm(
+    `Excluir o evento "${ev?.titulo||"este evento"}"?\nEsta ação não pode ser desfeita.`,
+    ()=>excluirEvento(id)
+  );
+}
+
 async function abrirDia(ds){
   diaAtual=ds;
-  const [a,m,d]=ds.split('-');
-  const dtFmt=`${d}/${m}/${a}`;
+  const [a,m,d]=ds.split('-');const dtFmt=`${d}/${m}/${a}`;
   const projsD=projetos.filter(p=>p.data_projeto===ds);
   const calEvsD=calEventos.filter(e=>e.data===ds);
   let html="";
-  if(projsD.length){
-    html+=`<div style="font-weight:500;margin-bottom:8px">Projetos neste dia</div>`;
-    projsD.forEach(p=>{html+=`<div class="card" style="margin-bottom:6px;border-color:#d4e9f7"><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"}</div></div>`;});
-  }
+  if(projsD.length){html+=`<div style="font-weight:500;margin-bottom:8px">Projetos neste dia</div>`;projsD.forEach(p=>{html+=`<div class="card" style="margin-bottom:6px;border-color:#d4e9f7"><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"}</div></div>`;});}
   if(calEvsD.length){
     html+=`<div style="font-weight:500;margin:12px 0 8px">Eventos do dia</div>`;
     calEvsD.forEach(e=>{
-      const cl=checklists.find(c=>c.id===e.checklist_id);
-      const proj=projetos.find(p=>p.id===e.projeto_id);
-      html+=`<div class="card" style="margin-bottom:6px;border-color:#c8e6c9">
-        <div class="item-row">
-          <div><div class="item-name">${e.titulo}</div>
-            ${e.observacao?`<div class="item-sub">Obs: ${e.observacao}</div>`:""}
-            ${proj?`<div class="item-sub">Projeto: ${proj.nome}</div>`:""}
-            ${cl?`<div class="item-sub">Checklist: ${cl.nome}</div>`:""}
-          </div>
-          <div class="actions">
-            <button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirFormEvento('${ds}',${e.id})">Editar</button>
-            <button class="btn btn-sm btn-danger" onclick="excluirEvento(${e.id})">Excluir</button>
-          </div>
-        </div>
-      </div>`;
+      const cl=checklists.find(c=>c.id===e.checklist_id),proj=projetos.find(p=>p.id===e.projeto_id);
+      html+=`<div class="card" style="margin-bottom:6px;border-color:#c8e6c9"><div class="item-row"><div><div class="item-name">${e.titulo}</div>${e.observacao?`<div class="item-sub">Obs: ${e.observacao}</div>`:""} ${proj?`<div class="item-sub">Projeto: ${proj.nome}</div>`:""} ${cl?`<div class="item-sub">Checklist: ${cl.nome}</div>`:""}</div><div class="actions"><button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirFormEvento('${ds}',${e.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="fecharModal('modalDia');confirmarExcluirEvento(${e.id})">Excluir</button></div></div></div>`;
     });
   }
   if(!projsD.length&&!calEvsD.length)html='<div class="empty">Nenhum evento neste dia.</div>';
@@ -622,20 +627,14 @@ async function abrirFormEvento(ds,eventoId){
   document.getElementById("formEventoTitulo").value=ev?.titulo||"";
   document.getElementById("formEventoObs").value=ev?.observacao||"";
   document.getElementById("modalFormEventoTitulo").textContent=eventoId?"Editar evento":"Novo evento";
-  // Preenche selects
   document.getElementById("formEventoProj").innerHTML='<option value="">Nenhum</option>'+projetos.map(p=>`<option value="${p.id}" ${ev?.projeto_id===p.id?"selected":""}>${p.nome}</option>`).join("");
   document.getElementById("formEventoCheck").innerHTML='<option value="">Nenhum</option>'+checklists.map(c=>`<option value="${c.id}" ${ev?.checklist_id===c.id?"selected":""}>${c.nome}</option>`).join("");
-  // Carrega equipe
   let equipeExistente=[];
   if(eventoId){const {data}=await sb.from("calendario_equipe").select("*").eq("evento_id",eventoId);equipeExistente=data||[];}
   const equipeMap=new Map(equipeExistente.map(e=>[e.freelancer_id,e.funcao_no_evento]));
   document.getElementById("formEventoEquipe").innerHTML=freelancers.map(f=>{
     const checked=equipeMap.has(f.id),funcao=equipeMap.get(f.id)||(f.funcoes_lista||[])[0]||"";
-    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid #f1efe8">
-      <input type="checkbox" id="calfl-${f.id}" value="${f.id}" ${checked?"checked":""} style="width:auto"/>
-      <label for="calfl-${f.id}" style="flex:1;font-size:13px">${f.nome}</label>
-      <input id="calfunc-${f.id}" type="text" value="${funcao}" placeholder="Função" style="width:120px;font-size:12px;padding:4px 8px"/>
-    </div>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid #f1efe8"><input type="checkbox" id="calfl-${f.id}" value="${f.id}" ${checked?"checked":""} style="width:auto"/><label for="calfl-${f.id}" style="flex:1;font-size:13px">${f.nome}</label><input id="calfunc-${f.id}" type="text" value="${funcao}" placeholder="Função" style="width:120px;font-size:12px;padding:4px 8px"/></div>`;
   }).join("")||'<div style="color:#888;font-size:13px">Nenhum freelancer cadastrado.</div>';
   abrirModal("modalFormEvento");
 }
@@ -663,152 +662,76 @@ async function salvarEvento(){
   diaAtual=ds;abrirDia(ds);
 }
 async function excluirEvento(id){
-  if(!confirm("Excluir este evento?"))return;
   await sb.from("calendario_equipe").delete().eq("evento_id",id);
   await sb.from("calendario_eventos").delete().eq("id",id);
   await carregarCalEventos();renderCalendario();fecharModal("modalDia");showMsg("Evento excluído.");
 }
 
 // ── RESUMO MENSAL PASTA ───────────────────────────────
-function abrirResumoPasta(pastaId){
-  const pasta=pastas.find(p=>p.id===pastaId);
-  document.getElementById("modalResumoPastaTitulo").textContent=`Resumo mensal — ${pasta.nome}`;
-  document.getElementById("resumoPastaId").value=pastaId;
-  document.getElementById("resumoMes").value=new Date().getMonth();
-  document.getElementById("resumoAno").value=new Date().getFullYear();
-  abrirModal("modalResumoPasta");
-}
+function abrirResumoPasta(pastaId){const pasta=pastas.find(p=>p.id===pastaId);document.getElementById("modalResumoPastaTitulo").textContent=`Resumo mensal — ${pasta.nome}`;document.getElementById("resumoPastaId").value=pastaId;document.getElementById("resumoMes").value=new Date().getMonth();document.getElementById("resumoAno").value=new Date().getFullYear();abrirModal("modalResumoPasta");}
 async function gerarPDFResumoPasta(){
-  const pastaId=parseInt(document.getElementById("resumoPastaId").value);
-  const mes=parseInt(document.getElementById("resumoMes").value);
-  const ano=parseInt(document.getElementById("resumoAno").value);
-  const pasta=pastas.find(p=>p.id===pastaId);
-  fecharModal("modalResumoPasta");
+  const pastaId=parseInt(document.getElementById("resumoPastaId").value),mes=parseInt(document.getElementById("resumoMes").value),ano=parseInt(document.getElementById("resumoAno").value);
+  const pasta=pastas.find(p=>p.id===pastaId);fecharModal("modalResumoPasta");
   const {jsPDF}=window.jspdf,doc=new jsPDF();
   let y=await adicionarHeaderPDF(doc,"Resumo Mensal",`Gerado em ${new Date().toLocaleString("pt-BR")}`);
-  // Título
-  doc.setFont("helvetica","bold");doc.setFontSize(15);doc.setTextColor(15,15,15);
-  doc.text(`${pasta.nome} — ${MESES[mes]} ${ano}`,14,y);y+=10;
-  // Projetos da pasta no mês
-  const projsDoPeriodo=projetos.filter(p=>{
-    if(p.pasta_id!==pastaId||!p.data_projeto)return false;
-    const d=new Date(p.data_projeto+"T12:00:00");
-    return d.getMonth()===mes&&d.getFullYear()===ano;
-  }).sort((a,b)=>a.data_projeto.localeCompare(b.data_projeto));
-  // Eventos de calendário do mês para projetos desta pasta
+  doc.setFont("helvetica","bold");doc.setFontSize(15);doc.setTextColor(15,15,15);doc.text(`${pasta.nome} — ${MESES[mes]} ${ano}`,14,y);y+=10;
+  const projsDoPeriodo=projetos.filter(p=>{if(p.pasta_id!==pastaId||!p.data_projeto)return false;const d=new Date(p.data_projeto+"T12:00:00");return d.getMonth()===mes&&d.getFullYear()===ano;}).sort((a,b)=>a.data_projeto.localeCompare(b.data_projeto));
   const projIds=new Set(projetos.filter(p=>p.pasta_id===pastaId).map(p=>p.id));
-  const calEvsDoPeriodo=calEventos.filter(e=>{
-    if(!e.data)return false;
-    const d=new Date(e.data+"T12:00:00");
-    return d.getMonth()===mes&&d.getFullYear()===ano&&(e.projeto_id===null||projIds.has(e.projeto_id));
-  }).sort((a,b)=>a.data.localeCompare(b.data));
-  if(!projsDoPeriodo.length&&!calEvsDoPeriodo.length){
-    doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(150,150,150);
-    doc.text("Nenhum evento encontrado neste período.",14,y);
-  } else {
-    // Projetos
-    if(projsDoPeriodo.length){
-      doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);
-      doc.text("Projetos",14,y);y+=7;
-      doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
-      for(const proj of projsDoPeriodo){
-        if(y>255){doc.addPage();y=20;}
-        const dt=new Date(proj.data_projeto+"T12:00:00").toLocaleDateString("pt-BR");
-        doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(15,15,15);
-        doc.text(`${dt} — ${proj.nome}`,16,y);y+=6;
-        if(proj.cliente){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text(`Cliente: ${proj.cliente}`,18,y);y+=5;}
-        // Equipe do projeto
-        const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",proj.id);
-        const vinc=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);
-        if(vinc.length){
-          doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);
-          vinc.forEach(f=>{
-            if(y>265){doc.addPage();y=20;}
-            doc.text(`   • ${f.nome} — ${(f.funcoes_lista||[]).join(", ")||"—"}`,18,y);y+=5;
-          });
-        }
-        y+=4;doc.setDrawColor(230,230,225);doc.line(14,y,196,y);y+=5;
-      }
-    }
-    // Eventos de calendário
-    if(calEvsDoPeriodo.length){
-      if(y>240){doc.addPage();y=20;}
-      doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);
-      doc.text("Eventos do calendário",14,y);y+=7;
-      doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
-      for(const ev of calEvsDoPeriodo){
-        if(y>255){doc.addPage();y=20;}
-        const dt=new Date(ev.data+"T12:00:00").toLocaleDateString("pt-BR");
-        const projVinc=projetos.find(p=>p.id===ev.projeto_id);
-        doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(15,15,15);
-        doc.text(`${dt} — ${ev.titulo}`,16,y);y+=6;
-        if(projVinc){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text(`Projeto: ${projVinc.nome}`,18,y);y+=5;}
-        if(ev.observacao){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text(`Obs: ${ev.observacao}`,18,y);y+=5;}
-        // Equipe do evento
-        const {data:eq}=await sb.from("calendario_equipe").select("*,freelancers(nome)").eq("evento_id",ev.id);
-        if(eq&&eq.length){
-          doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);
-          eq.forEach(e=>{
-            if(y>265){doc.addPage();y=20;}
-            doc.text(`   • ${e.freelancers?.nome||"—"} — ${e.funcao_no_evento||"—"}`,18,y);y+=5;
-          });
-        }
-        y+=4;doc.setDrawColor(230,230,225);doc.line(14,y,196,y);y+=5;
-      }
-    }
+  const calEvsDoPeriodo=calEventos.filter(e=>{if(!e.data)return false;const d=new Date(e.data+"T12:00:00");return d.getMonth()===mes&&d.getFullYear()===ano&&(e.projeto_id===null||projIds.has(e.projeto_id));}).sort((a,b)=>a.data.localeCompare(b.data));
+  if(!projsDoPeriodo.length&&!calEvsDoPeriodo.length){doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(150,150,150);doc.text("Nenhum evento encontrado neste período.",14,y);}
+  else{
+    if(projsDoPeriodo.length){doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Projetos",14,y);y+=7;doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;for(const proj of projsDoPeriodo){if(y>255){doc.addPage();y=20;}const dt=new Date(proj.data_projeto+"T12:00:00").toLocaleDateString("pt-BR");doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(15,15,15);doc.text(`${dt} — ${proj.nome}`,16,y);y+=6;if(proj.cliente){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text(`Cliente: ${proj.cliente}`,18,y);y+=5;}const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",proj.id);const vinc=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);if(vinc.length){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);vinc.forEach(f=>{if(y>265){doc.addPage();y=20;}doc.text(`   • ${f.nome} — ${(f.funcoes_lista||[]).join(", ")||"—"}`,18,y);y+=5;});}y+=4;doc.setDrawColor(230,230,225);doc.line(14,y,196,y);y+=5;}}
+    if(calEvsDoPeriodo.length){if(y>240){doc.addPage();y=20;}doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Eventos do calendário",14,y);y+=7;doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;for(const ev of calEvsDoPeriodo){if(y>255){doc.addPage();y=20;}const dt=new Date(ev.data+"T12:00:00").toLocaleDateString("pt-BR");const projVinc=projetos.find(p=>p.id===ev.projeto_id);doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(15,15,15);doc.text(`${dt} — ${ev.titulo}`,16,y);y+=6;if(projVinc){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text(`Projeto: ${projVinc.nome}`,18,y);y+=5;}if(ev.observacao){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text(`Obs: ${ev.observacao}`,18,y);y+=5;}const {data:eq}=await sb.from("calendario_equipe").select("*,freelancers(nome)").eq("evento_id",ev.id);if(eq&&eq.length){doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);eq.forEach(e=>{if(y>265){doc.addPage();y=20;}doc.text(`   • ${e.freelancers?.nome||"—"} — ${e.funcao_no_evento||"—"}`,18,y);y+=5;});}y+=4;doc.setDrawColor(230,230,225);doc.line(14,y,196,y);y+=5;}}
   }
-  rodapePDF(doc,y);
-  doc.save(`Resumo-${pasta.nome.replace(/\s+/g,"-")}-${MESES[mes]}-${ano}.pdf`);
+  rodapePDF(doc,y);doc.save(`Resumo-${pasta.nome.replace(/\s+/g,"-")}-${MESES[mes]}-${ano}.pdf`);
 }
 
 // ── CATEGORIAS ────────────────────────────────────────
-function renderCategorias(){["eqCat","editEqCat"].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=categorias.map(c=>`<option value="${c.nome}">${c.nome}</option>`).join("");});const lista=document.getElementById("listaCategorias");if(lista)lista.innerHTML=categorias.map(c=>`<div class="tag-item">${c.nome}<button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarCategoria(${c.id},'${esc(c.nome)}')">✏</button><button class="tag-x" onclick="excluirCategoria(${c.id},'${esc(c.nome)}')">×</button></div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma.</span>";}
+function renderCategorias(){["eqCat","editEqCat"].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=categorias.map(c=>`<option value="${c.nome}">${c.nome}</option>`).join("");});const lista=document.getElementById("listaCategorias");if(lista)lista.innerHTML=categorias.map(c=>`<div class="tag-item">${c.nome}<button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarCategoria(${c.id},'${esc(c.nome)}')">✏</button><button class="tag-x" onclick="confirmarExcluirCategoria(${c.id},'${esc(c.nome)}')">×</button></div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma.</span>";}
 async function criarCategoria(){const nome=document.getElementById("catNome").value.trim();if(!nome)return;const {error}=await sb.from("categorias").insert({nome});if(error){showMsg("Categoria já existe.",true);return;}document.getElementById("catNome").value="";await carregarCategorias();showMsg("Categoria adicionada!");}
 function abrirEditarCategoria(id,nome){editCatId=id;document.getElementById("editCatNome").value=nome;abrirModal("modalCat");}
 async function salvarCategoria(){const nome=document.getElementById("editCatNome").value.trim();if(!nome)return;await sb.from("categorias").update({nome}).eq("id",editCatId);fecharModal("modalCat");await carregarCategorias();showMsg("Categoria atualizada!");}
-async function excluirCategoria(id,nome){if(equipamentos.some(e=>e.categoria===nome)){showMsg(`"${nome}" está em uso.`,true);return;}if(!confirm(`Excluir "${nome}"?`))return;await sb.from("categorias").delete().eq("id",id);await carregarCategorias();showMsg("Categoria excluída.");}
+function confirmarExcluirCategoria(id,nome){if(equipamentos.some(e=>e.categoria===nome)){showMsg(`"${nome}" está em uso.`,true);return;}abrirConfirm(`Excluir a categoria "${nome}"?`,()=>excluirCategoria(id));}
+async function excluirCategoria(id){await sb.from("categorias").delete().eq("id",id);await carregarCategorias();showMsg("Categoria excluída.");}
 
 // ── EQUIPAMENTOS ──────────────────────────────────────
 function renderMetrics(){const total=equipamentos.reduce((a,e)=>a+e.qtd_total,0),disp=equipamentos.reduce((a,e)=>a+e.qtd_disponivel,0),ativos=projetos.filter(p=>p.status==="ativo").length;document.getElementById("metricsArea").innerHTML=`<div class="metric"><div class="metric-label">Total</div><div class="metric-value">${total}</div></div><div class="metric"><div class="metric-label" style="color:#3b6d11">Disponíveis</div><div class="metric-value" style="color:#3b6d11">${disp}</div></div><div class="metric"><div class="metric-label" style="color:#854f0b">Alocados</div><div class="metric-value" style="color:#854f0b">${total-disp}</div></div><div class="metric"><div class="metric-label" style="color:#185fa5">Projetos ativos</div><div class="metric-value" style="color:#185fa5">${ativos}</div></div>`;}
-function renderEquipamentos(){
-  const cats=["Todas",...new Set(equipamentos.map(e=>e.categoria))];
-  document.getElementById("filtrosArea").innerHTML=cats.map(c=>`<button class="filter-btn${filtroAtivo===c?" active":""}" onclick="setFiltro('${c}')">${c}</button>`).join("");
-  const lista=filtroAtivo==="Todas"?equipamentos:equipamentos.filter(e=>e.categoria===filtroAtivo);
-  document.getElementById("listaEquipamentos").innerHTML=lista.map(eq=>{const aloc=eq.qtd_total-eq.qtd_disponivel,pct=Math.round((eq.qtd_disponivel/eq.qtd_total)*100),cor=eq.qtd_disponivel===0?"#e24b4a":aloc>0?"#EF9F27":"#639922";return `<div class="card"><div class="item-row"><div><div class="item-name">${eq.nome}</div><div class="item-sub">${eq.categoria} · Série: ${eq.numero_serie||"—"}</div></div><div class="actions"><span class="badge badge-ok">${eq.qtd_disponivel} disp.</span>${aloc>0?`<span class="badge badge-warn">${aloc} aloc.</span>`:""}</div></div><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${cor}"></div></div></div>`;}).join("")||'<div class="empty">Nenhum equipamento.</div>';
-  const cl=document.getElementById("checkEquipamentosLista");
-  if(cl)cl.innerHTML=equipamentos.map(eq=>`<div class="checklist-eq-item"><input type="checkbox" id="ckeq-${eq.id}" value="${eq.id}"/><label for="ckeq-${eq.id}" style="cursor:pointer;flex:1">${eq.nome} <span style="color:#888;font-size:12px">· ${eq.categoria}</span></label><input type="number" id="ckqtd-${eq.id}" min="1" value="1" style="width:55px;text-align:center;padding:4px" title="Qtd"/></div>`).join("")||"<div style='color:#888;font-size:13px'>Nenhum equipamento.</div>";
-}
-function renderGerenciarEquipamentos(){document.getElementById("gerenciarEquipamentos").innerHTML=equipamentos.map(eq=>{const aloc=eq.qtd_total-eq.qtd_disponivel;return `<div class="card"><div class="item-row"><div><div class="item-name">${eq.nome}</div><div class="item-sub">${eq.categoria} · Série: ${eq.numero_serie||"—"} · Qtd: ${eq.qtd_total}</div></div><div class="actions">${aloc>0?`<span class="badge badge-warn">${aloc} aloc.</span>`:""}<button class="btn btn-sm btn-edit" onclick="abrirEditarEq(${eq.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="excluirEq(${eq.id})">Excluir</button></div></div></div>`;}).join("")||'<div class="empty">Nenhum.</div>';}
+function renderEquipamentos(){const cats=["Todas",...new Set(equipamentos.map(e=>e.categoria))];document.getElementById("filtrosArea").innerHTML=cats.map(c=>`<button class="filter-btn${filtroAtivo===c?" active":""}" onclick="setFiltro('${c}')">${c}</button>`).join("");const lista=filtroAtivo==="Todas"?equipamentos:equipamentos.filter(e=>e.categoria===filtroAtivo);document.getElementById("listaEquipamentos").innerHTML=lista.map(eq=>{const aloc=eq.qtd_total-eq.qtd_disponivel,pct=Math.round((eq.qtd_disponivel/eq.qtd_total)*100),cor=eq.qtd_disponivel===0?"#e24b4a":aloc>0?"#EF9F27":"#639922";return `<div class="card"><div class="item-row"><div><div class="item-name">${eq.nome}</div><div class="item-sub">${eq.categoria} · Série: ${eq.numero_serie||"—"}</div></div><div class="actions"><span class="badge badge-ok">${eq.qtd_disponivel} disp.</span>${aloc>0?`<span class="badge badge-warn">${aloc} aloc.</span>`:""}</div></div><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${cor}"></div></div></div>`;}).join("")||'<div class="empty">Nenhum equipamento.</div>';const cl=document.getElementById("checkEquipamentosLista");if(cl)cl.innerHTML=equipamentos.map(eq=>`<div class="checklist-eq-item"><input type="checkbox" id="ckeq-${eq.id}" value="${eq.id}"/><label for="ckeq-${eq.id}" style="cursor:pointer;flex:1">${eq.nome} <span style="color:#888;font-size:12px">· ${eq.categoria}</span></label><input type="number" id="ckqtd-${eq.id}" min="1" value="1" style="width:55px;text-align:center;padding:4px" title="Qtd"/></div>`).join("")||"<div style='color:#888;font-size:13px'>Nenhum equipamento.</div>";}
+function renderGerenciarEquipamentos(){document.getElementById("gerenciarEquipamentos").innerHTML=equipamentos.map(eq=>{const aloc=eq.qtd_total-eq.qtd_disponivel;return `<div class="card"><div class="item-row"><div><div class="item-name">${eq.nome}</div><div class="item-sub">${eq.categoria} · Série: ${eq.numero_serie||"—"} · Qtd: ${eq.qtd_total}</div></div><div class="actions">${aloc>0?`<span class="badge badge-warn">${aloc} aloc.</span>`:""}<button class="btn btn-sm btn-edit" onclick="abrirEditarEq(${eq.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="confirmarExcluirEq(${eq.id})">Excluir</button></div></div></div>`;}).join("")||'<div class="empty">Nenhum.</div>';}
 function setFiltro(c){filtroAtivo=c;renderEquipamentos();}
 async function cadastrarEq(){const nome=document.getElementById("eqNome").value.trim(),cat=document.getElementById("eqCat").value,qtd=parseInt(document.getElementById("eqQtd").value),serie=document.getElementById("eqSerie").value.trim(),preco_base=parseFloat(document.getElementById("eqPrecoBase")?.value)||0;if(!nome)return;const {error}=await sb.from("equipamentos").insert({nome,categoria:cat,qtd_total:qtd,qtd_disponivel:qtd,numero_serie:serie||null,preco_base});if(error){showMsg("Erro: "+error.message,true);return;}document.getElementById("eqNome").value="";document.getElementById("eqSerie").value="";document.getElementById("eqQtd").value=1;if(document.getElementById("eqPrecoBase"))document.getElementById("eqPrecoBase").value=0;await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();atualizarSelectsMovimentar();showMsg("Equipamento adicionado!");}
 function abrirEditarEq(id){const eq=equipamentos.find(e=>e.id===id);editEqId=id;document.getElementById("editEqNome").value=eq.nome;document.getElementById("editEqCat").value=eq.categoria;document.getElementById("editEqQtd").value=eq.qtd_total;document.getElementById("editEqSerie").value=eq.numero_serie||"";if(document.getElementById("editEqPrecoBase"))document.getElementById("editEqPrecoBase").value=eq.preco_base||0;abrirModal("modalEq");}
 async function salvarEq(){const nome=document.getElementById("editEqNome").value.trim(),categoria=document.getElementById("editEqCat").value,qtd_total=parseInt(document.getElementById("editEqQtd").value),numero_serie=document.getElementById("editEqSerie").value.trim()||null,preco_base=parseFloat(document.getElementById("editEqPrecoBase")?.value)||0;const eq=equipamentos.find(e=>e.id===editEqId),qtd_disponivel=Math.max(0,eq.qtd_disponivel+(qtd_total-eq.qtd_total));const {error}=await sb.from("equipamentos").update({nome,categoria,qtd_total,qtd_disponivel,numero_serie,preco_base}).eq("id",editEqId);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalEq");await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();atualizarSelectsMovimentar();showMsg("Equipamento atualizado!");}
-async function excluirEq(id){const {data:movs}=await sb.from("movimentacoes").select("id").eq("equipamento_id",id).limit(1);if(movs&&movs.length>0){if(!confirm("Este equipamento tem movimentações. Excluir mesmo assim?"))return;await sb.from("movimentacoes").delete().eq("equipamento_id",id);}else{if(!confirm("Excluir?"))return;}const {error}=await sb.from("equipamentos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarEquipamentos();await carregarTodasMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();atualizarSelectsMovimentar();showMsg("Equipamento excluído.");}
+function confirmarExcluirEq(id){const eq=equipamentos.find(e=>e.id===id);abrirConfirm(`Excluir o equipamento "${eq?.nome}"?`,()=>excluirEq(id));}
+async function excluirEq(id){const {data:movs}=await sb.from("movimentacoes").select("id").eq("equipamento_id",id).limit(1);if(movs&&movs.length>0){await sb.from("movimentacoes").delete().eq("equipamento_id",id);}const {error}=await sb.from("equipamentos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarEquipamentos();await carregarTodasMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();atualizarSelectsMovimentar();showMsg("Equipamento excluído.");}
 
 // ── CHECKLISTS ────────────────────────────────────────
-function renderChecklists(){const lista=document.getElementById("listaChecklists");if(!lista)return;lista.innerHTML=checklists.map(c=>{const proj=projetos.find(p=>p.id===c.projeto_id),itens=c.checklist_itens||[];return `<div class="card"><div class="item-row"><div><div class="item-name">${c.nome}</div><div class="item-sub">${proj?proj.nome:"Sem projeto"} · ${itens.length} item(s)</div></div><div class="actions"><button class="btn btn-sm btn-outline" onclick="verChecklist(${c.id})">Ver</button><button class="btn btn-sm btn-edit" onclick="abrirEditarChecklist(${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="excluirChecklist(${c.id})">Excluir</button></div></div></div>`;}).join("")||'<div class="empty">Nenhum checklist.</div>';const sel=document.getElementById("checkProjeto");if(sel)sel.innerHTML='<option value="">Sem projeto</option>'+projetos.filter(p=>p.status==="ativo").map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");}
+function renderChecklists(){const lista=document.getElementById("listaChecklists");if(!lista)return;lista.innerHTML=checklists.map(c=>{const proj=projetos.find(p=>p.id===c.projeto_id),itens=c.checklist_itens||[];return `<div class="card"><div class="item-row"><div><div class="item-name">${c.nome}</div><div class="item-sub">${proj?proj.nome:"Sem projeto"} · ${itens.length} item(s)</div></div><div class="actions"><button class="btn btn-sm btn-outline" onclick="verChecklist(${c.id})">Ver</button><button class="btn btn-sm btn-edit" onclick="abrirEditarChecklist(${c.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="confirmarExcluirChecklist(${c.id})">Excluir</button></div></div></div>`;}).join("")||'<div class="empty">Nenhum checklist.</div>';const sel=document.getElementById("checkProjeto");if(sel)sel.innerHTML='<option value="">Sem projeto</option>'+projetos.filter(p=>p.status==="ativo").map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");}
 async function salvarChecklist(){const nome=document.getElementById("checkNome").value.trim();if(!nome){showMsg("Informe o nome.",true);return;}const projetoId=document.getElementById("checkProjeto").value||null;const checkboxes=document.querySelectorAll("#checkEquipamentosLista input[type=checkbox]:checked");if(checkboxes.length===0){showMsg("Selecione ao menos um equipamento.",true);return;}const {data:cl,error}=await sb.from("checklists").insert({nome,projeto_id:projetoId?parseInt(projetoId):null}).select().single();if(error){showMsg("Erro: "+error.message,true);return;}const itens=Array.from(checkboxes).map(cb=>{const qtd=parseInt(document.getElementById(`ckqtd-${cb.value}`)?.value)||1;const eq=equipamentos.find(e=>e.id===parseInt(cb.value));return{checklist_id:cl.id,equipamento_id:parseInt(cb.value),equipamento_nome:eq?.nome||"",quantidade:qtd};});await sb.from("checklist_itens").insert(itens);document.getElementById("checkNome").value="";document.querySelectorAll("#checkEquipamentosLista input[type=checkbox]:checked").forEach(cb=>cb.checked=false);await carregarChecklists();renderChecklists();preencherSelectChecklists();showMsg("Checklist salvo!");}
 async function verChecklist(id){const c=checklists.find(x=>x.id===id),proj=projetos.find(p=>p.id===c.projeto_id),itens=c.checklist_itens||[];document.getElementById("modalVerCheckTitulo").textContent=c.nome;document.getElementById("modalVerCheckConteudo").innerHTML=`<div style="font-size:13px;color:#888;margin-bottom:12px">Projeto: <strong style="color:#1a1a1a">${proj?proj.nome:"—"}</strong></div>`+(itens.length?itens.map(i=>`<div style="padding:6px 0;border-bottom:0.5px solid #f1efe8;font-size:14px;display:flex;justify-content:space-between"><span>✓ ${i.equipamento_nome}</span><span class="badge badge-info">× ${i.quantidade||1}</span></div>`).join(""):'<div class="empty">Nenhum item.</div>');abrirModal("modalVerChecklist");}
 async function abrirEditarChecklist(id){editCheckId=id;const c=checklists.find(x=>x.id===id);if(!c)return;document.getElementById("editCheckNome").value=c.nome;const sel=document.getElementById("editCheckProjeto");sel.innerHTML='<option value="">Sem projeto</option>'+projetos.filter(p=>p.status==="ativo").map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");sel.value=c.projeto_id||"";const itens=c.checklist_itens||[];const itemMap=new Map(itens.map(i=>[i.equipamento_id,i.quantidade||1]));document.getElementById("editCheckEquipamentosLista").innerHTML=equipamentos.map(eq=>{const qty=itemMap.get(eq.id)||1,checked=itemMap.has(eq.id);return `<div class="checklist-eq-item"><input type="checkbox" id="edckeq-${eq.id}" value="${eq.id}" ${checked?"checked":""}"/><label for="edckeq-${eq.id}" style="cursor:pointer;flex:1">${eq.nome} <span style="color:#888;font-size:12px">· ${eq.categoria}</span></label><input type="number" id="edckqtd-${eq.id}" min="1" value="${qty}" style="width:55px;text-align:center;padding:4px"/></div>`;}).join("")||"<div style='color:#888;font-size:13px'>Nenhum.</div>";abrirModal("modalEditChecklist");}
 async function salvarChecklistEditado(){const nome=document.getElementById("editCheckNome").value.trim();if(!nome){showMsg("Informe o nome.",true);return;}const projetoId=document.getElementById("editCheckProjeto").value||null;const checkboxes=document.querySelectorAll("#editCheckEquipamentosLista input[type=checkbox]:checked");if(checkboxes.length===0){showMsg("Selecione ao menos um equipamento.",true);return;}const {error}=await sb.from("checklists").update({nome,projeto_id:projetoId?parseInt(projetoId):null}).eq("id",editCheckId);if(error){showMsg("Erro: "+error.message,true);return;}await sb.from("checklist_itens").delete().eq("checklist_id",editCheckId);const itens=Array.from(checkboxes).map(cb=>{const qtd=parseInt(document.getElementById(`edckqtd-${cb.value}`)?.value)||1;const eq=equipamentos.find(e=>e.id===parseInt(cb.value));return{checklist_id:editCheckId,equipamento_id:parseInt(cb.value),equipamento_nome:eq?.nome||"",quantidade:qtd};});await sb.from("checklist_itens").insert(itens);fecharModal("modalEditChecklist");await carregarChecklists();renderChecklists();preencherSelectChecklists();showMsg("Checklist atualizado!");}
-async function excluirChecklist(id){if(!confirm("Excluir este checklist?"))return;await sb.from("checklist_itens").delete().eq("checklist_id",id);await sb.from("checklists").delete().eq("id",id);await carregarChecklists();renderChecklists();preencherSelectChecklists();showMsg("Checklist excluído.");}
+function confirmarExcluirChecklist(id){const c=checklists.find(x=>x.id===id);abrirConfirm(`Excluir o checklist "${c?.nome}"?`,()=>excluirChecklist(id));}
+async function excluirChecklist(id){await sb.from("checklist_itens").delete().eq("checklist_id",id);await sb.from("checklists").delete().eq("id",id);await carregarChecklists();renderChecklists();preencherSelectChecklists();showMsg("Checklist excluído.");}
 function preencherSelectChecklists(){const sel=document.getElementById("orcChecklist");if(!sel)return;sel.innerHTML='<option value="">Selecione um checklist...</option>'+checklists.map(c=>`<option value="${c.id}">${c.nome}${projetos.find(p=>p.id===c.projeto_id)?" · "+projetos.find(p=>p.id===c.projeto_id).nome:""}</option>`).join("");}
 function importarChecklist(){const id=parseInt(document.getElementById("orcChecklist").value);if(!id){showMsg("Selecione um checklist.",true);return;}const c=checklists.find(x=>x.id===id);if(!c)return;const itens=c.checklist_itens||[];orcLinhas.forEach(lid=>{const el=document.getElementById(`orc-linha-${lid}`);if(el)el.remove();});orcLinhas=[];itens.forEach(item=>{const eq=equipamentos.find(e=>e.id===item.equipamento_id);adicionarItemOrc(item.equipamento_nome,eq?.preco_base||0,item.quantidade||1);});atualizarSubtotal();showMsg(`${itens.length} equipamento(s) importado(s)!`);}
 
 // ── PASTAS ────────────────────────────────────────────
-function renderPastas(){preencherSelectPastas();const container=document.getElementById("listaPastas");if(!container)return;container.innerHTML=pastas.map(pasta=>{const projs=projetos.filter(p=>p.pasta_id===pasta.id);return `<div class="pasta-card"><div class="pasta-header" onclick="togglePasta(${pasta.id})"><div><div style="font-weight:500">📁 ${pasta.nome}</div>${pasta.descricao?`<div style="font-size:12px;color:#888">${pasta.descricao}</div>`:""}</div><div class="actions"><span class="badge badge-info">${projs.length} projeto(s)</span><button class="btn btn-sm btn-blue" onclick="event.stopPropagation();abrirResumoPasta(${pasta.id})">📊 Resumo</button><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();excluirPasta(${pasta.id})">Excluir</button></div></div><div class="pasta-body" id="pasta-body-${pasta.id}" style="display:none">${projs.length?projs.map(p=>renderProjetoCard(p)).join(""):'<div class="empty" style="padding:1rem 0">Nenhum projeto.</div>'}</div></div>`;}).join("")||'<div class="empty">Nenhuma pasta.</div>';document.getElementById("listaProjetos").innerHTML=projetos.filter(p=>!p.pasta_id).map(p=>renderProjetoCard(p)).join("")||'<div class="empty">Nenhum projeto sem pasta.</div>';}
+function renderPastas(){preencherSelectPastas();const container=document.getElementById("listaPastas");if(!container)return;container.innerHTML=pastas.map(pasta=>{const projs=projetos.filter(p=>p.pasta_id===pasta.id);return `<div class="pasta-card"><div class="pasta-header" onclick="togglePasta(${pasta.id})"><div><div style="font-weight:500">📁 ${pasta.nome}</div>${pasta.descricao?`<div style="font-size:12px;color:#888">${pasta.descricao}</div>`:""}</div><div class="actions"><span class="badge badge-info">${projs.length} projeto(s)</span><button class="btn btn-sm btn-blue" onclick="event.stopPropagation();abrirResumoPasta(${pasta.id})">📊 Resumo</button><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();confirmarExcluirPasta(${pasta.id})">Excluir</button></div></div><div class="pasta-body" id="pasta-body-${pasta.id}" style="display:none">${projs.length?projs.map(p=>renderProjetoCard(p)).join(""):'<div class="empty" style="padding:1rem 0">Nenhum projeto.</div>'}</div></div>`;}).join("")||'<div class="empty">Nenhuma pasta.</div>';document.getElementById("listaProjetos").innerHTML=projetos.filter(p=>!p.pasta_id).map(p=>renderProjetoCard(p)).join("")||'<div class="empty">Nenhum projeto sem pasta.</div>';}
 function togglePasta(id){const el=document.getElementById(`pasta-body-${id}`);if(el)el.style.display=el.style.display==="none"?"block":"none";}
 function preencherSelectPastas(){const opts='<option value="">Sem pasta</option>'+pastas.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");["projPasta","editProjPasta"].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=opts;});}
 async function criarPasta(){const nome=document.getElementById("pastaNome").value.trim();if(!nome)return;const {error}=await sb.from("pastas_projeto").insert({nome,descricao:document.getElementById("pastaDesc").value.trim()||null});if(error){showMsg("Erro: "+error.message,true);return;}document.getElementById("pastaNome").value="";document.getElementById("pastaDesc").value="";await carregarPastas();renderPastas();showMsg("Pasta criada!");}
-async function excluirPasta(id){if(!confirm("Excluir esta pasta?"))return;await sb.from("projetos").update({pasta_id:null}).eq("pasta_id",id);await sb.from("pastas_projeto").delete().eq("id",id);await carregarPastas();await carregarProjetos();renderPastas();showMsg("Pasta excluída.");}
+function confirmarExcluirPasta(id){const pasta=pastas.find(p=>p.id===id);abrirConfirm(`Excluir a pasta "${pasta?.nome}"? Os projetos dentro serão mantidos sem pasta.`,()=>excluirPasta(id));}
+async function excluirPasta(id){await sb.from("projetos").update({pasta_id:null}).eq("pasta_id",id);await sb.from("pastas_projeto").delete().eq("id",id);await carregarPastas();await carregarProjetos();renderPastas();showMsg("Pasta excluída.");}
 
 // ── PROJETOS ──────────────────────────────────────────
-function renderProjetoCard(p){const dt=p.data_projeto?new Date(p.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"—";return `<div class="card"><div class="item-row"><div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · Data: ${dt}</div></div><div class="actions"><span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span><button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver/PDF</button><button class="btn btn-sm btn-outline" onclick="abrirFreelancersProj(${p.id})">Equipe</button>${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="abrirEditarProjeto(${p.id})">Editar</button><button class="btn btn-sm btn-outline" onclick="encerrarProjeto(${p.id})">Encerrar</button>`:""}<button class="btn btn-sm btn-danger" onclick="excluirProjeto(${p.id})">Excluir</button></div></div></div>`;}
+function renderProjetoCard(p){const dt=p.data_projeto?new Date(p.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"—";return `<div class="card"><div class="item-row"><div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · Data: ${dt}</div></div><div class="actions"><span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span><button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver/PDF</button><button class="btn btn-sm btn-outline" onclick="abrirFreelancersProj(${p.id})">Equipe</button>${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="abrirEditarProjeto(${p.id})">Editar</button><button class="btn btn-sm btn-outline" onclick="encerrarProjeto(${p.id})">Encerrar</button>`:""}<button class="btn btn-sm btn-danger" onclick="confirmarExcluirProjeto(${p.id})">Excluir</button></div></div></div>`;}
 async function criarProjeto(){const nome=document.getElementById("projNome").value.trim(),cliente=document.getElementById("projCliente").value.trim(),data_projeto=document.getElementById("projData").value||null,pasta_id=document.getElementById("projPasta").value||null;if(!nome)return;const {error}=await sb.from("projetos").insert({nome,cliente:cliente||null,data_projeto,pasta_id:pasta_id?parseInt(pasta_id):null});if(error){showMsg("Erro: "+error.message,true);return;}document.getElementById("projNome").value="";document.getElementById("projCliente").value="";await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();showMsg("Projeto criado!");}
 function abrirEditarProjeto(id){const p=projetos.find(x=>x.id===id);editProjId=id;document.getElementById("editProjNome").value=p.nome;document.getElementById("editProjCliente").value=p.cliente||"";document.getElementById("editProjData").value=p.data_projeto||"";preencherSelectPastas();document.getElementById("editProjPasta").value=p.pasta_id||"";abrirModal("modalEditProj");}
 async function salvarProjeto(){const nome=document.getElementById("editProjNome").value.trim(),cliente=document.getElementById("editProjCliente").value.trim()||null,data_projeto=document.getElementById("editProjData").value||null,pasta_id=document.getElementById("editProjPasta").value||null;if(!nome)return;await sb.from("projetos").update({nome,cliente,data_projeto,pasta_id:pasta_id?parseInt(pasta_id):null}).eq("id",editProjId);fecharModal("modalEditProj");await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();showMsg("Projeto atualizado!");}
 async function encerrarProjeto(id){await sb.from("projetos").update({status:"encerrado"}).eq("id",id);await carregarProjetos();renderPastas();preencherSelects();showMsg("Projeto encerrado.");}
-async function excluirProjeto(id){if(!confirm("Excluir este projeto?"))return;await sb.from("projeto_freelancers").delete().eq("projeto_id",id);await sb.from("movimentacoes").delete().eq("projeto_id",id);const {error}=await sb.from("projetos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarProjetos();await carregarTodasMovs();renderPastas();preencherSelects();preencherSelectHistorico();showMsg("Projeto excluído.");}
+function confirmarExcluirProjeto(id){const p=projetos.find(x=>x.id===id);abrirConfirm(`Excluir o projeto "${p?.nome}"? Movimentações vinculadas também serão removidas.`,()=>excluirProjeto(id));}
+async function excluirProjeto(id){await sb.from("projeto_freelancers").delete().eq("projeto_id",id);await sb.from("movimentacoes").delete().eq("projeto_id",id);const {error}=await sb.from("projetos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarProjetos();await carregarTodasMovs();renderPastas();preencherSelects();preencherSelectHistorico();showMsg("Projeto excluído.");}
 async function abrirFreelancersProj(projId){const proj=projetos.find(p=>p.id===projId);document.getElementById("modalFlProjTitulo").textContent=`Equipe — ${proj.nome}`;const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);const vinculados=new Set((links||[]).map(l=>l.freelancer_id));document.getElementById("modalFlProjConteudo").innerHTML=`<div class="check-list">${freelancers.map(f=>`<label class="check-item"><input type="checkbox" ${vinculados.has(f.id)?"checked":""} onchange="toggleFreelancer(${projId},${f.id},this.checked)"/><span>${f.nome} <span style="color:#888;font-size:12px">· ${(f.funcoes_lista||[]).join(", ")||"—"}</span></span></label>`).join("")||"<div style='color:#888'>Nenhum.</div>"}</div>`;abrirModal("modalFlProj");}
 async function toggleFreelancer(projId,flId,checked){if(checked)await sb.from("projeto_freelancers").upsert({projeto_id:projId,freelancer_id:flId});else await sb.from("projeto_freelancers").delete().eq("projeto_id",projId).eq("freelancer_id",flId);}
 async function abrirModalProjeto(projId){const proj=projetos.find(p=>p.id===projId);modalProjAtual=proj;document.getElementById("modalProjTitulo").textContent=proj.nome;const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);const vinculados=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);const alocMap={};(movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);const dt=proj.data_projeto?new Date(proj.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"Não definida";document.getElementById("modalProjConteudo").innerHTML=`<div style="font-size:13px;color:#888;margin-bottom:4px">Cliente: <strong style="color:#1a1a1a">${proj.cliente||"—"}</strong></div><div style="font-size:13px;color:#888;margin-bottom:1rem">Data: <strong style="color:#1a1a1a">${dt}</strong> · Status: <strong>${proj.status}</strong></div><div style="font-weight:500;margin-bottom:8px">Equipe</div>${vinculados.length?vinculados.map(f=>`<div style="font-size:14px;padding:4px 0;border-bottom:0.5px solid #f1efe8">${f.nome} <span style="color:#888;font-size:12px">· ${(f.funcoes_lista||[]).join(", ")||"—"}</span></div>`).join(""):"<div style='color:#888;font-size:13px;margin-bottom:8px'>Nenhum.</div>"}<div style="font-weight:500;margin:1rem 0 8px">Equipamentos alocados</div>${eqsAloc.length?eqsAloc.map(({eq,qtd})=>`<div style="font-size:14px;padding:4px 0;border-bottom:0.5px solid #f1efe8">${eq.nome} <span style="color:#888">× ${qtd}</span></div>`).join(""):"<div style='color:#888;font-size:13px'>Nenhum.</div>"}`;abrirModal("modalProj");}
@@ -830,16 +753,18 @@ async function gerarPDFProjeto(){
 // ── FUNÇÕES / FREELANCERS ─────────────────────────────
 function renderFuncoesCheckboxes(containerId,selecionadas=[]){const c=document.getElementById(containerId);if(!c)return;c.innerHTML=funcoes.map(f=>`<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" style="width:auto" value="${f.nome}" ${selecionadas.includes(f.nome)?"checked":""}/>${f.nome}</label>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma função.</span>";}
 function getFuncoesChecked(containerId){const c=document.getElementById(containerId);if(!c)return[];return Array.from(c.querySelectorAll("input[type=checkbox]:checked")).map(i=>i.value);}
-function renderFuncoes(){renderFuncoesCheckboxes("flFuncoesCheck");const lista=document.getElementById("listaFuncoes");if(lista)lista.innerHTML=funcoes.map(f=>`<div class="tag-item">${f.nome}<button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarFuncao(${f.id},'${esc(f.nome)}')">✏</button><button class="tag-x" onclick="excluirFuncao(${f.id},'${esc(f.nome)}')">×</button></div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma.</span>";}
+function renderFuncoes(){renderFuncoesCheckboxes("flFuncoesCheck");const lista=document.getElementById("listaFuncoes");if(lista)lista.innerHTML=funcoes.map(f=>`<div class="tag-item">${f.nome}<button class="tag-x" style="color:#185fa5;font-size:13px" onclick="abrirEditarFuncao(${f.id},'${esc(f.nome)}')">✏</button><button class="tag-x" onclick="confirmarExcluirFuncao(${f.id},'${esc(f.nome)}')">×</button></div>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma.</span>";}
 async function criarFuncao(){const nome=document.getElementById("funcaoNome").value.trim();if(!nome)return;const {error}=await sb.from("funcoes").insert({nome});if(error){showMsg("Função já existe.",true);return;}document.getElementById("funcaoNome").value="";await carregarFuncoes();renderFuncoes();showMsg("Função adicionada!");}
 function abrirEditarFuncao(id,nome){editFuncaoId=id;document.getElementById("editFuncaoNome").value=nome;abrirModal("modalFuncao");}
 async function salvarFuncao(){const nome=document.getElementById("editFuncaoNome").value.trim();if(!nome)return;await sb.from("funcoes").update({nome}).eq("id",editFuncaoId);fecharModal("modalFuncao");await carregarFuncoes();renderFuncoes();showMsg("Função atualizada!");}
-async function excluirFuncao(id,nome){if(!confirm(`Excluir "${nome}"?`))return;await sb.from("funcoes").delete().eq("id",id);await carregarFuncoes();renderFuncoes();showMsg("Função excluída.");}
-function renderFreelancers(){document.getElementById("listaFreelancers").innerHTML=freelancers.map(f=>`<div class="card"><div class="item-row"><div><div class="item-name">${f.nome}</div><div class="item-sub">${(f.funcoes_lista||[]).join(", ")||"—"} · Tel: ${f.telefone||"—"} · RG: ${f.rg||"—"}</div></div><div class="actions">${(f.funcoes_lista||[]).map(fn=>`<span class="badge badge-info">${fn}</span>`).join("")}<button class="btn btn-sm btn-edit" onclick="abrirEditarFreelancer(${f.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="excluirFreelancer(${f.id})">Excluir</button></div></div></div>`).join("")||'<div class="empty">Nenhum freelancer.</div>';}
+function confirmarExcluirFuncao(id,nome){abrirConfirm(`Excluir a função "${nome}"?`,()=>excluirFuncao(id));}
+async function excluirFuncao(id){await sb.from("funcoes").delete().eq("id",id);await carregarFuncoes();renderFuncoes();showMsg("Função excluída.");}
+function renderFreelancers(){document.getElementById("listaFreelancers").innerHTML=freelancers.map(f=>`<div class="card"><div class="item-row"><div><div class="item-name">${f.nome}</div><div class="item-sub">${(f.funcoes_lista||[]).join(", ")||"—"} · Tel: ${f.telefone||"—"} · RG: ${f.rg||"—"}</div></div><div class="actions">${(f.funcoes_lista||[]).map(fn=>`<span class="badge badge-info">${fn}</span>`).join("")}<button class="btn btn-sm btn-edit" onclick="abrirEditarFreelancer(${f.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="confirmarExcluirFreelancer(${f.id})">Excluir</button></div></div></div>`).join("")||'<div class="empty">Nenhum freelancer.</div>';}
 async function cadastrarFreelancer(){const nome=document.getElementById("flNome").value.trim(),telefone=document.getElementById("flTel").value.trim(),rg=document.getElementById("flRg").value.trim(),funcosSel=getFuncoesChecked("flFuncoesCheck");if(!nome){showMsg("Preencha o nome.",true);return;}const {data:fl,error}=await sb.from("freelancers").insert({nome,funcao:funcosSel[0]||"",telefone:telefone||null,rg:rg||null}).select().single();if(error){showMsg("Erro: "+error.message,true);return;}if(funcosSel.length>0)await sb.from("freelancer_funcoes").insert(funcosSel.map(fn=>({freelancer_id:fl.id,funcao:fn})));document.getElementById("flNome").value="";document.getElementById("flTel").value="";document.getElementById("flRg").value="";renderFuncoesCheckboxes("flFuncoesCheck");await carregarFreelancers();renderFreelancers();showMsg("Freelancer cadastrado!");}
 async function abrirEditarFreelancer(id){const f=freelancers.find(x=>x.id===id);editFlId=id;document.getElementById("editFlNome").value=f.nome;document.getElementById("editFlTel").value=f.telefone||"";document.getElementById("editFlRg").value=f.rg||"";renderFuncoesCheckboxes("editFlFuncoesCheck",f.funcoes_lista||[]);abrirModal("modalFl");}
 async function salvarFreelancer(){const nome=document.getElementById("editFlNome").value.trim(),telefone=document.getElementById("editFlTel").value.trim()||null,rg=document.getElementById("editFlRg").value.trim()||null,funcosSel=getFuncoesChecked("editFlFuncoesCheck");const {error}=await sb.from("freelancers").update({nome,funcao:funcosSel[0]||"",telefone,rg}).eq("id",editFlId);if(error){showMsg("Erro: "+error.message,true);return;}await sb.from("freelancer_funcoes").delete().eq("freelancer_id",editFlId);if(funcosSel.length>0)await sb.from("freelancer_funcoes").insert(funcosSel.map(fn=>({freelancer_id:editFlId,funcao:fn})));fecharModal("modalFl");await carregarFreelancers();renderFreelancers();showMsg("Freelancer atualizado!");}
-async function excluirFreelancer(id){if(!confirm("Excluir?"))return;await sb.from("freelancer_funcoes").delete().eq("freelancer_id",id);await sb.from("projeto_freelancers").delete().eq("freelancer_id",id);const {error}=await sb.from("freelancers").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarFreelancers();renderFreelancers();showMsg("Freelancer excluído.");}
+function confirmarExcluirFreelancer(id){const f=freelancers.find(x=>x.id===id);abrirConfirm(`Excluir o freelancer "${f?.nome}"?`,()=>excluirFreelancer(id));}
+async function excluirFreelancer(id){await sb.from("freelancer_funcoes").delete().eq("freelancer_id",id);await sb.from("projeto_freelancers").delete().eq("freelancer_id",id);const {error}=await sb.from("freelancers").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarFreelancers();renderFreelancers();showMsg("Freelancer excluído.");}
 function buscarFreelancer(){const q=document.getElementById("buscaFl").value.trim().toLowerCase(),res=document.getElementById("resultadoBusca");if(!q){res.style.display="none";return;}const enc=freelancers.filter(f=>f.nome.toLowerCase().includes(q));res.style.display="block";res.innerHTML=enc.length?enc.map(f=>`<div class="card" style="cursor:pointer" onclick="verProjetosDo(${f.id})"><div class="item-row"><div><div class="item-name">${f.nome}</div><div class="item-sub">${(f.funcoes_lista||[]).join(", ")||"—"} · ${f.telefone||"—"} · RG: ${f.rg||"—"}</div></div><button class="btn btn-sm btn-blue">Ver projetos</button></div></div>`).join(""):'<div class="empty">Nenhum resultado.</div>';}
 function limparBusca(){document.getElementById("buscaFl").value="";document.getElementById("resultadoBusca").style.display="none";}
 async function verProjetosDo(flId){const fl=freelancers.find(f=>f.id===flId);const {data:links}=await sb.from("projeto_freelancers").select("projeto_id").eq("freelancer_id",flId);const ids=new Set((links||[]).map(l=>l.projeto_id));const projsDo=projetos.filter(p=>ids.has(p.id));document.getElementById("modalBuscaFlTitulo").textContent=`Projetos de ${fl.nome}`;document.getElementById("modalBuscaFlConteudo").innerHTML=`<div style="margin-bottom:12px">${(fl.funcoes_lista||[]).map(fn=>`<span class="badge badge-info" style="margin-right:4px">${fn}</span>`).join("")} Tel: ${fl.telefone||"—"} &nbsp; RG: ${fl.rg||"—"}</div>${projsDo.length?projsDo.map(p=>{const dt=p.data_projeto?new Date(p.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"—";return `<div class="card"><div class="item-row"><div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · Data: ${dt}</div></div><span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span></div></div>`;}).join(""):'<div class="empty">Nenhum projeto.</div>'}`;abrirModal("modalBuscaFl");}
@@ -875,9 +800,10 @@ function atualizarSubtotal(){const eq=calcSubtotalEq(),prov=calcSubtotalProv();c
 function finalizarOrcamento(){const titulo=document.getElementById("orcTitulo").value.trim();if(!titulo){showMsg("Informe o título.",true);return;}const sub=calcSubtotal();document.getElementById("descontoValor").value=0;document.getElementById("descontoPreview").innerHTML=`Subtotal: <strong>${brl(sub)}</strong>`;orcDadosTemp={titulo,cliente:document.getElementById("orcCliente").value.trim(),local:document.getElementById("orcLocal").value.trim(),descricao:document.getElementById("orcDescricao").value.trim()};abrirModal("modalDesconto");}
 function atualizarPreviewDesconto(){const pct=parseFloat(document.getElementById("descontoValor").value)||0,sub=calcSubtotal(),desc=sub*(pct/100),total=sub-desc;document.getElementById("descontoPreview").innerHTML=`Subtotal: <strong>${brl(sub)}</strong> · Desconto (${pct}%): <strong>-${brl(desc)}</strong> · Total: <strong>${brl(total)}</strong>`;}
 async function confirmarOrcamento(comDesconto){const pct=comDesconto?parseFloat(document.getElementById("descontoValor").value)||0:0;const {titulo,cliente,local,descricao}=orcDadosTemp;const {data:orc,error}=await sb.from("orcamentos").insert({titulo,cliente:cliente||null,local:local||null,descricao_servico:descricao||null,desconto:pct,criado_por:usuario.id}).select().single();if(error){showMsg("Erro: "+error.message,true);return;}const itensEq=orcLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-desc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-qtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0,tipo:"equipamento"})).filter(i=>i.descricao);const itensProv=orcProvedoresLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-pfunc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-pqtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0,tipo:"provedor"})).filter(i=>i.descricao);const todos=[...itensEq,...itensProv];if(todos.length)await sb.from("orcamento_itens").insert(todos);fecharModal("modalDesconto");await carregarOrcamentos();renderOrcamentos();["orcTitulo","orcCliente","orcLocal","orcDescricao"].forEach(id=>document.getElementById(id).value="");iniciarOrcLista();showMsg("Orçamento salvo!");}
-function renderOrcamentos(){if(!isSupremo())return;document.getElementById("listaOrcamentos").innerHTML=orcamentos.map(o=>{const itens=o.orcamento_itens||[],sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0),desc=sub*((o.desconto||0)/100),total=sub-desc,dt=new Date(o.criado_em).toLocaleDateString("pt-BR");return `<div class="card"><div class="item-row"><div><div class="item-name">${o.titulo}</div><div class="item-sub">Cliente: ${o.cliente||"—"} · ${dt} · ${itens.length} item(s)</div></div><div class="actions"><span style="font-size:13px;font-weight:500;color:#3b6d11">${brl(total)}</span>${o.desconto>0?`<span class="badge badge-warn">${o.desconto}% desc.</span>`:""}<button class="btn btn-sm btn-outline" onclick="verOrcamento(${o.id})">Ver/PDF</button><button class="btn btn-sm btn-edit" onclick="editarOrcamento(${o.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="excluirOrcamento(${o.id})">Excluir</button></div></div></div>`;}).join("")||'<div class="empty">Nenhum orçamento.</div>';}
+function renderOrcamentos(){if(!isSupremo())return;document.getElementById("listaOrcamentos").innerHTML=orcamentos.map(o=>{const itens=o.orcamento_itens||[],sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0),desc=sub*((o.desconto||0)/100),total=sub-desc,dt=new Date(o.criado_em).toLocaleDateString("pt-BR");return `<div class="card"><div class="item-row"><div><div class="item-name">${o.titulo}</div><div class="item-sub">Cliente: ${o.cliente||"—"} · ${dt} · ${itens.length} item(s)</div></div><div class="actions"><span style="font-size:13px;font-weight:500;color:#3b6d11">${brl(total)}</span>${o.desconto>0?`<span class="badge badge-warn">${o.desconto}% desc.</span>`:""}<button class="btn btn-sm btn-outline" onclick="verOrcamento(${o.id})">Ver/PDF</button><button class="btn btn-sm btn-edit" onclick="editarOrcamento(${o.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="confirmarExcluirOrcamento(${o.id})">Excluir</button></div></div></div>`;}).join("")||'<div class="empty">Nenhum orçamento.</div>';}
 async function verOrcamento(id){const {data:o,error}=await sb.from("orcamentos").select("*,orcamento_itens(*)").eq("id",id).single();if(error||!o){showMsg("Erro ao carregar.",true);return;}orcAtual=o;const itens=o.orcamento_itens||[],eqItens=itens.filter(i=>i.tipo==="equipamento"||!i.tipo),provItens=itens.filter(i=>i.tipo==="provedor"),subEq=eqItens.reduce((s,i)=>s+(i.quantidade*i.preco_unitario),0),subProv=provItens.reduce((s,i)=>s+(i.quantidade*i.preco_unitario),0),sub=subEq+subProv,desc=sub*((o.desconto||0)/100),total=sub-desc,dt=new Date(o.criado_em).toLocaleDateString("pt-BR");const titulo=document.getElementById("modalVerOrcTitulo"),conteudo=document.getElementById("modalVerOrcConteudo");if(!titulo||!conteudo){showMsg("Erro: modal não encontrado.",true);return;}titulo.textContent=o.titulo;let html="";html+=`<div style="font-size:13px;color:#888;margin-bottom:2px">Cliente: <strong style="color:#1a1a1a">${o.cliente||"—"}</strong></div>`;html+=`<div style="font-size:13px;color:#888;margin-bottom:12px">Local: <strong style="color:#1a1a1a">${o.local||"—"}</strong> · Data: ${dt}</div>`;if(o.descricao_servico)html+=`<div style="background:#f5f5f0;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:14px;line-height:1.6"><div style="font-weight:500;margin-bottom:4px">Descrição</div>${o.descricao_servico}</div>`;if(eqItens.length){html+=`<div style="font-weight:500;margin-bottom:8px">Equipamentos</div><div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px">`;html+=`<div style="display:grid;grid-template-columns:3fr 1fr 1fr;gap:8px;padding:8px 12px;background:#f5f5f0;font-size:12px;font-weight:600;color:#666"><span>EQUIPAMENTO</span><span style="text-align:center">QTD</span><span style="text-align:right">VALOR</span></div>`;eqItens.forEach(i=>{html+=`<div style="display:grid;grid-template-columns:3fr 1fr 1fr;gap:8px;padding:8px 12px;border-top:0.5px solid #f1efe8;font-size:14px"><span>${i.descricao}</span><span style="text-align:center">${i.quantidade}</span><span style="text-align:right">${brl(i.preco_unitario)}</span></div>`;});html+=`<div style="display:flex;justify-content:space-between;padding:8px 12px;border-top:0.5px solid #e0e0d8;font-size:13px;color:#888"><span>Subtotal equip.</span><strong>${brl(subEq)}</strong></div></div>`;}if(provItens.length){html+=`<div style="font-weight:500;margin-bottom:8px">Provedores</div><div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px">`;html+=`<div style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;padding:8px 12px;background:#f5f5f0;font-size:12px;font-weight:600;color:#666"><span>FUNÇÃO</span><span style="text-align:center">QTD</span><span style="text-align:right">UNIT.</span><span style="text-align:right">TOTAL</span></div>`;provItens.forEach(i=>{html+=`<div style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;padding:8px 12px;border-top:0.5px solid #f1efe8;font-size:14px"><span>${i.descricao}</span><span style="text-align:center">${i.quantidade}</span><span style="text-align:right">${brl(i.preco_unitario)}</span><span style="text-align:right">${brl(i.quantidade*i.preco_unitario)}</span></div>`;});html+=`<div style="display:flex;justify-content:space-between;padding:8px 12px;border-top:0.5px solid #e0e0d8;font-size:13px;color:#888"><span>Subtotal prov.</span><strong>${brl(subProv)}</strong></div></div>`;}if(o.desconto>0)html+=`<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;color:#854f0b"><span>Desconto (${o.desconto}%)</span><strong>-${brl(desc)}</strong></div>`;html+=`<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:600;border-top:0.5px solid #d0d0c8;padding-top:8px;margin-top:4px"><span>Total</span><span style="color:#3b6d11">${brl(total)}</span></div>`;conteudo.innerHTML=html;abrirModal("modalVerOrc");}
-async function excluirOrcamento(id){if(!confirm("Excluir?"))return;await sb.from("orcamento_itens").delete().eq("orcamento_id",id);const {error}=await sb.from("orcamentos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento excluído.");}
+function confirmarExcluirOrcamento(id){const o=orcamentos.find(x=>x.id===id);abrirConfirm(`Excluir o orçamento "${o?.titulo}"?`,()=>excluirOrcamento(id));}
+async function excluirOrcamento(id){await sb.from("orcamento_itens").delete().eq("orcamento_id",id);const {error}=await sb.from("orcamentos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento excluído.");}
 async function editarOrcamento(id){const {data:o}=await sb.from("orcamentos").select("*,orcamento_itens(*)").eq("id",id).single();if(!o)return;editOrcId=id;document.getElementById("editOrcTitulo").value=o.titulo||"";document.getElementById("editOrcCliente").value=o.cliente||"";document.getElementById("editOrcLocal").value=o.local||"";document.getElementById("editOrcDescricao").value=o.descricao_servico||"";document.getElementById("editOrcDesconto").value=o.desconto||0;editOrcLinhas=[];editOrcProvLinhas=[];document.getElementById("editOrcItensLista").innerHTML="";document.getElementById("editOrcProvedoresLista").innerHTML="";const itens=o.orcamento_itens||[];itens.filter(i=>i.tipo==="equipamento"||!i.tipo).forEach(i=>adicionarItemOrcEdit(i));itens.filter(i=>i.tipo==="provedor").forEach(i=>adicionarProvedorOrcEdit(i));atualizarSubtotalEdit();abrirModal("modalEditOrc");}
 function adicionarItemOrcEdit(item=null){const id=Date.now()+Math.random();editOrcLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`edit-orc-linha-${id}`;const eqOpts=equipamentos.map(e=>`<option value="${e.nome}" ${item&&item.descricao===e.nome?"selected":""}>${e.nome}</option>`).join("");div.innerHTML=`<select id="edit-orc-desc-${id}" style="flex:3;min-width:140px" onchange="atualizarSubtotalEdit()"><option value="">Selecione...</option>${eqOpts}</select><input id="edit-orc-qtd-${id}" type="number" min="1" value="${item?.quantidade||1}" style="width:55px;flex:none" oninput="atualizarSubtotalEdit()"/><input id="edit-orc-preco-${id}" type="number" min="0" step="0.01" value="${item?.preco_unitario||0}" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotalEdit()"/><button class="btn btn-sm btn-danger" onclick="removerItemOrcEdit(${id})">×</button>`;document.getElementById("editOrcItensLista").appendChild(div);}
 function adicionarProvedorOrcEdit(item=null){const id=Date.now()+Math.random();editOrcProvLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`edit-orc-prov-${id}`;const funcOpts=funcoes.map(f=>`<option value="${f.nome}" ${item&&item.descricao===f.nome?"selected":""}>${f.nome}</option>`).join("");div.innerHTML=`<select id="edit-orc-pfunc-${id}" style="flex:2;min-width:120px" onchange="atualizarSubtotalEdit()"><option value="">Função...</option>${funcOpts}</select><input id="edit-orc-pqtd-${id}" type="number" min="1" value="${item?.quantidade||1}" style="width:55px;flex:none" oninput="atualizarSubtotalEdit()"/><input id="edit-orc-ppreco-${id}" type="number" min="0" step="0.01" value="${item?.preco_unitario||0}" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotalEdit()"/><button class="btn btn-sm btn-danger" onclick="removerProvedorOrcEdit(${id})">×</button>`;document.getElementById("editOrcProvedoresLista").appendChild(div);}
@@ -909,9 +835,10 @@ async function gerarPDFOrcamento(){
 async function fazerBackup(){showMsg("Gerando backup...");const tables=["equipamentos","projetos","categorias","freelancers","funcoes","movimentacoes","orcamentos","orcamento_itens","pastas_projeto","projeto_freelancers","checklists","checklist_itens","calendario_eventos","calendario_equipe"];const results=await Promise.all(tables.map(t=>sb.from(t).select("*")));const backup={gerado_em:new Date().toISOString()};tables.forEach((t,i)=>backup[t]=results[i].data);const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`backup-takevision-${new Date().toISOString().split("T")[0]}.json`;a.click();URL.revokeObjectURL(url);showMsg("Backup gerado!");}
 
 // ── USUÁRIOS ──────────────────────────────────────────
-async function carregarUsuarios(){const {data}=await sb.from("perfis").select("*").order("criado_em");document.getElementById("listaUsuarios").innerHTML=(data||[]).map(u=>`<div class="card"><div class="item-row"><div><div class="item-name">${u.nome}</div><div class="item-sub">${u.id}</div></div><div class="actions"><span class="badge ${u.supremo?"badge-purple":u.papel==="admin"?"admin-badge":"badge-gray"}">${u.supremo?"★ Supremo":u.papel}</span>${!u.supremo?`<button class="btn btn-sm btn-outline" onclick="alterarPapel('${u.id}','${u.papel}')">${u.papel==="admin"?"→ Usuário":"→ Admin"}</button><button class="btn btn-sm btn-danger" onclick="bloquearUsuario('${u.id}','${u.nome}')">Remover acesso</button>`:"(conta suprema)"}</div></div></div>`).join("")||'<div class="empty">Nenhum usuário.</div>';}
+async function carregarUsuarios(){const {data}=await sb.from("perfis").select("*").order("criado_em");document.getElementById("listaUsuarios").innerHTML=(data||[]).map(u=>`<div class="card"><div class="item-row"><div><div class="item-name">${u.nome}</div><div class="item-sub">${u.id}</div></div><div class="actions"><span class="badge ${u.supremo?"badge-purple":u.papel==="admin"?"admin-badge":"badge-gray"}">${u.supremo?"★ Supremo":u.papel}</span>${!u.supremo?`<button class="btn btn-sm btn-outline" onclick="alterarPapel('${u.id}','${u.papel}')">${u.papel==="admin"?"→ Usuário":"→ Admin"}</button><button class="btn btn-sm btn-danger" onclick="confirmarBloquearUsuario('${u.id}','${u.nome}')">Remover acesso</button>`:"(conta suprema)"}</div></div></div>`).join("")||'<div class="empty">Nenhum usuário.</div>';}
 async function alterarPapel(id,papelAtual){const novo=papelAtual==="admin"?"usuario":"admin";const {error}=await sb.from("perfis").update({papel:novo}).eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarUsuarios();showMsg("Papel atualizado!");}
-async function bloquearUsuario(id,nome){if(!confirm(`Remover acesso de "${nome}"?`))return;await sb.from("perfis").update({papel:"bloqueado"}).eq("id",id);carregarUsuarios();showMsg("Acesso removido.");}
+function confirmarBloquearUsuario(id,nome){abrirConfirm(`Remover acesso de "${nome}"?`,()=>bloquearUsuario(id));}
+async function bloquearUsuario(id){await sb.from("perfis").update({papel:"bloqueado"}).eq("id",id);carregarUsuarios();showMsg("Acesso removido.");}
 async function criarUsuario(){if(!isSupremo()){showMsg("Apenas a conta suprema pode criar usuários.",true);return;}const nome=document.getElementById("novoUserNome").value.trim(),email=document.getElementById("novoUserEmail").value.trim(),senha=document.getElementById("novoUserSenha").value,papel=document.getElementById("novoUserPapel").value;if(!nome||!email||!senha){showMsg("Preencha todos os campos.",true);return;}if(senha.length<6){showMsg("Senha mínima 6 caracteres.",true);return;}const {data,error}=await sb.auth.signUp({email,password:senha});if(error){showMsg("Erro: "+error.message,true);return;}if(data?.user){await sb.from("perfis").update({nome,papel}).eq("id",data.user.id);document.getElementById("novoUserNome").value="";document.getElementById("novoUserEmail").value="";document.getElementById("novoUserSenha").value="";await carregarUsuarios();showMsg(`Usuário "${nome}" criado!`);}}
 </script>
 </body>
