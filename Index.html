@@ -28,6 +28,7 @@ input:focus,select:focus,textarea:focus{border-color:#888}
 .btn-edit{background:#f5a623;border-color:#f5a623;color:#fff}
 .btn-green{background:#639922;border-color:#639922;color:#fff}
 .btn-purple{background:#534ab7;border-color:#534ab7;color:#fff}
+.btn-recibo{background:#b8860b;border-color:#b8860b;color:#fff}
 .err{background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
 .ok{background:#eaf3de;color:#3b6d11;border:0.5px solid #97c459;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
 header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
@@ -85,6 +86,9 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .checklist-eq-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #f1efe8;font-size:14px}
 .checklist-eq-item:last-child{border-bottom:none}
 .checklist-eq-item input[type=checkbox]{width:auto;cursor:pointer}
+.toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.toggle-row input[type=checkbox]{width:auto;cursor:pointer}
+.toggle-row label{font-size:13px;color:#555;cursor:pointer}
 /* ── CALENDÁRIO ── */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
@@ -98,30 +102,22 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .cal-ev span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .cal-ev-proj{background:#e6f1fb;color:#185fa5}
 .cal-ev-cal{background:#eaf3de;color:#3b6d11}
-.cal-ev-proj-mid{background:#d0e5f7;color:#185fa5;border-radius:0}
-.cal-ev-proj-start{border-radius:3px 0 0 3px}
-.cal-ev-proj-end{border-radius:0 3px 3px 0}
 .cal-empty{pointer-events:none;border-color:transparent!important;background:transparent!important}
-/* ── BOTÕES NOS EVENTOS DO GRID ── */
 .cal-ev-actions{display:none;gap:1px;flex-shrink:0}
 .cal-ev:hover .cal-ev-actions{display:flex}
-.cal-ev-action-btn{background:none;border:none;cursor:pointer;font-size:9px;padding:0 2px;line-height:1.4;border-radius:2px;opacity:.7;transition:opacity .15s,background .15s}
+.cal-ev-action-btn{background:none;border:none;cursor:pointer;font-size:9px;padding:0 2px;line-height:1.4;border-radius:2px;opacity:.7;transition:opacity .15s}
 .cal-ev-action-btn:hover{opacity:1;background:rgba(0,0,0,.12)}
-/* ── MODAL CONFIRMAÇÃO ── */
 .modal-confirm-icon{font-size:36px;text-align:center;margin-bottom:12px}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
 .modal-box{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;margin:1rem}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
 .modal-title{font-size:17px;font-weight:500}
 .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#888}
-.toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.toggle-row input[type=checkbox]{width:auto;cursor:pointer}
-.toggle-row label{font-size:13px;color:#555;cursor:pointer}
+.margem-box{background:#fff8dc;border:0.5px solid #d4a017;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:13px;color:#7a5c00}
 @media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}.row{flex-direction:column}.two-col{grid-template-columns:1fr}.cal-day{min-height:55px}}
 </style>
 </head>
 <body>
-
 <div class="auth" id="authScreen">
   <div class="auth-card">
     <div class="auth-title">Take Vision Imagem</div>
@@ -340,7 +336,11 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Título</label><input id="orcTitulo" placeholder="Ex: Cobertura de Evento"/></div>
           <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Cliente</label><input id="orcCliente" placeholder="Ex: Empresa XYZ"/></div>
         </div>
-        <div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Local</label><input id="orcLocal" placeholder="Ex: Rio de Janeiro, RJ"/></div></div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Local</label><input id="orcLocal" placeholder="Ex: Rio de Janeiro, RJ"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data do evento</label><input id="orcDataEvento" type="date"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de diárias</label><input id="orcDiarias" type="number" min="1" value="1" oninput="atualizarSubtotal()"/></div>
+        </div>
         <div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Descrição do serviço</label><textarea id="orcDescricao" placeholder="Descreva o serviço..."></textarea></div>
         <div class="field">
           <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Importar checklist (opcional)</label>
@@ -353,10 +353,11 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="orcProvedoresLista"></div>
         <button class="btn btn-sm btn-outline" onclick="adicionarProvedor()" style="margin-bottom:16px">+ Adicionar provedor</button>
         <div class="orc-subtotal">
-          <div style="font-size:13px;color:#888;margin-bottom:2px">Equipamentos: <strong id="previewSubtotalEq">R$ 0,00</strong></div>
-          <div style="font-size:13px;color:#888;margin-bottom:2px">Provedores: <strong id="previewSubtotalProv">R$ 0,00</strong></div>
-          <div style="font-size:13px;color:#888;margin-bottom:2px">Subtotal: <strong id="previewSubtotal">R$ 0,00</strong></div>
-          <div style="font-size:13px;color:#854f0b;margin-bottom:2px">Com diárias + 40% margem: <strong id="previewComMargem">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:4px">Equipamentos: <strong id="previewSubtotalEq">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:4px">Provedores: <strong id="previewSubtotalProv">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:4px;border-top:0.5px solid #d0d0c8;padding-top:8px">Subtotal: <strong id="previewSubtotal">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:2px" id="previewDiariasRow" style="display:none">× <span id="previewDiariasNum">1</span> diária(s): <strong id="previewComDiarias">R$ 0,00</strong></div>
+          <div style="font-size:14px;color:#854f0b;margin-top:4px">+ 40% margem → <strong id="previewComMargem">R$ 0,00</strong></div>
         </div>
         <div style="margin-top:14px"><button class="btn btn-sm btn-purple" onclick="finalizarOrcamento()">✓ Finalizar orçamento</button></div>
       </div>
@@ -387,40 +388,65 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
   </div>
 </div>
 
-<!-- MODAIS EXISTENTES -->
+<!-- MODAIS -->
 <div class="modal-bg" id="modalProj"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalProj')">×</button></div><div id="modalProjConteudo"></div><div style="display:flex;gap:8px;margin-top:1rem"><button class="btn btn-sm btn-blue" onclick="gerarPDFProjeto()">⬇ PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalProj')">Fechar</button></div></div></div>
-
-<!-- MODAL EDITAR PROJETO (ampliado com data fim) -->
-<div class="modal-bg" id="modalEditProj"><div class="modal-box">
-  <div class="modal-header"><div class="modal-title">Editar projeto</div><button class="modal-close" onclick="fecharModal('modalEditProj')">×</button></div>
-  <div class="field"><label>Nome</label><input id="editProjNome"/></div>
-  <div class="field"><label>Cliente</label><input id="editProjCliente"/></div>
-  <div class="row">
-    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data início</label><input id="editProjData" type="date"/></div>
-    <div class="col" id="editProjDataFimWrap"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data fim <span style="color:#aaa;font-size:11px">(opcional)</span></label><input id="editProjDataFim" type="date"/></div>
-  </div>
-  <div class="toggle-row" style="margin-bottom:12px">
-    <input type="checkbox" id="editProjMultiDia" onchange="document.getElementById('editProjDataFimWrap').style.display=this.checked?'':'none'"/>
-    <label for="editProjMultiDia">Evento com mais de um dia</label>
-  </div>
-  <div class="field"><label>Pasta</label><select id="editProjPasta"><option value="">Sem pasta</option></select></div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-sm btn-outline" onclick="salvarProjeto()">Salvar</button>
-    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditProj')">Cancelar</button>
-  </div>
-</div></div>
-
+<div class="modal-bg" id="modalEditProj"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar projeto</div><button class="modal-close" onclick="fecharModal('modalEditProj')">×</button></div><div class="field"><label>Nome</label><input id="editProjNome"/></div><div class="field"><label>Cliente</label><input id="editProjCliente"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data início</label><input id="editProjData" type="date"/></div><div class="col" id="editProjDataFimWrap"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data fim</label><input id="editProjDataFim" type="date"/></div></div><div class="toggle-row" style="margin-bottom:12px"><input type="checkbox" id="editProjMultiDia" onchange="document.getElementById('editProjDataFimWrap').style.display=this.checked?'':'none'"/><label for="editProjMultiDia">Evento com mais de um dia</label></div><div class="field"><label>Pasta</label><select id="editProjPasta"><option value="">Sem pasta</option></select></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarProjeto()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditProj')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" onclick="fecharModal('modalEq')">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div class="field" id="editEqPrecoBaseWrap" style="display:none"><label>Preço base (R$)</label><input id="editEqPrecoBase" type="number" min="0" step="0.01" value="0"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarEq()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEq')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalCat"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" onclick="fecharModal('modalCat')">×</button></div><div class="field"><label>Nome</label><input id="editCatNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarCategoria()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalCat')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalFl"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar freelancer</div><button class="modal-close" onclick="fecharModal('modalFl')">×</button></div><div class="field"><label>Nome</label><input id="editFlNome"/></div><div class="field"><label>Funções</label><div id="editFlFuncoesCheck" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:0.5px solid #d0d0c8;border-radius:8px;min-height:42px"></div></div><div class="field"><label>Telefone</label><input id="editFlTel"/></div><div class="field"><label>RG</label><input id="editFlRg"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarFreelancer()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFl')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalFuncao"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar função</div><button class="modal-close" onclick="fecharModal('modalFuncao')">×</button></div><div class="field"><label>Nome</label><input id="editFuncaoNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarFuncao()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFuncao')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalFlProj"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalFlProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalFlProj')">×</button></div><div id="modalFlProjConteudo"></div><div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFlProj')">Fechar</button></div></div></div>
 <div class="modal-bg" id="modalBuscaFl"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalBuscaFlTitulo"></div><button class="modal-close" onclick="fecharModal('modalBuscaFl')">×</button></div><div id="modalBuscaFlConteudo"></div><div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalBuscaFl')">Fechar</button></div></div></div>
-<div class="modal-bg" id="modalDesconto"><div class="modal-box"><div class="modal-header"><div class="modal-title">Resumo e desconto</div><button class="modal-close" onclick="fecharModal('modalDesconto')">×</button></div><div id="descontoPreview" style="margin-bottom:14px"></div><div class="field"><label>Desconto sobre o valor com margem (%)</label><input id="descontoValor" type="number" min="0" max="100" value="0" oninput="atualizarPreviewDesconto()"/></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm btn-green" onclick="confirmarOrcamento(true)">Aplicar e salvar</button><button class="btn btn-sm btn-outline" onclick="confirmarOrcamento(false)">Salvar sem desconto</button></div></div></div>
-<div class="modal-bg" id="modalVerOrc" style="display:none"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalVerOrcTitulo">Orçamento</div><button class="modal-close" onclick="fecharModal('modalVerOrc')">×</button></div><div id="modalVerOrcConteudo"></div><div style="display:flex;gap:8px;margin-top:1rem"><button class="btn btn-sm btn-blue" onclick="gerarPDFOrcamento()">⬇ PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalVerOrc')">Fechar</button></div></div></div>
-<div class="modal-bg" id="modalEditOrc"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar orçamento</div><button class="modal-close" onclick="fecharModal('modalEditOrc')">×</button></div><div class="field"><label>Título</label><input id="editOrcTitulo"/></div><div class="field"><label>Cliente</label><input id="editOrcCliente"/></div><div class="field"><label>Local</label><input id="editOrcLocal"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data do evento</label><input id="editOrcDataEvento" type="date"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de diárias</label><input id="editOrcDiarias" type="number" min="1" value="1" oninput="atualizarSubtotalEdit()"/></div></div><div class="field"><label>Descrição do serviço</label><textarea id="editOrcDescricao"></textarea></div><div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div><div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="editOrcItensLista"></div><button class="btn btn-sm btn-outline" onclick="adicionarItemOrcEdit()" style="margin-bottom:16px">+ Adicionar equipamento</button><div style="font-weight:500;font-size:14px;margin:8px 0 10px">Provedores</div><div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="editOrcProvedoresLista"></div><button class="btn btn-sm btn-outline" onclick="adicionarProvedorOrcEdit()" style="margin-bottom:16px">+ Adicionar provedor</button><div class="orc-subtotal"><div style="font-size:13px;color:#888;margin-bottom:2px">Equipamentos: <strong id="editPreviewSubtotalEq">R$ 0,00</strong></div><div style="font-size:13px;color:#888;margin-bottom:2px">Provedores: <strong id="editPreviewSubtotalProv">R$ 0,00</strong></div><div style="font-size:14px;margin-top:6px;border-top:0.5px solid #d0d0c8;padding-top:6px">Subtotal: <strong id="editPreviewSubtotal">R$ 0,00</strong></div></div><div class="field" style="margin-top:14px"><label>Desconto (%)</label><input id="editOrcDesconto" type="number" min="0" max="100" value="0" oninput="atualizarSubtotalEdit()"/></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm btn-green" onclick="salvarOrcamentoEditado()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditOrc')">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalVerChecklist"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalVerCheckTitulo">Checklist</div><button class="modal-close" onclick="fecharModal('modalVerChecklist')">×</button></div><div id="modalVerCheckConteudo"></div><div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalVerChecklist')">Fechar</button></div></div></div>
 <div class="modal-bg" id="modalEditChecklist"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar checklist</div><button class="modal-close" onclick="fecharModal('modalEditChecklist')">×</button></div><div class="field"><label>Nome</label><input id="editCheckNome"/></div><div class="field"><label>Projeto</label><select id="editCheckProjeto"><option value="">Sem projeto</option></select></div><div style="font-size:13px;color:#666;margin-bottom:6px">Equipamentos e quantidades</div><div id="editCheckEquipamentosLista" style="max-height:260px;overflow-y:auto;border:0.5px solid #e0e0d8;border-radius:8px;padding:8px;margin-bottom:12px"></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-green" onclick="salvarChecklistEditado()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditChecklist')">Cancelar</button></div></div></div>
+
+<!-- MODAL DESCONTO (com breakdown de margem) -->
+<div class="modal-bg" id="modalDesconto"><div class="modal-box">
+  <div class="modal-header"><div class="modal-title">Resumo e desconto</div><button class="modal-close" onclick="fecharModal('modalDesconto')">×</button></div>
+  <div id="descontoPreview" style="margin-bottom:16px"></div>
+  <div class="field"><label>Desconto sobre o valor com margem (%)</label><input id="descontoValor" type="number" min="0" max="100" value="0" oninput="atualizarPreviewDesconto()"/></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-sm btn-green" onclick="confirmarOrcamento(true)">Aplicar e salvar</button>
+    <button class="btn btn-sm btn-outline" onclick="confirmarOrcamento(false)">Salvar sem desconto</button>
+  </div>
+</div></div>
+
+<!-- MODAL VER ORÇAMENTO -->
+<div class="modal-bg" id="modalVerOrc" style="display:none"><div class="modal-box">
+  <div class="modal-header"><div class="modal-title" id="modalVerOrcTitulo">Orçamento</div><button class="modal-close" onclick="fecharModal('modalVerOrc')">×</button></div>
+  <div id="modalVerOrcConteudo"></div>
+  <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
+    <button class="btn btn-sm btn-blue" onclick="gerarPDFOrcamento()">⬇ PDF Orçamento</button>
+    <button class="btn btn-sm btn-recibo" id="btnReciboModal" onclick="">📄 Gerar Recibo</button>
+    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalVerOrc')">Fechar</button>
+  </div>
+</div></div>
+
+<!-- MODAL EDIT ORÇAMENTO -->
+<div class="modal-bg" id="modalEditOrc"><div class="modal-box">
+  <div class="modal-header"><div class="modal-title">Editar orçamento</div><button class="modal-close" onclick="fecharModal('modalEditOrc')">×</button></div>
+  <div class="field"><label>Título</label><input id="editOrcTitulo"/></div>
+  <div class="field"><label>Cliente</label><input id="editOrcCliente"/></div>
+  <div class="field"><label>Local</label><input id="editOrcLocal"/></div>
+  <div class="row">
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data do evento</label><input id="editOrcDataEvento" type="date"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de diárias</label><input id="editOrcDiarias" type="number" min="1" value="1" oninput="atualizarSubtotalEdit()"/></div>
+  </div>
+  <div class="field"><label>Descrição do serviço</label><textarea id="editOrcDescricao"></textarea></div>
+  <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
+  <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="editOrcItensLista"></div>
+  <button class="btn btn-sm btn-outline" onclick="adicionarItemOrcEdit()" style="margin-bottom:16px">+ Adicionar equipamento</button>
+  <div style="font-weight:500;font-size:14px;margin:8px 0 10px">Provedores</div>
+  <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="editOrcProvedoresLista"></div>
+  <button class="btn btn-sm btn-outline" onclick="adicionarProvedorOrcEdit()" style="margin-bottom:16px">+ Adicionar provedor</button>
+  <div class="orc-subtotal">
+    <div style="font-size:13px;color:#888;margin-bottom:2px">Eq: <strong id="editPreviewSubtotalEq">R$ 0,00</strong> · Prov: <strong id="editPreviewSubtotalProv">R$ 0,00</strong></div>
+    <div style="font-size:13px;color:#888;margin-bottom:2px">Subtotal: <strong id="editPreviewSubtotal">R$ 0,00</strong></div>
+    <div style="font-size:14px;color:#854f0b">+ 40% margem → Total: <strong id="editPreviewComMargem">R$ 0,00</strong></div>
+  </div>
+  <div class="field" style="margin-top:14px"><label>Desconto (%)</label><input id="editOrcDesconto" type="number" min="0" max="100" value="0" oninput="atualizarSubtotalEdit()"/></div>
+  <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm btn-green" onclick="salvarOrcamentoEditado()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditOrc')">Cancelar</button></div>
+</div></div>
 
 <!-- MODAL DIA CALENDÁRIO -->
 <div class="modal-bg" id="modalDia"><div class="modal-box">
@@ -442,10 +468,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data início</label><input id="calProjData" type="date"/></div>
     <div class="col" id="calProjDataFimWrap" style="display:none"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data fim</label><input id="calProjDataFim" type="date"/></div>
   </div>
-  <div class="toggle-row" style="margin-bottom:12px">
-    <input type="checkbox" id="calProjMultiDia" onchange="document.getElementById('calProjDataFimWrap').style.display=this.checked?'':'none'"/>
-    <label for="calProjMultiDia">Evento com mais de um dia</label>
-  </div>
+  <div class="toggle-row" style="margin-bottom:12px"><input type="checkbox" id="calProjMultiDia" onchange="document.getElementById('calProjDataFimWrap').style.display=this.checked?'':'none'"/><label for="calProjMultiDia">Evento com mais de um dia</label></div>
   <div class="field"><label>Pasta (opcional)</label><select id="calProjPasta"><option value="">Sem pasta</option></select></div>
   <div style="display:flex;gap:8px">
     <button class="btn btn-sm btn-green" onclick="criarProjetoDoCal()">+ Criar projeto</button>
@@ -453,27 +476,21 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
   </div>
 </div></div>
 
-<!-- MODAL FORM EVENTO CALENDÁRIO -->
+<!-- MODAL FORM EVENTO -->
 <div class="modal-bg" id="modalFormEvento"><div class="modal-box">
   <div class="modal-header"><div class="modal-title" id="modalFormEventoTitulo">Evento</div><button class="modal-close" onclick="fecharModal('modalFormEvento')">×</button></div>
   <input type="hidden" id="formEventoId"/><input type="hidden" id="formEventoData"/>
   <div class="field"><label>Título do evento</label><input id="formEventoTitulo" placeholder="Ex: Show Vivo Rio"/></div>
-  <div class="field"><label>Observação (opcional)</label><textarea id="formEventoObs" placeholder="Notas sobre o evento..." style="min-height:55px"></textarea></div>
+  <div class="field"><label>Observação (opcional)</label><textarea id="formEventoObs" style="min-height:55px"></textarea></div>
   <div class="row">
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto vinculado</label><select id="formEventoProj"><option value="">Nenhum</option></select></div>
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Checklist vinculado</label><select id="formEventoCheck"><option value="">Nenhum</option></select></div>
   </div>
-  <div class="field">
-    <label style="font-size:13px;color:#666;display:block;margin-bottom:6px">Equipe do evento</label>
-    <div id="formEventoEquipe" style="border:0.5px solid #d0d0c8;border-radius:8px;padding:8px;max-height:200px;overflow-y:auto"></div>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:8px">
-    <button class="btn btn-sm btn-green" onclick="salvarEvento()">Salvar</button>
-    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalFormEvento')">Cancelar</button>
-  </div>
+  <div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:6px">Equipe do evento</label><div id="formEventoEquipe" style="border:0.5px solid #d0d0c8;border-radius:8px;padding:8px;max-height:200px;overflow-y:auto"></div></div>
+  <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm btn-green" onclick="salvarEvento()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFormEvento')">Cancelar</button></div>
 </div></div>
 
-<!-- MODAL RESUMO MENSAL PASTA -->
+<!-- MODAL RESUMO PASTA -->
 <div class="modal-bg" id="modalResumoPasta"><div class="modal-box">
   <div class="modal-header"><div class="modal-title" id="modalResumoPastaTitulo">Resumo mensal</div><button class="modal-close" onclick="fecharModal('modalResumoPasta')">×</button></div>
   <p style="font-size:14px;margin-bottom:16px">Selecione o período para o resumo:</p>
@@ -484,10 +501,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Ano</label><input id="resumoAno" type="number" value="2026"/></div>
   </div>
   <input type="hidden" id="resumoPastaId"/>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-sm btn-blue" onclick="gerarPDFResumoPasta()">⬇ Gerar PDF</button>
-    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalResumoPasta')">Cancelar</button>
-  </div>
+  <div style="display:flex;gap:8px"><button class="btn btn-sm btn-blue" onclick="gerarPDFResumoPasta()">⬇ Gerar PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalResumoPasta')">Cancelar</button></div>
 </div></div>
 
 <!-- MODAL CONFIRMAÇÃO -->
@@ -510,8 +524,7 @@ const sb=createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshTo
 let usuario=null,perfil=null,equipamentos=[],projetos=[],categorias=[],freelancers=[],funcoes=[],todasMovs=[],orcamentos=[],pastas=[],checklists=[],calEventos=[],filtroAtivo="Todas",modalProjAtual=null,orcAtual=null;
 let editEqId=null,editCatId=null,editFlId=null,editFuncaoId=null,editProjId=null,editCheckId=null;
 let linhasEq=[],orcLinhas=[],orcProvedoresLinhas=[],orcDadosTemp=null,editOrcId=null,editOrcLinhas=[],editOrcProvLinhas=[];
-let calAno=new Date().getFullYear(),calMes=new Date().getMonth(),diaAtual=null;
-let logoDataUrl=null;
+let calAno=new Date().getFullYear(),calMes=new Date().getMonth(),diaAtual=null,logoDataUrl=null;
 
 const isSupremo=()=>perfil?.supremo===true;
 const isAdmin=()=>perfil?.papel==="admin"||isSupremo();
@@ -526,11 +539,53 @@ function abrirConfirm(msg,onOk){
   abrirModal("modalConfirm");
 }
 
+// ── NÚMERO POR EXTENSO ────────────────────────────────
+function valorPorExtenso(v){
+  const u=['','um','dois','três','quatro','cinco','seis','sete','oito','nove'];
+  const e=['dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+  const d=['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+  const c=['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+  function grp(n){
+    if(n===0)return'';if(n===100)return'cem';
+    const cv=Math.floor(n/100),r=n%100;
+    let res=cv?c[cv]:'';
+    if(cv&&r)res+=' e ';
+    if(r>=10&&r<=19)res+=e[r-10];
+    else{const dv=Math.floor(r/10),uv=r%10;if(dv)res+=d[dv];if(dv&&uv)res+=' e ';if(uv)res+=u[uv];}
+    return res;
+  }
+  const int=Math.floor(v),cts=Math.round((v-int)*100);
+  if(int===0&&cts===0)return'Zero reais';
+  const M=Math.floor(int/1000000),K=Math.floor((int%1000000)/1000),R=int%1000;
+  const pts=[];
+  if(M>0)pts.push(grp(M)+(M===1?' milhão':' milhões'));
+  if(K>0)pts.push(K===1?'mil':grp(K)+' mil');
+  if(R>0)pts.push(grp(R));
+  let res=int===0?'':pts.join(' e ')+(int===1?' real':' reais');
+  if(cts>0){if(res)res+=' e ';res+=grp(cts)+(cts===1?' centavo':' centavos');}
+  return res.charAt(0).toUpperCase()+res.slice(1);
+}
+
 // ── LOGO / PDF ────────────────────────────────────────
 async function carregarLogo(){if(logoDataUrl)return logoDataUrl;try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(r=>{const rd=new FileReader();rd.onloadend=()=>{logoDataUrl=rd.result;r(logoDataUrl);};rd.readAsDataURL(blob);});}catch(e){return null;}}
-async function adicionarHeaderPDF(doc,sub,dt){const logo=await carregarLogo();const r=8,cx=14+r,cy=22;if(logo){try{doc.addImage(logo,'PNG',14,14,16,16);}catch(e){_drawLens(doc,cx,cy,r);}}else{_drawLens(doc,cx,cy,r);}doc.setDrawColor(160,160,160);doc.setLineWidth(0.4);doc.line(cx+r+4,cy-r*0.7,cx+r+4,cy+r*0.7);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TAKEVISION",cx+r+8,cy+1.5);if(sub){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(sub,cx+r+8,cy+6);}if(dt){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(dt,196,cy,{align:"right"});}const y=cy+r+5;doc.setDrawColor(200,200,195);doc.setLineWidth(0.5);doc.line(14,y,196,y);return y+8;}
+async function adicionarHeaderPDF(doc,sub,dt){
+  const logo=await carregarLogo();const r=8,cx=14+r,cy=22;
+  if(logo){try{doc.addImage(logo,'PNG',14,14,16,16);}catch(e){_drawLens(doc,cx,cy,r);}}else{_drawLens(doc,cx,cy,r);}
+  doc.setDrawColor(160,160,160);doc.setLineWidth(0.4);doc.line(cx+r+4,cy-r*0.7,cx+r+4,cy+r*0.7);
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TAKEVISION",cx+r+8,cy+1.5);
+  if(sub){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(sub,cx+r+8,cy+6);}
+  if(dt){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(dt,196,cy,{align:"right"});}
+  const y=cy+r+5;doc.setDrawColor(200,200,195);doc.setLineWidth(0.5);doc.line(14,y,196,y);return y+8;
+}
 function _drawLens(doc,cx,cy,r){doc.setFillColor(15,15,15);doc.circle(cx,cy,r,'F');doc.setDrawColor(255,255,255);doc.setLineWidth(r*0.28);for(let i=0;i<6;i++){const a1=(i*60-10)*Math.PI/180,a2=(i*60+45)*Math.PI/180;doc.line(cx+r*0.2*Math.cos(a1),cy+r*0.2*Math.sin(a1),cx+r*0.8*Math.cos(a2),cy+r*0.8*Math.sin(a2));}doc.setFillColor(15,15,15);doc.circle(cx,cy,r*0.28,'F');}
-function rodapePDF(doc,y){const fy=y+16;doc.setDrawColor(130,130,125);doc.setLineWidth(0.5);doc.line(14,fy,90,fy);doc.line(120,fy,196,fy);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(60,60,60);doc.text("Take Vision Imagem",52,fy+5,{align:"center"});doc.text("Assinatura do contratante",158,fy+5,{align:"center"});}
+function rodapePDF(doc,y){
+  const fy=y+28;
+  doc.setDrawColor(130,130,125);doc.setLineWidth(0.5);
+  doc.line(14,fy,90,fy);doc.line(120,fy,196,fy);
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(60,60,60);
+  doc.text("Take Vision Imagem",52,fy+5,{align:"center"});
+  doc.text("Assinatura do contratante",158,fy+5,{align:"center"});
+}
 
 // ── AUTH ──────────────────────────────────────────────
 let modoLogin=true;
@@ -588,8 +643,14 @@ function fecharModal(id){const el=document.getElementById(id);if(el)el.style.dis
 function esc(s){return(s||"").replace(/'/g,"\\'");}
 function brl(v){return"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function showMsg(txt,erro=false){const el=document.getElementById("appMsg");el.innerHTML=`<div class="${erro?"err":"ok"}">${txt}</div>`;setTimeout(()=>el.innerHTML="",3500);}
-// Verifica se data ds cai no range de um projeto
 function projNoDia(p,ds){if(!p.data_projeto)return false;const fim=p.data_fim||p.data_projeto;return ds>=p.data_projeto&&ds<=fim;}
+function calcTotalOrc(o){
+  const itens=o.orcamento_itens||[];
+  const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
+  const diarias=o.diarias||1,baseDiarias=sub*diarias,baseComMargem=baseDiarias*1.4;
+  const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;
+  return{sub,diarias,baseDiarias,baseComMargem,desc,total};
+}
 function mudarTab(nome,el){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");
   ["estoque","projetos","freelancers","movimentar","historico","calendario","orcamentos","usuarios"].forEach(t=>{document.getElementById("tab-"+t).style.display=t===nome?"block":"none";});
@@ -606,177 +667,43 @@ function renderCalendario(){
   const titulo=document.getElementById("calTitulo");if(!titulo)return;
   titulo.textContent=`${MESES[calMes]} ${calAno}`;
   const grid=document.getElementById("calGrid");if(!grid)return;
-  const primeiroDia=new Date(calAno,calMes,1).getDay();
-  const diasNoMes=new Date(calAno,calMes+1,0).getDate();
+  const primeiroDia=new Date(calAno,calMes,1).getDay(),diasNoMes=new Date(calAno,calMes+1,0).getDate();
   const hoje=new Date(),hd=hoje.getDate(),hm=hoje.getMonth(),ha=hoje.getFullYear();
   let html="";
   for(let i=0;i<primeiroDia;i++)html+=`<div class="cal-day cal-empty"></div>`;
   for(let d=1;d<=diasNoMes;d++){
     const ds=`${calAno}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isH=d===hd&&calMes===hm&&calAno===ha;
-    // Projetos: suporte a range
     const projsD=projetos.filter(p=>projNoDia(p,ds));
     const calEvsD=calEventos.filter(e=>e.data===ds);
-    let evHtml="";
-    // Renderiza projetos com indicador de range
-    evHtml+=projsD.slice(0,2).map(p=>{
-      const isStart=p.data_projeto===ds;
-      const isFim=(p.data_fim||p.data_projeto)===ds;
+    let evHtml=projsD.slice(0,2).map(p=>{
       const isRange=p.data_fim&&p.data_fim!==p.data_projeto;
-      let prefix="";
-      if(isRange){prefix=isStart?"▶ ":isFim?"◀ ":"─ ";}
-      return `<div class="cal-ev cal-ev-proj" title="${p.nome} (${fmtRange(p.data_projeto,p.data_fim)})">
-        <span>${prefix}${p.nome}</span>
-        <div class="cal-ev-actions">
-          <button class="cal-ev-action-btn" style="color:#185fa5" title="Editar" onclick="event.stopPropagation();fecharModal('modalDia');abrirEditarProjeto(${p.id})">✏</button>
-        </div>
-      </div>`;
+      const prefix=isRange?(p.data_projeto===ds?"▶ ":(p.data_fim===ds?"◀ ":"─ ")):"";
+      return `<div class="cal-ev cal-ev-proj" title="${p.nome}"><span>${prefix}${p.nome}</span><div class="cal-ev-actions"><button class="cal-ev-action-btn" style="color:#185fa5" onclick="event.stopPropagation();fecharModal('modalDia');abrirEditarProjeto(${p.id})">✏</button></div></div>`;
     }).join("");
-    // Renderiza eventos do calendário
-    evHtml+=calEvsD.slice(0,2).map(e=>`
-      <div class="cal-ev cal-ev-cal" title="${e.titulo}">
-        <span>${e.titulo}</span>
-        <div class="cal-ev-actions">
-          <button class="cal-ev-action-btn" title="Editar" onclick="event.stopPropagation();abrirFormEvento('${ds}',${e.id})">✏</button>
-          <button class="cal-ev-action-btn" style="color:#a32d2d" title="Excluir" onclick="event.stopPropagation();confirmarExcluirEvento(${e.id})">×</button>
-        </div>
-      </div>`).join("");
-    const mais=projsD.length+calEvsD.length-4;
-    if(mais>0)evHtml+=`<div style="font-size:9px;color:#888">+${mais} mais</div>`;
+    evHtml+=calEvsD.slice(0,2).map(e=>`<div class="cal-ev cal-ev-cal" title="${e.titulo}"><span>${e.titulo}</span><div class="cal-ev-actions"><button class="cal-ev-action-btn" onclick="event.stopPropagation();abrirFormEvento('${ds}',${e.id})">✏</button><button class="cal-ev-action-btn" style="color:#a32d2d" onclick="event.stopPropagation();confirmarExcluirEvento(${e.id})">×</button></div></div>`).join("");
+    const mais=projsD.length+calEvsD.length-4;if(mais>0)evHtml+=`<div style="font-size:9px;color:#888">+${mais} mais</div>`;
     html+=`<div class="cal-day${isH?" cal-day-hoje":""}" onclick="abrirDia('${ds}')"><div class="cal-day-num">${d}</div>${evHtml}</div>`;
   }
   grid.innerHTML=html;
 }
-
-// ── CRIAR PROJETO DO CALENDÁRIO ───────────────────────
-function abrirCriarProjetoCal(ds){
-  fecharModal("modalDia");
-  document.getElementById("calProjNome").value="";
-  document.getElementById("calProjCliente").value="";
-  document.getElementById("calProjData").value=ds||"";
-  document.getElementById("calProjDataFim").value="";
-  document.getElementById("calProjMultiDia").checked=false;
-  document.getElementById("calProjDataFimWrap").style.display="none";
-  const sel=document.getElementById("calProjPasta");
-  sel.innerHTML='<option value="">Sem pasta</option>'+pastas.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
-  abrirModal("modalCriarProjetoCal");
-}
-async function criarProjetoDoCal(){
-  const nome=document.getElementById("calProjNome").value.trim();
-  if(!nome){showMsg("Informe o nome.",true);return;}
-  const cliente=document.getElementById("calProjCliente").value.trim()||null;
-  const data_projeto=document.getElementById("calProjData").value||null;
-  const data_fim=document.getElementById("calProjMultiDia").checked?(document.getElementById("calProjDataFim").value||null):null;
-  const pasta_id=document.getElementById("calProjPasta").value||null;
-  const {error}=await sb.from("projetos").insert({nome,cliente,data_projeto,data_fim,pasta_id:pasta_id?parseInt(pasta_id):null});
-  if(error){showMsg("Erro: "+error.message,true);return;}
-  fecharModal("modalCriarProjetoCal");
-  await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();
-  showMsg("Projeto criado! Aparece em Projetos e no Calendário.");
-  if(data_projeto){diaAtual=data_projeto;setTimeout(()=>abrirDia(data_projeto),300);}
-}
-
-// ── DIA NO CALENDÁRIO ─────────────────────────────────
-function confirmarExcluirEvento(id){
-  const ev=calEventos.find(e=>e.id===id);
-  abrirConfirm(`Excluir o evento "${ev?.titulo||"este evento"}"? Esta ação não pode ser desfeita.`,()=>excluirEvento(id));
-}
+function confirmarExcluirEvento(id){const ev=calEventos.find(e=>e.id===id);abrirConfirm(`Excluir o evento "${ev?.titulo||"este evento"}"?`,()=>excluirEvento(id));}
+function abrirCriarProjetoCal(ds){fecharModal("modalDia");document.getElementById("calProjNome").value="";document.getElementById("calProjCliente").value="";document.getElementById("calProjData").value=ds||"";document.getElementById("calProjDataFim").value="";document.getElementById("calProjMultiDia").checked=false;document.getElementById("calProjDataFimWrap").style.display="none";const sel=document.getElementById("calProjPasta");sel.innerHTML='<option value="">Sem pasta</option>'+pastas.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");abrirModal("modalCriarProjetoCal");}
+async function criarProjetoDoCal(){const nome=document.getElementById("calProjNome").value.trim();if(!nome){showMsg("Informe o nome.",true);return;}const cliente=document.getElementById("calProjCliente").value.trim()||null,data_projeto=document.getElementById("calProjData").value||null,data_fim=document.getElementById("calProjMultiDia").checked?(document.getElementById("calProjDataFim").value||null):null,pasta_id=document.getElementById("calProjPasta").value||null;const {error}=await sb.from("projetos").insert({nome,cliente,data_projeto,data_fim,pasta_id:pasta_id?parseInt(pasta_id):null});if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalCriarProjetoCal");await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();showMsg("Projeto criado!");if(data_projeto){diaAtual=data_projeto;setTimeout(()=>abrirDia(data_projeto),300);}}
 async function abrirDia(ds){
-  diaAtual=ds;
-  const [a,m,d]=ds.split('-');
-  const projsD=projetos.filter(p=>projNoDia(p,ds));
-  const calEvsD=calEventos.filter(e=>e.data===ds);
+  diaAtual=ds;const [a,m,d]=ds.split('-');
+  const projsD=projetos.filter(p=>projNoDia(p,ds)),calEvsD=calEventos.filter(e=>e.data===ds);
   let html="";
-  if(projsD.length){
-    html+=`<div style="font-weight:600;font-size:13px;color:#185fa5;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid #d4e9f7">📁 Projetos</div>`;
-    projsD.forEach(p=>{
-      const rangeStr=fmtRange(p.data_projeto,p.data_fim);
-      html+=`<div class="card" style="margin-bottom:6px;border-color:#d4e9f7">
-        <div class="item-row">
-          <div>
-            <div class="item-name">${p.nome}</div>
-            <div class="item-sub">Cliente: ${p.cliente||"—"} · ${rangeStr}</div>
-            <div class="item-sub"><span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span></div>
-          </div>
-          <div class="actions">
-            ${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirEditarProjeto(${p.id})">Editar</button>`:""}
-            <button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver</button>
-          </div>
-        </div>
-      </div>`;
-    });
-  }
-  if(calEvsD.length){
-    html+=`<div style="font-weight:600;font-size:13px;color:#3b6d11;margin:${projsD.length?'14px':0} 0 8px;padding-bottom:4px;border-bottom:0.5px solid #c8e6c9">📅 Eventos</div>`;
-    calEvsD.forEach(e=>{
-      const cl=checklists.find(c=>c.id===e.checklist_id),proj=projetos.find(p=>p.id===e.projeto_id);
-      html+=`<div class="card" style="margin-bottom:6px;border-color:#c8e6c9">
-        <div class="item-row">
-          <div>
-            <div class="item-name">${e.titulo}</div>
-            ${e.observacao?`<div class="item-sub">Obs: ${e.observacao}</div>`:""}
-            ${proj?`<div class="item-sub">Projeto: ${proj.nome}</div>`:""}
-            ${cl?`<div class="item-sub">Checklist: ${cl.nome}</div>`:""}
-          </div>
-          <div class="actions">
-            <button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirFormEvento('${ds}',${e.id})">Editar</button>
-            <button class="btn btn-sm btn-danger" onclick="fecharModal('modalDia');confirmarExcluirEvento(${e.id})">Excluir</button>
-          </div>
-        </div>
-      </div>`;
-    });
-  }
+  if(projsD.length){html+=`<div style="font-weight:600;font-size:13px;color:#185fa5;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid #d4e9f7">📁 Projetos</div>`;projsD.forEach(p=>{html+=`<div class="card" style="margin-bottom:6px;border-color:#d4e9f7"><div class="item-row"><div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · ${fmtRange(p.data_projeto,p.data_fim)}</div></div><div class="actions">${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirEditarProjeto(${p.id})">Editar</button>`:"<span class='badge badge-gray'>encerrado</span>"}<button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver</button></div></div></div>`;});}
+  if(calEvsD.length){html+=`<div style="font-weight:600;font-size:13px;color:#3b6d11;margin:${projsD.length?'14px':0} 0 8px;padding-bottom:4px;border-bottom:0.5px solid #c8e6c9">📅 Eventos</div>`;calEvsD.forEach(e=>{const cl=checklists.find(c=>c.id===e.checklist_id),proj=projetos.find(p=>p.id===e.projeto_id);html+=`<div class="card" style="margin-bottom:6px;border-color:#c8e6c9"><div class="item-row"><div><div class="item-name">${e.titulo}</div>${e.observacao?`<div class="item-sub">Obs: ${e.observacao}</div>`:""}${proj?`<div class="item-sub">Projeto: ${proj.nome}</div>`:""}${cl?`<div class="item-sub">Checklist: ${cl.nome}</div>`:""}</div><div class="actions"><button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirFormEvento('${ds}',${e.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="fecharModal('modalDia');confirmarExcluirEvento(${e.id})">Excluir</button></div></div></div>`;});}
   if(!projsD.length&&!calEvsD.length)html='<div class="empty">Nenhum projeto ou evento neste dia.</div>';
   document.getElementById("modalDiaTitulo").textContent=`${d}/${m}/${a}`;
   document.getElementById("modalDiaConteudo").innerHTML=html;
   abrirModal("modalDia");
 }
-async function abrirFormEvento(ds,eventoId){
-  fecharModal("modalDia");
-  const ev=eventoId?calEventos.find(e=>e.id===eventoId):null;
-  document.getElementById("formEventoId").value=eventoId||"";
-  document.getElementById("formEventoData").value=ds;
-  document.getElementById("formEventoTitulo").value=ev?.titulo||"";
-  document.getElementById("formEventoObs").value=ev?.observacao||"";
-  document.getElementById("modalFormEventoTitulo").textContent=eventoId?"Editar evento":"Novo evento";
-  document.getElementById("formEventoProj").innerHTML='<option value="">Nenhum</option>'+projetos.map(p=>`<option value="${p.id}" ${ev?.projeto_id===p.id?"selected":""}>${p.nome}</option>`).join("");
-  document.getElementById("formEventoCheck").innerHTML='<option value="">Nenhum</option>'+checklists.map(c=>`<option value="${c.id}" ${ev?.checklist_id===c.id?"selected":""}>${c.nome}</option>`).join("");
-  let equipeExistente=[];
-  if(eventoId){const {data}=await sb.from("calendario_equipe").select("*").eq("evento_id",eventoId);equipeExistente=data||[];}
-  const equipeMap=new Map(equipeExistente.map(e=>[e.freelancer_id,e.funcao_no_evento]));
-  document.getElementById("formEventoEquipe").innerHTML=freelancers.map(f=>{
-    const checked=equipeMap.has(f.id),funcao=equipeMap.get(f.id)||(f.funcoes_lista||[])[0]||"";
-    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid #f1efe8"><input type="checkbox" id="calfl-${f.id}" value="${f.id}" ${checked?"checked":""} style="width:auto"/><label for="calfl-${f.id}" style="flex:1;font-size:13px">${f.nome}</label><input id="calfunc-${f.id}" type="text" value="${funcao}" placeholder="Função" style="width:120px;font-size:12px;padding:4px 8px"/></div>`;
-  }).join("")||'<div style="color:#888;font-size:13px">Nenhum freelancer cadastrado.</div>';
-  abrirModal("modalFormEvento");
-}
-async function salvarEvento(){
-  const idStr=document.getElementById("formEventoId").value,ds=document.getElementById("formEventoData").value;
-  const titulo=document.getElementById("formEventoTitulo").value.trim();
-  if(!titulo){showMsg("Informe o título do evento.",true);return;}
-  const obs=document.getElementById("formEventoObs").value.trim();
-  const projId=document.getElementById("formEventoProj").value||null;
-  const checkId=document.getElementById("formEventoCheck").value||null;
-  let eventoId=idStr?parseInt(idStr):null;
-  if(eventoId){
-    await sb.from("calendario_eventos").update({titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).eq("id",eventoId);
-    await sb.from("calendario_equipe").delete().eq("evento_id",eventoId);
-  } else {
-    const {data:ev,error}=await sb.from("calendario_eventos").insert({data:ds,titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).select().single();
-    if(error){showMsg("Erro: "+error.message,true);return;}eventoId=ev.id;
-  }
-  const cbs=document.querySelectorAll("#formEventoEquipe input[type=checkbox]:checked");
-  const equipe=Array.from(cbs).map(cb=>({evento_id:eventoId,freelancer_id:parseInt(cb.value),funcao_no_evento:document.getElementById(`calfunc-${cb.value}`)?.value||null}));
-  if(equipe.length)await sb.from("calendario_equipe").insert(equipe);
-  fecharModal("modalFormEvento");
-  await carregarCalEventos();renderCalendario();showMsg("Evento salvo!");
-  diaAtual=ds;setTimeout(()=>abrirDia(ds),300);
-}
-async function excluirEvento(id){
-  await sb.from("calendario_equipe").delete().eq("evento_id",id);
-  await sb.from("calendario_eventos").delete().eq("id",id);
-  await carregarCalEventos();renderCalendario();fecharModal("modalDia");showMsg("Evento excluído.");
-}
+async function abrirFormEvento(ds,eventoId){fecharModal("modalDia");const ev=eventoId?calEventos.find(e=>e.id===eventoId):null;document.getElementById("formEventoId").value=eventoId||"";document.getElementById("formEventoData").value=ds;document.getElementById("formEventoTitulo").value=ev?.titulo||"";document.getElementById("formEventoObs").value=ev?.observacao||"";document.getElementById("modalFormEventoTitulo").textContent=eventoId?"Editar evento":"Novo evento";document.getElementById("formEventoProj").innerHTML='<option value="">Nenhum</option>'+projetos.map(p=>`<option value="${p.id}" ${ev?.projeto_id===p.id?"selected":""}>${p.nome}</option>`).join("");document.getElementById("formEventoCheck").innerHTML='<option value="">Nenhum</option>'+checklists.map(c=>`<option value="${c.id}" ${ev?.checklist_id===c.id?"selected":""}>${c.nome}</option>`).join("");let equipeExistente=[];if(eventoId){const {data}=await sb.from("calendario_equipe").select("*").eq("evento_id",eventoId);equipeExistente=data||[];}const equipeMap=new Map(equipeExistente.map(e=>[e.freelancer_id,e.funcao_no_evento]));document.getElementById("formEventoEquipe").innerHTML=freelancers.map(f=>{const checked=equipeMap.has(f.id),funcao=equipeMap.get(f.id)||(f.funcoes_lista||[])[0]||"";return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid #f1efe8"><input type="checkbox" id="calfl-${f.id}" value="${f.id}" ${checked?"checked":""} style="width:auto"/><label for="calfl-${f.id}" style="flex:1;font-size:13px">${f.nome}</label><input id="calfunc-${f.id}" type="text" value="${funcao}" placeholder="Função" style="width:120px;font-size:12px;padding:4px 8px"/></div>`;}).join("")||'<div style="color:#888;font-size:13px">Nenhum freelancer cadastrado.</div>';abrirModal("modalFormEvento");}
+async function salvarEvento(){const idStr=document.getElementById("formEventoId").value,ds=document.getElementById("formEventoData").value,titulo=document.getElementById("formEventoTitulo").value.trim();if(!titulo){showMsg("Informe o título do evento.",true);return;}const obs=document.getElementById("formEventoObs").value.trim(),projId=document.getElementById("formEventoProj").value||null,checkId=document.getElementById("formEventoCheck").value||null;let eventoId=idStr?parseInt(idStr):null;if(eventoId){await sb.from("calendario_eventos").update({titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).eq("id",eventoId);await sb.from("calendario_equipe").delete().eq("evento_id",eventoId);}else{const {data:ev,error}=await sb.from("calendario_eventos").insert({data:ds,titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).select().single();if(error){showMsg("Erro: "+error.message,true);return;}eventoId=ev.id;}const cbs=document.querySelectorAll("#formEventoEquipe input[type=checkbox]:checked");const equipe=Array.from(cbs).map(cb=>({evento_id:eventoId,freelancer_id:parseInt(cb.value),funcao_no_evento:document.getElementById(`calfunc-${cb.value}`)?.value||null}));if(equipe.length)await sb.from("calendario_equipe").insert(equipe);fecharModal("modalFormEvento");await carregarCalEventos();renderCalendario();showMsg("Evento salvo!");diaAtual=ds;setTimeout(()=>abrirDia(ds),300);}
+async function excluirEvento(id){await sb.from("calendario_equipe").delete().eq("evento_id",id);await sb.from("calendario_eventos").delete().eq("id",id);await carregarCalEventos();renderCalendario();fecharModal("modalDia");showMsg("Evento excluído.");}
 
 // ── RESUMO MENSAL PASTA ───────────────────────────────
 function abrirResumoPasta(pid){const p=pastas.find(x=>x.id===pid);document.getElementById("modalResumoPastaTitulo").textContent=`Resumo mensal — ${p.nome}`;document.getElementById("resumoPastaId").value=pid;document.getElementById("resumoMes").value=new Date().getMonth();document.getElementById("resumoAno").value=new Date().getFullYear();abrirModal("modalResumoPasta");}
@@ -838,88 +765,17 @@ function confirmarExcluirPasta(id){const pasta=pastas.find(p=>p.id===id);abrirCo
 async function excluirPasta(id){await sb.from("projetos").update({pasta_id:null}).eq("pasta_id",id);await sb.from("pastas_projeto").delete().eq("id",id);await carregarPastas();await carregarProjetos();renderPastas();showMsg("Pasta excluída.");}
 
 // ── PROJETOS ──────────────────────────────────────────
-function renderProjetoCard(p){
-  const rangeStr=fmtRange(p.data_projeto,p.data_fim);
-  return `<div class="card"><div class="item-row">
-    <div>
-      <div class="item-name">${p.nome}</div>
-      <div class="item-sub">Cliente: ${p.cliente||"—"} · ${rangeStr}</div>
-    </div>
-    <div class="actions">
-      <span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span>
-      <button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver/PDF</button>
-      <button class="btn btn-sm btn-outline" onclick="abrirFreelancersProj(${p.id})">Equipe</button>
-      ${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="abrirEditarProjeto(${p.id})">Editar</button><button class="btn btn-sm btn-outline" onclick="encerrarProjeto(${p.id})">Encerrar</button>`:""}
-      <button class="btn btn-sm btn-danger" onclick="confirmarExcluirProjeto(${p.id})">Excluir</button>
-    </div>
-  </div></div>`;
-}
-async function criarProjeto(){
-  const nome=document.getElementById("projNome").value.trim(),cliente=document.getElementById("projCliente").value.trim();
-  const data_projeto=document.getElementById("projData").value||null;
-  const isMulti=document.getElementById("projMultiDia").checked;
-  const data_fim=isMulti?(document.getElementById("projDataFim").value||null):null;
-  const pasta_id=document.getElementById("projPasta").value||null;
-  if(!nome)return;
-  const {error}=await sb.from("projetos").insert({nome,cliente:cliente||null,data_projeto,data_fim,pasta_id:pasta_id?parseInt(pasta_id):null});
-  if(error){showMsg("Erro: "+error.message,true);return;}
-  document.getElementById("projNome").value="";document.getElementById("projCliente").value="";
-  document.getElementById("projMultiDia").checked=false;document.getElementById("projDataFimWrap").style.display="none";
-  await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();
-  showMsg("Projeto criado! Aparece também no Calendário.");
-}
-function abrirEditarProjeto(id){
-  const p=projetos.find(x=>x.id===id);editProjId=id;
-  document.getElementById("editProjNome").value=p.nome;
-  document.getElementById("editProjCliente").value=p.cliente||"";
-  document.getElementById("editProjData").value=p.data_projeto||"";
-  const temFim=!!(p.data_fim&&p.data_fim!==p.data_projeto);
-  document.getElementById("editProjMultiDia").checked=temFim;
-  document.getElementById("editProjDataFimWrap").style.display=temFim?"":"none";
-  document.getElementById("editProjDataFim").value=p.data_fim||"";
-  preencherSelectPastas();document.getElementById("editProjPasta").value=p.pasta_id||"";
-  abrirModal("modalEditProj");
-}
-async function salvarProjeto(){
-  const nome=document.getElementById("editProjNome").value.trim(),cliente=document.getElementById("editProjCliente").value.trim()||null;
-  const data_projeto=document.getElementById("editProjData").value||null;
-  const isMulti=document.getElementById("editProjMultiDia").checked;
-  const data_fim=isMulti?(document.getElementById("editProjDataFim").value||null):null;
-  const pasta_id=document.getElementById("editProjPasta").value||null;
-  if(!nome)return;
-  await sb.from("projetos").update({nome,cliente,data_projeto,data_fim,pasta_id:pasta_id?parseInt(pasta_id):null}).eq("id",editProjId);
-  fecharModal("modalEditProj");await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();showMsg("Projeto atualizado!");
-}
+function renderProjetoCard(p){const rangeStr=fmtRange(p.data_projeto,p.data_fim);return `<div class="card"><div class="item-row"><div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · ${rangeStr}</div></div><div class="actions"><span class="badge ${p.status==="ativo"?"badge-info":"badge-gray"}">${p.status}</span><button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver/PDF</button><button class="btn btn-sm btn-outline" onclick="abrirFreelancersProj(${p.id})">Equipe</button>${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="abrirEditarProjeto(${p.id})">Editar</button><button class="btn btn-sm btn-outline" onclick="encerrarProjeto(${p.id})">Encerrar</button>`:""}<button class="btn btn-sm btn-danger" onclick="confirmarExcluirProjeto(${p.id})">Excluir</button></div></div></div>`;}
+async function criarProjeto(){const nome=document.getElementById("projNome").value.trim(),cliente=document.getElementById("projCliente").value.trim(),data_projeto=document.getElementById("projData").value||null,isMulti=document.getElementById("projMultiDia").checked,data_fim=isMulti?(document.getElementById("projDataFim").value||null):null,pasta_id=document.getElementById("projPasta").value||null;if(!nome)return;const {error}=await sb.from("projetos").insert({nome,cliente:cliente||null,data_projeto,data_fim,pasta_id:pasta_id?parseInt(pasta_id):null});if(error){showMsg("Erro: "+error.message,true);return;}document.getElementById("projNome").value="";document.getElementById("projCliente").value="";document.getElementById("projMultiDia").checked=false;document.getElementById("projDataFimWrap").style.display="none";await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();showMsg("Projeto criado!");}
+function abrirEditarProjeto(id){const p=projetos.find(x=>x.id===id);editProjId=id;document.getElementById("editProjNome").value=p.nome;document.getElementById("editProjCliente").value=p.cliente||"";document.getElementById("editProjData").value=p.data_projeto||"";const temFim=!!(p.data_fim&&p.data_fim!==p.data_projeto);document.getElementById("editProjMultiDia").checked=temFim;document.getElementById("editProjDataFimWrap").style.display=temFim?"":"none";document.getElementById("editProjDataFim").value=p.data_fim||"";preencherSelectPastas();document.getElementById("editProjPasta").value=p.pasta_id||"";abrirModal("modalEditProj");}
+async function salvarProjeto(){const nome=document.getElementById("editProjNome").value.trim(),cliente=document.getElementById("editProjCliente").value.trim()||null,data_projeto=document.getElementById("editProjData").value||null,isMulti=document.getElementById("editProjMultiDia").checked,data_fim=isMulti?(document.getElementById("editProjDataFim").value||null):null,pasta_id=document.getElementById("editProjPasta").value||null;if(!nome)return;await sb.from("projetos").update({nome,cliente,data_projeto,data_fim,pasta_id:pasta_id?parseInt(pasta_id):null}).eq("id",editProjId);fecharModal("modalEditProj");await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();showMsg("Projeto atualizado!");}
 async function encerrarProjeto(id){await sb.from("projetos").update({status:"encerrado"}).eq("id",id);await carregarProjetos();renderPastas();preencherSelects();renderCalendario();showMsg("Projeto encerrado.");}
 function confirmarExcluirProjeto(id){const p=projetos.find(x=>x.id===id);abrirConfirm(`Excluir o projeto "${p?.nome}"? Movimentações vinculadas também serão removidas.`,()=>excluirProjeto(id));}
 async function excluirProjeto(id){await sb.from("projeto_freelancers").delete().eq("projeto_id",id);await sb.from("movimentacoes").delete().eq("projeto_id",id);const {error}=await sb.from("projetos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarProjetos();await carregarTodasMovs();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();showMsg("Projeto excluído.");}
 async function abrirFreelancersProj(projId){const proj=projetos.find(p=>p.id===projId);document.getElementById("modalFlProjTitulo").textContent=`Equipe — ${proj.nome}`;const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);const vinculados=new Set((links||[]).map(l=>l.freelancer_id));document.getElementById("modalFlProjConteudo").innerHTML=`<div class="check-list">${freelancers.map(f=>`<label class="check-item"><input type="checkbox" ${vinculados.has(f.id)?"checked":""} onchange="toggleFreelancer(${projId},${f.id},this.checked)"/><span>${f.nome} <span style="color:#888;font-size:12px">· ${(f.funcoes_lista||[]).join(", ")||"—"}</span></span></label>`).join("")||"<div style='color:#888'>Nenhum.</div>"}</div>`;abrirModal("modalFlProj");}
 async function toggleFreelancer(projId,flId,checked){if(checked)await sb.from("projeto_freelancers").upsert({projeto_id:projId,freelancer_id:flId});else await sb.from("projeto_freelancers").delete().eq("projeto_id",projId).eq("freelancer_id",flId);}
-async function abrirModalProjeto(projId){
-  const proj=projetos.find(p=>p.id===projId);modalProjAtual=proj;
-  document.getElementById("modalProjTitulo").textContent=proj.nome;
-  const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);
-  const vinculados=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);
-  const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
-  const alocMap={};(movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
-  const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);
-  const rangeStr=fmtRange(proj.data_projeto,proj.data_fim);
-  document.getElementById("modalProjConteudo").innerHTML=`<div style="font-size:13px;color:#888;margin-bottom:4px">Cliente: <strong style="color:#1a1a1a">${proj.cliente||"—"}</strong></div><div style="font-size:13px;color:#888;margin-bottom:1rem">Data: <strong style="color:#1a1a1a">${rangeStr}</strong> · Status: <strong>${proj.status}</strong></div><div style="font-weight:500;margin-bottom:8px">Equipe</div>${vinculados.length?vinculados.map(f=>`<div style="font-size:14px;padding:4px 0;border-bottom:0.5px solid #f1efe8">${f.nome} <span style="color:#888;font-size:12px">· ${(f.funcoes_lista||[]).join(", ")||"—"}</span></div>`).join(""):"<div style='color:#888;font-size:13px;margin-bottom:8px'>Nenhum.</div>"}<div style="font-weight:500;margin:1rem 0 8px">Equipamentos alocados</div>${eqsAloc.length?eqsAloc.map(({eq,qtd})=>`<div style="font-size:14px;padding:4px 0;border-bottom:0.5px solid #f1efe8">${eq.nome} <span style="color:#888">× ${qtd}</span></div>`).join(""):"<div style='color:#888;font-size:13px'>Nenhum.</div>"}`;
-  abrirModal("modalProj");
-}
-async function gerarPDFProjeto(){
-  if(!modalProjAtual)return;const proj=modalProjAtual,{jsPDF}=window.jspdf,doc=new jsPDF();
-  let y=await adicionarHeaderPDF(doc,"Relatório de Projeto",`Gerado em ${new Date().toLocaleString("pt-BR")}`);
-  doc.setFont("helvetica","bold");doc.setFontSize(14);doc.setTextColor(15,15,15);doc.text(proj.nome,14,y);y+=7;
-  doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(80,80,80);doc.text(`Cliente: ${proj.cliente||"—"}`,14,y);y+=6;doc.text(`Data: ${fmtRange(proj.data_projeto,proj.data_fim)}    Status: ${proj.status}`,14,y);y+=12;
-  const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",proj.id);const vinc=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);
-  doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipe",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
-  if(vinc.length){vinc.forEach(f=>{doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(f.nome,16,y);doc.setTextColor(120);doc.text(`${(f.funcoes_lista||[]).join(", ")||"—"}   Tel: ${f.telefone||"—"}   RG: ${f.rg||"—"}`,80,y);y+=7;if(y>265){doc.addPage();y=20;}});}else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}
-  y+=4;const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",proj.id);const alocMap={};(movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);
-  doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipamentos",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
-  if(eqsAloc.length){eqsAloc.forEach(({eq,qtd})=>{doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(eq.nome,16,y);doc.setTextColor(120);doc.text(`× ${qtd}`,150,y);y+=7;if(y>265){doc.addPage();y=20;}});}else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}
-  rodapePDF(doc,y);doc.save(`${proj.nome.replace(/\s+/g,"-")}.pdf`);
-}
+async function abrirModalProjeto(projId){const proj=projetos.find(p=>p.id===projId);modalProjAtual=proj;document.getElementById("modalProjTitulo").textContent=proj.nome;const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);const vinculados=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);const alocMap={};(movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);document.getElementById("modalProjConteudo").innerHTML=`<div style="font-size:13px;color:#888;margin-bottom:4px">Cliente: <strong style="color:#1a1a1a">${proj.cliente||"—"}</strong></div><div style="font-size:13px;color:#888;margin-bottom:1rem">Data: <strong style="color:#1a1a1a">${fmtRange(proj.data_projeto,proj.data_fim)}</strong> · Status: <strong>${proj.status}</strong></div><div style="font-weight:500;margin-bottom:8px">Equipe</div>${vinculados.length?vinculados.map(f=>`<div style="font-size:14px;padding:4px 0;border-bottom:0.5px solid #f1efe8">${f.nome} <span style="color:#888;font-size:12px">· ${(f.funcoes_lista||[]).join(", ")||"—"}</span></div>`).join(""):"<div style='color:#888;font-size:13px;margin-bottom:8px'>Nenhum.</div>"}<div style="font-weight:500;margin:1rem 0 8px">Equipamentos alocados</div>${eqsAloc.length?eqsAloc.map(({eq,qtd})=>`<div style="font-size:14px;padding:4px 0;border-bottom:0.5px solid #f1efe8">${eq.nome} <span style="color:#888">× ${qtd}</span></div>`).join(""):"<div style='color:#888;font-size:13px'>Nenhum.</div>"}`;abrirModal("modalProj");}
+async function gerarPDFProjeto(){if(!modalProjAtual)return;const proj=modalProjAtual,{jsPDF}=window.jspdf,doc=new jsPDF();let y=await adicionarHeaderPDF(doc,"Relatório de Projeto",`Gerado em ${new Date().toLocaleString("pt-BR")}`);doc.setFont("helvetica","bold");doc.setFontSize(14);doc.setTextColor(15,15,15);doc.text(proj.nome,14,y);y+=7;doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(80,80,80);doc.text(`Cliente: ${proj.cliente||"—"}`,14,y);y+=6;doc.text(`Data: ${fmtRange(proj.data_projeto,proj.data_fim)}    Status: ${proj.status}`,14,y);y+=12;const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",proj.id);const vinc=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipe",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;if(vinc.length){vinc.forEach(f=>{doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(f.nome,16,y);doc.setTextColor(120);doc.text(`${(f.funcoes_lista||[]).join(", ")||"—"}   Tel: ${f.telefone||"—"}   RG: ${f.rg||"—"}`,80,y);y+=7;if(y>265){doc.addPage();y=20;}});}else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}y+=4;const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",proj.id);const alocMap={};(movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipamentos",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;if(eqsAloc.length){eqsAloc.forEach(({eq,qtd})=>{doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(eq.nome,16,y);doc.setTextColor(120);doc.text(`× ${qtd}`,150,y);y+=7;if(y>265){doc.addPage();y=20;}});}else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}rodapePDF(doc,y);doc.save(`${proj.nome.replace(/\s+/g,"-")}.pdf`);}
 
 // ── FUNÇÕES / FREELANCERS ─────────────────────────────
 function renderFuncoesCheckboxes(cid,sel=[]){const c=document.getElementById(cid);if(!c)return;c.innerHTML=funcoes.map(f=>`<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" style="width:auto" value="${f.nome}" ${sel.includes(f.nome)?"checked":""}/>${f.nome}</label>`).join("")||"<span style='color:#888;font-size:13px'>Nenhuma função.</span>";}
@@ -959,63 +815,156 @@ async function renderHistorico(){if(!todasMovs.length)await carregarTodasMovs();
 
 // ── ORÇAMENTOS ────────────────────────────────────────
 function iniciarOrcLista(){orcLinhas=[];orcProvedoresLinhas=[];document.getElementById("orcItensLista").innerHTML="";document.getElementById("orcProvedoresLista").innerHTML="";adicionarItemOrc();adicionarProvedor();atualizarSubtotal();}
-function adicionarItemOrc(nomeEq="",preco=0,qtd=1){const id=Date.now()+Math.random();orcLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`orc-linha-${id}`;const eqOpts=equipamentos.map(e=>`<option value="${e.nome}" ${e.nome===nomeEq?"selected":""}>${e.nome}</option>`).join("");div.innerHTML=`<select id="orc-desc-${id}" style="flex:3;min-width:140px" onchange="preencherPrecoBase(${id})"><option value="">Selecione...</option>${eqOpts}</select><input id="orc-qtd-${id}" type="number" min="1" value="${qtd}" style="width:55px;flex:none" oninput="atualizarSubtotal()"/><input id="orc-preco-${id}" type="number" min="0" step="0.01" value="${preco}" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotal()"/><button class="btn btn-sm btn-danger" onclick="removerItemOrc(${id})">×</button>`;document.getElementById("orcItensLista").appendChild(div);atualizarSubtotal();}
-function preencherPrecoBase(id){const sel=document.getElementById(`orc-desc-${id}`),preco=document.getElementById(`orc-preco-${id}`);if(!sel||!preco)return;const eq=equipamentos.find(e=>e.nome===sel.value);if(eq&&eq.preco_base)preco.value=eq.preco_base;atualizarSubtotal();}
-function removerItemOrc(id){orcLinhas=orcLinhas.filter(x=>x!==id);const el=document.getElementById(`orc-linha-${id}`);if(el)el.remove();atualizarSubtotal();}
-function adicionarProvedor(){const id=Date.now()+Math.random();orcProvedoresLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`orc-prov-${id}`;const funcOpts=funcoes.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join("");div.innerHTML=`<select id="orc-pfunc-${id}" style="flex:2;min-width:120px" onchange="atualizarSubtotal()"><option value="">Função...</option>${funcOpts}</select><input id="orc-pqtd-${id}" type="number" min="1" value="1" style="width:55px;flex:none" oninput="atualizarSubtotal()"/><input id="orc-ppreco-${id}" type="number" min="0" step="0.01" value="0" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotal()"/><button class="btn btn-sm btn-danger" onclick="removerProvedor(${id})">×</button>`;document.getElementById("orcProvedoresLista").appendChild(div);}
-function removerProvedor(id){orcProvedoresLinhas=orcProvedoresLinhas.filter(x=>x!==id);const el=document.getElementById(`orc-prov-${id}`);if(el)el.remove();atualizarSubtotal();}
-function calcSubtotalEq(){return orcLinhas.reduce((s,id)=>{const qtd=parseFloat(document.getElementById(`orc-qtd-${id}`)?.value)||1,preco=parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0;return s+qtd*preco;},0);}
-function calcSubtotalProv(){return orcProvedoresLinhas.reduce((s,id)=>{const qtd=parseFloat(document.getElementById(`orc-pqtd-${id}`)?.value)||0,preco=parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0;return s+qtd*preco;},0);}
-function atualizarSubtotal(){const eq=calcSubtotalEq(),prov=calcSubtotalProv();["previewSubtotalEq","previewSubtotalProv","previewSubtotal"].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=brl(i===0?eq:i===1?prov:eq+prov);});}
-function finalizarOrcamento(){const titulo=document.getElementById("orcTitulo").value.trim();if(!titulo){showMsg("Informe o título.",true);return;}const sub=calcSubtotalEq()+calcSubtotalProv();document.getElementById("descontoValor").value=0;document.getElementById("descontoPreview").innerHTML=`Subtotal: <strong>${brl(sub)}</strong>`;orcDadosTemp={titulo,cliente:document.getElementById("orcCliente").value.trim(),local:document.getElementById("orcLocal").value.trim(),descricao:document.getElementById("orcDescricao").value.trim()};abrirModal("modalDesconto");}
-function atualizarPreviewDesconto(){const pct=parseFloat(document.getElementById("descontoValor").value)||0,sub=calcSubtotalEq()+calcSubtotalProv(),desc=sub*(pct/100),total=sub-desc;document.getElementById("descontoPreview").innerHTML=`Subtotal: <strong>${brl(sub)}</strong> · Desconto (${pct}%): <strong>-${brl(desc)}</strong> · Total: <strong>${brl(total)}</strong>`;}
-async function confirmarOrcamento(comDesconto){const pct=comDesconto?parseFloat(document.getElementById("descontoValor").value)||0:0;const {titulo,cliente,local,descricao}=orcDadosTemp;const {data:orc,error}=await sb.from("orcamentos").insert({titulo,cliente:cliente||null,local:local||null,descricao_servico:descricao||null,desconto:pct,criado_por:usuario.id}).select().single();if(error){showMsg("Erro: "+error.message,true);return;}const itensEq=orcLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-desc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-qtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0,tipo:"equipamento"})).filter(i=>i.descricao);const itensProv=orcProvedoresLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-pfunc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-pqtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0,tipo:"provedor"})).filter(i=>i.descricao);const todos=[...itensEq,...itensProv];if(todos.length)await sb.from("orcamento_itens").insert(todos);fecharModal("modalDesconto");await carregarOrcamentos();renderOrcamentos();["orcTitulo","orcCliente","orcLocal","orcDescricao"].forEach(id=>document.getElementById(id).value="");iniciarOrcLista();showMsg("Orçamento salvo!");}
-function calcTotalOrc(o){const itens=o.orcamento_itens||[];const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);const diarias=o.diarias||1;const base=sub*diarias*1.4;const desc=base*((o.desconto||0)/100);return{sub,diarias,base,desc,total:base-desc};}
-function renderOrcamentos(){if(!isSupremo())return;document.getElementById("listaOrcamentos").innerHTML=orcamentos.map(o=>{const {diarias,base,desc,total}=calcTotalOrc(o);const dt=new Date(o.criado_em).toLocaleDateString("pt-BR");const dtEv=o.data_evento?` · Evento: ${fmtDt(o.data_evento)}`:"";return `<div class="card"><div class="item-row"><div><div class="item-name">${o.titulo}</div><div class="item-sub">Cliente: ${o.cliente||"—"} · ${dt}${dtEv}${diarias>1?` · ${diarias} diárias`:""}</div></div><div class="actions"><span style="font-size:13px;font-weight:500;color:#3b6d11">${brl(total)}</span>${o.desconto>0?`<span class="badge badge-warn">${o.desconto}% desc.</span>`:""}<button class="btn btn-sm btn-outline" onclick="verOrcamento(${o.id})">Ver/PDF</button><button class="btn btn-sm btn-edit" onclick="editarOrcamento(${o.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="confirmarExcluirOrcamento(${o.id})">Excluir</button></div></div></div>`;}).join("")||'<div class="empty">Nenhum orçamento.</div>';}
+
+function calcSubtotalEq(){return orcLinhas.reduce((s,id)=>{const q=parseFloat(document.getElementById(`orc-qtd-${id}`)?.value)||1,p=parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0;return s+q*p;},0);}
+function calcSubtotalProv(){return orcProvedoresLinhas.reduce((s,id)=>{const q=parseFloat(document.getElementById(`orc-pqtd-${id}`)?.value)||0,p=parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0;return s+q*p;},0);}
+
+function atualizarSubtotal(){
+  const eq=calcSubtotalEq(),prov=calcSubtotalProv(),sub=eq+prov;
+  const diarias=Math.max(1,parseInt(document.getElementById("orcDiarias")?.value)||1);
+  const comDiarias=sub*diarias,comMargem=comDiarias*1.4;
+  const elEq=document.getElementById("previewSubtotalEq"),elProv=document.getElementById("previewSubtotalProv");
+  const elSub=document.getElementById("previewSubtotal"),elDn=document.getElementById("previewDiariasNum");
+  const elDrow=document.getElementById("previewDiariasRow"),elCD=document.getElementById("previewComDiarias");
+  const elMargem=document.getElementById("previewComMargem");
+  if(elEq)elEq.textContent=brl(eq);if(elProv)elProv.textContent=brl(prov);if(elSub)elSub.textContent=brl(sub);
+  if(elDrow)elDrow.style.display=diarias>1?"":"none";
+  if(elDn)elDn.textContent=diarias;if(elCD)elCD.textContent=brl(comDiarias);
+  if(elMargem)elMargem.textContent=brl(comMargem);
+}
+
+function finalizarOrcamento(){
+  const titulo=document.getElementById("orcTitulo").value.trim();
+  if(!titulo){showMsg("Informe o título.",true);return;}
+  const eq=calcSubtotalEq(),prov=calcSubtotalProv(),sub=eq+prov;
+  const diarias=Math.max(1,parseInt(document.getElementById("orcDiarias")?.value)||1);
+  const baseDiarias=sub*diarias,baseComMargem=baseDiarias*1.4;
+  orcDadosTemp={titulo,cliente:document.getElementById("orcCliente").value.trim(),local:document.getElementById("orcLocal").value.trim(),descricao:document.getElementById("orcDescricao").value.trim(),data_evento:document.getElementById("orcDataEvento")?.value||null,diarias,sub,baseDiarias,baseComMargem};
+  document.getElementById("descontoValor").value=0;
+  atualizarPreviewDesconto();
+  abrirModal("modalDesconto");
+}
+
+function atualizarPreviewDesconto(){
+  if(!orcDadosTemp)return;
+  const pct=parseFloat(document.getElementById("descontoValor").value)||0;
+  const {sub,diarias,baseDiarias,baseComMargem}=orcDadosTemp;
+  const desc=baseComMargem*(pct/100),total=baseComMargem-desc;
+  document.getElementById("descontoPreview").innerHTML=`
+    <div style="background:#f5f5f0;border-radius:8px;padding:12px 14px;font-size:13px;line-height:2.2">
+      <div style="display:flex;justify-content:space-between"><span>Subtotal dos itens</span><strong>${brl(sub)}</strong></div>
+      ${diarias>1?`<div style="display:flex;justify-content:space-between"><span>× ${diarias} diária${diarias>1?"s":""}</span><strong>${brl(baseDiarias)}</strong></div>`:""}
+      <div style="display:flex;justify-content:space-between;color:#854f0b"><span>+ 40% margem comercial</span><strong>+${brl(baseComMargem-baseDiarias)}</strong></div>
+      <div style="display:flex;justify-content:space-between;border-top:0.5px solid #d0d0c8;padding-top:6px;margin-top:4px"><span>Base de negociação</span><strong>${brl(baseComMargem)}</strong></div>
+      ${pct>0?`<div style="display:flex;justify-content:space-between;color:#639922"><span>− Desconto (${pct}%)</span><strong>−${brl(desc)}</strong></div>`:""}
+      <div style="display:flex;justify-content:space-between;border-top:0.5px solid #d0d0c8;padding-top:6px;margin-top:4px;font-size:15px"><strong>Total</strong><strong style="color:#3b6d11">${brl(total)}</strong></div>
+    </div>`;
+}
+
+async function confirmarOrcamento(comDesconto){
+  const pct=comDesconto?parseFloat(document.getElementById("descontoValor").value)||0:0;
+  const {titulo,cliente,local,descricao,data_evento,diarias}=orcDadosTemp;
+  const {data:orc,error}=await sb.from("orcamentos").insert({titulo,cliente:cliente||null,local:local||null,descricao_servico:descricao||null,desconto:pct,diarias:diarias||1,data_evento:data_evento||null,criado_por:usuario.id}).select().single();
+  if(error){showMsg("Erro: "+error.message,true);return;}
+  const itensEq=orcLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-desc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-qtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0,tipo:"equipamento"})).filter(i=>i.descricao);
+  const itensProv=orcProvedoresLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-pfunc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-pqtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0,tipo:"provedor"})).filter(i=>i.descricao);
+  const todos=[...itensEq,...itensProv];if(todos.length)await sb.from("orcamento_itens").insert(todos);
+  fecharModal("modalDesconto");await carregarOrcamentos();renderOrcamentos();
+  ["orcTitulo","orcCliente","orcLocal","orcDescricao"].forEach(id=>document.getElementById(id).value="");
+  if(document.getElementById("orcDataEvento"))document.getElementById("orcDataEvento").value="";
+  if(document.getElementById("orcDiarias"))document.getElementById("orcDiarias").value=1;
+  iniciarOrcLista();showMsg("Orçamento salvo!");
+}
+
+function renderOrcamentos(){
+  if(!isSupremo())return;
+  document.getElementById("listaOrcamentos").innerHTML=orcamentos.map(o=>{
+    const {diarias,baseComMargem,desc,total}=calcTotalOrc(o);
+    const dt=new Date(o.criado_em).toLocaleDateString("pt-BR");
+    const dtEv=o.data_evento?` · Evento: ${fmtDt(o.data_evento)}`:"";
+    const numR=o.numero_recibo?` · Recibo #${String(o.numero_recibo).padStart(3,'0')}`:""
+    return `<div class="card"><div class="item-row">
+      <div><div class="item-name">${o.titulo}</div>
+      <div class="item-sub">Cliente: ${o.cliente||"—"} · ${dt}${dtEv}${diarias>1?` · ${diarias}×`:""} +40%${o.desconto>0?` −${o.desconto}%`:""}${numR}</div></div>
+      <div class="actions">
+        <span style="font-size:13px;font-weight:500;color:#3b6d11">${brl(total)}</span>
+        <button class="btn btn-sm btn-outline" onclick="verOrcamento(${o.id})">Ver/PDF</button>
+        <button class="btn btn-sm btn-recibo" onclick="gerarPDFRecibo(${o.id})">📄 Recibo</button>
+        <button class="btn btn-sm btn-edit" onclick="editarOrcamento(${o.id})">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="confirmarExcluirOrcamento(${o.id})">Excluir</button>
+      </div>
+    </div></div>`;
+  }).join("")||'<div class="empty">Nenhum orçamento.</div>';
+}
+
 async function verOrcamento(id){
   const {data:o,error}=await sb.from("orcamentos").select("*,orcamento_itens(*)").eq("id",id).single();
   if(error||!o){showMsg("Erro ao carregar.",true);return;}orcAtual=o;
   const itens=o.orcamento_itens||[],eqItens=itens.filter(i=>i.tipo==="equipamento"||!i.tipo),provItens=itens.filter(i=>i.tipo==="provedor");
-  const subEq=eqItens.reduce((s,i)=>s+(i.quantidade*i.preco_unitario),0),subProv=provItens.reduce((s,i)=>s+(i.quantidade*i.preco_unitario),0);
+  const subEq=eqItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0),subProv=provItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
   const sub=subEq+subProv,diarias=o.diarias||1,baseDiarias=sub*diarias,baseComMargem=baseDiarias*1.4;
   const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;
   const dt=new Date(o.criado_em).toLocaleDateString("pt-BR");
   document.getElementById("modalVerOrcTitulo").textContent=o.titulo;
   let html=`<div style="font-size:13px;color:#888;margin-bottom:2px">Cliente: <strong style="color:#1a1a1a">${o.cliente||"—"}</strong></div>`;
-  html+=`<div style="font-size:13px;color:#888;margin-bottom:2px">Local: <strong style="color:#1a1a1a">${o.local||"—"}</strong> · Criado: ${dt}</div>`;
-  if(o.data_evento)html+=`<div style="font-size:13px;color:#888;margin-bottom:12px">Data do evento: <strong style="color:#1a1a1a">${fmtDt(o.data_evento)}</strong>${diarias>1?` · <strong>${diarias} diárias</strong>`:""}</div>`;
+  html+=`<div style="font-size:13px;color:#888;margin-bottom:${o.data_evento?'2px':'12px'}">Local: <strong style="color:#1a1a1a">${o.local||"—"}</strong> · Criado: ${dt}</div>`;
+  if(o.data_evento)html+=`<div style="font-size:13px;color:#888;margin-bottom:12px">Evento: <strong style="color:#1a1a1a">${fmtDt(o.data_evento)}</strong>${diarias>1?` · <strong>${diarias} diárias</strong>`:""}</div>`;
   if(o.descricao_servico)html+=`<div style="background:#f5f5f0;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:14px;line-height:1.6"><div style="font-weight:500;margin-bottom:4px">Descrição</div>${o.descricao_servico}</div>`;
   if(eqItens.length){html+=`<div style="font-weight:500;margin-bottom:8px">Equipamentos</div><div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px"><div style="display:grid;grid-template-columns:3fr 1fr 1fr;gap:8px;padding:8px 12px;background:#f5f5f0;font-size:12px;font-weight:600;color:#666"><span>EQUIPAMENTO</span><span style="text-align:center">QTD</span><span style="text-align:right">VALOR</span></div>`;eqItens.forEach(i=>{html+=`<div style="display:grid;grid-template-columns:3fr 1fr 1fr;gap:8px;padding:8px 12px;border-top:0.5px solid #f1efe8;font-size:14px"><span>${i.descricao}</span><span style="text-align:center">${i.quantidade}</span><span style="text-align:right">${brl(i.preco_unitario)}</span></div>`;});html+=`<div style="display:flex;justify-content:space-between;padding:8px 12px;border-top:0.5px solid #e0e0d8;font-size:13px;color:#888"><span>Subtotal equip.</span><strong>${brl(subEq)}</strong></div></div>`;}
   if(provItens.length){html+=`<div style="font-weight:500;margin-bottom:8px">Provedores</div><div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px"><div style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;padding:8px 12px;background:#f5f5f0;font-size:12px;font-weight:600;color:#666"><span>FUNÇÃO</span><span style="text-align:center">QTD</span><span style="text-align:right">UNIT.</span><span style="text-align:right">TOTAL</span></div>`;provItens.forEach(i=>{html+=`<div style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;padding:8px 12px;border-top:0.5px solid #f1efe8;font-size:14px"><span>${i.descricao}</span><span style="text-align:center">${i.quantidade}</span><span style="text-align:right">${brl(i.preco_unitario)}</span><span style="text-align:right">${brl(i.quantidade*i.preco_unitario)}</span></div>`;});html+=`<div style="display:flex;justify-content:space-between;padding:8px 12px;border-top:0.5px solid #e0e0d8;font-size:13px;color:#888"><span>Subtotal prov.</span><strong>${brl(subProv)}</strong></div></div>`;}
-  html+=`<div style="background:#f5f5f0;border-radius:8px;padding:10px 14px;font-size:13px;line-height:2">`;
-  html+=`<div style="display:flex;justify-content:space-between"><span>Subtotal</span><strong>${brl(sub)}</strong></div>`;
+  html+=`<div style="background:#f5f5f0;border-radius:8px;padding:12px 14px;font-size:13px;line-height:2.1">`;
+  html+=`<div style="display:flex;justify-content:space-between"><span>Subtotal dos itens</span><strong>${brl(sub)}</strong></div>`;
   if(diarias>1)html+=`<div style="display:flex;justify-content:space-between"><span>× ${diarias} diárias</span><strong>${brl(baseDiarias)}</strong></div>`;
   html+=`<div style="display:flex;justify-content:space-between;color:#854f0b"><span>+ 40% margem comercial</span><strong>+${brl(baseComMargem-baseDiarias)}</strong></div>`;
+  html+=`<div style="display:flex;justify-content:space-between;border-top:0.5px solid #d0d0c8;padding-top:6px;margin-top:4px"><span>Base de negociação</span><strong>${brl(baseComMargem)}</strong></div>`;
   if(o.desconto>0)html+=`<div style="display:flex;justify-content:space-between;color:#639922"><span>− Desconto (${o.desconto}%)</span><strong>−${brl(desc)}</strong></div>`;
-  html+=`<div style="display:flex;justify-content:space-between;border-top:0.5px solid #d0d0c8;margin-top:4px;padding-top:8px;font-size:15px"><span><strong>Total</strong></span><strong style="color:#3b6d11">${brl(total)}</strong></div></div>`;
-  document.getElementById("modalVerOrcConteudo").innerHTML=html;abrirModal("modalVerOrc");
+  html+=`<div style="display:flex;justify-content:space-between;border-top:0.5px solid #d0d0c8;padding-top:6px;margin-top:4px;font-size:15px"><strong>Total</strong><strong style="color:#3b6d11">${brl(total)}</strong></div></div>`;
+  document.getElementById("modalVerOrcConteudo").innerHTML=html;
+  document.getElementById("btnReciboModal").onclick=()=>gerarPDFRecibo(id);
+  abrirModal("modalVerOrc");
 }
+
 function confirmarExcluirOrcamento(id){const o=orcamentos.find(x=>x.id===id);abrirConfirm(`Excluir o orçamento "${o?.titulo}"?`,()=>excluirOrcamento(id));}
 async function excluirOrcamento(id){await sb.from("orcamento_itens").delete().eq("orcamento_id",id);const {error}=await sb.from("orcamentos").delete().eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento excluído.");}
-async function editarOrcamento(id){const {data:o}=await sb.from("orcamentos").select("*,orcamento_itens(*)").eq("id",id).single();if(!o)return;editOrcId=id;document.getElementById("editOrcTitulo").value=o.titulo||"";document.getElementById("editOrcCliente").value=o.cliente||"";document.getElementById("editOrcLocal").value=o.local||"";document.getElementById("editOrcDescricao").value=o.descricao_servico||"";document.getElementById("editOrcDesconto").value=o.desconto||0;if(document.getElementById("editOrcDataEvento"))document.getElementById("editOrcDataEvento").value=o.data_evento||"";if(document.getElementById("editOrcDiarias"))document.getElementById("editOrcDiarias").value=o.diarias||1;editOrcLinhas=[];editOrcProvLinhas=[];document.getElementById("editOrcItensLista").innerHTML="";document.getElementById("editOrcProvedoresLista").innerHTML="";const itens=o.orcamento_itens||[];itens.filter(i=>i.tipo==="equipamento"||!i.tipo).forEach(i=>adicionarItemOrcEdit(i));itens.filter(i=>i.tipo==="provedor").forEach(i=>adicionarProvedorOrcEdit(i));atualizarSubtotalEdit();abrirModal("modalEditOrc");}
+
+async function editarOrcamento(id){
+  const {data:o}=await sb.from("orcamentos").select("*,orcamento_itens(*)").eq("id",id).single();if(!o)return;
+  editOrcId=id;document.getElementById("editOrcTitulo").value=o.titulo||"";document.getElementById("editOrcCliente").value=o.cliente||"";document.getElementById("editOrcLocal").value=o.local||"";document.getElementById("editOrcDescricao").value=o.descricao_servico||"";document.getElementById("editOrcDesconto").value=o.desconto||0;
+  if(document.getElementById("editOrcDataEvento"))document.getElementById("editOrcDataEvento").value=o.data_evento||"";
+  if(document.getElementById("editOrcDiarias"))document.getElementById("editOrcDiarias").value=o.diarias||1;
+  editOrcLinhas=[];editOrcProvLinhas=[];document.getElementById("editOrcItensLista").innerHTML="";document.getElementById("editOrcProvedoresLista").innerHTML="";
+  const itens=o.orcamento_itens||[];itens.filter(i=>i.tipo==="equipamento"||!i.tipo).forEach(i=>adicionarItemOrcEdit(i));itens.filter(i=>i.tipo==="provedor").forEach(i=>adicionarProvedorOrcEdit(i));
+  atualizarSubtotalEdit();abrirModal("modalEditOrc");
+}
+
+function adicionarItemOrc(nomeEq="",preco=0,qtd=1){const id=Date.now()+Math.random();orcLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`orc-linha-${id}`;const eqOpts=equipamentos.map(e=>`<option value="${e.nome}" ${e.nome===nomeEq?"selected":""}>${e.nome}</option>`).join("");div.innerHTML=`<select id="orc-desc-${id}" style="flex:3;min-width:140px" onchange="preencherPrecoBase(${id})"><option value="">Selecione...</option>${eqOpts}</select><input id="orc-qtd-${id}" type="number" min="1" value="${qtd}" style="width:55px;flex:none" oninput="atualizarSubtotal()"/><input id="orc-preco-${id}" type="number" min="0" step="0.01" value="${preco}" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotal()"/><button class="btn btn-sm btn-danger" onclick="removerItemOrc(${id})">×</button>`;document.getElementById("orcItensLista").appendChild(div);atualizarSubtotal();}
+function preencherPrecoBase(id){const sel=document.getElementById(`orc-desc-${id}`),preco=document.getElementById(`orc-preco-${id}`);if(!sel||!preco)return;const eq=equipamentos.find(e=>e.nome===sel.value);if(eq&&eq.preco_base)preco.value=eq.preco_base;atualizarSubtotal();}
+function removerItemOrc(id){orcLinhas=orcLinhas.filter(x=>x!==id);document.getElementById(`orc-linha-${id}`)?.remove();atualizarSubtotal();}
+function adicionarProvedor(){const id=Date.now()+Math.random();orcProvedoresLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`orc-prov-${id}`;const funcOpts=funcoes.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join("");div.innerHTML=`<select id="orc-pfunc-${id}" style="flex:2;min-width:120px" onchange="atualizarSubtotal()"><option value="">Função...</option>${funcOpts}</select><input id="orc-pqtd-${id}" type="number" min="1" value="1" style="width:55px;flex:none" oninput="atualizarSubtotal()"/><input id="orc-ppreco-${id}" type="number" min="0" step="0.01" value="0" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotal()"/><button class="btn btn-sm btn-danger" onclick="removerProvedor(${id})">×</button>`;document.getElementById("orcProvedoresLista").appendChild(div);}
+function removerProvedor(id){orcProvedoresLinhas=orcProvedoresLinhas.filter(x=>x!==id);document.getElementById(`orc-prov-${id}`)?.remove();atualizarSubtotal();}
+
 function adicionarItemOrcEdit(item=null){const id=Date.now()+Math.random();editOrcLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`edit-orc-linha-${id}`;const eqOpts=equipamentos.map(e=>`<option value="${e.nome}" ${item&&item.descricao===e.nome?"selected":""}>${e.nome}</option>`).join("");div.innerHTML=`<select id="edit-orc-desc-${id}" style="flex:3;min-width:140px" onchange="atualizarSubtotalEdit()"><option value="">Selecione...</option>${eqOpts}</select><input id="edit-orc-qtd-${id}" type="number" min="1" value="${item?.quantidade||1}" style="width:55px;flex:none" oninput="atualizarSubtotalEdit()"/><input id="edit-orc-preco-${id}" type="number" min="0" step="0.01" value="${item?.preco_unitario||0}" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotalEdit()"/><button class="btn btn-sm btn-danger" onclick="removerItemOrcEdit(${id})">×</button>`;document.getElementById("editOrcItensLista").appendChild(div);}
 function adicionarProvedorOrcEdit(item=null){const id=Date.now()+Math.random();editOrcProvLinhas.push(id);const div=document.createElement("div");div.className="orc-item-row";div.id=`edit-orc-prov-${id}`;const funcOpts=funcoes.map(f=>`<option value="${f.nome}" ${item&&item.descricao===f.nome?"selected":""}>${f.nome}</option>`).join("");div.innerHTML=`<select id="edit-orc-pfunc-${id}" style="flex:2;min-width:120px" onchange="atualizarSubtotalEdit()"><option value="">Função...</option>${funcOpts}</select><input id="edit-orc-pqtd-${id}" type="number" min="1" value="${item?.quantidade||1}" style="width:55px;flex:none" oninput="atualizarSubtotalEdit()"/><input id="edit-orc-ppreco-${id}" type="number" min="0" step="0.01" value="${item?.preco_unitario||0}" placeholder="R$" style="width:95px;flex:none" oninput="atualizarSubtotalEdit()"/><button class="btn btn-sm btn-danger" onclick="removerProvedorOrcEdit(${id})">×</button>`;document.getElementById("editOrcProvedoresLista").appendChild(div);}
 function removerItemOrcEdit(id){editOrcLinhas=editOrcLinhas.filter(x=>x!==id);document.getElementById(`edit-orc-linha-${id}`)?.remove();atualizarSubtotalEdit();}
 function removerProvedorOrcEdit(id){editOrcProvLinhas=editOrcProvLinhas.filter(x=>x!==id);document.getElementById(`edit-orc-prov-${id}`)?.remove();atualizarSubtotalEdit();}
 function atualizarSubtotalEdit(){
-  const eq=editOrcLinhas.reduce((s,id)=>{const qtd=parseFloat(document.getElementById(`edit-orc-qtd-${id}`)?.value)||1,preco=parseFloat(document.getElementById(`edit-orc-preco-${id}`)?.value)||0;return s+qtd*preco;},0);
-  const prov=editOrcProvLinhas.reduce((s,id)=>{const qtd=parseFloat(document.getElementById(`edit-orc-pqtd-${id}`)?.value)||0,preco=parseFloat(document.getElementById(`edit-orc-ppreco-${id}`)?.value)||0;return s+qtd*preco;},0);
-  const sub=eq+prov,diarias=parseInt(document.getElementById("editOrcDiarias")?.value)||1;
+  const eq=editOrcLinhas.reduce((s,id)=>{const q=parseFloat(document.getElementById(`edit-orc-qtd-${id}`)?.value)||1,p=parseFloat(document.getElementById(`edit-orc-preco-${id}`)?.value)||0;return s+q*p;},0);
+  const prov=editOrcProvLinhas.reduce((s,id)=>{const q=parseFloat(document.getElementById(`edit-orc-pqtd-${id}`)?.value)||0,p=parseFloat(document.getElementById(`edit-orc-ppreco-${id}`)?.value)||0;return s+q*p;},0);
+  const sub=eq+prov,diarias=Math.max(1,parseInt(document.getElementById("editOrcDiarias")?.value)||1);
   const baseComMargem=sub*diarias*1.4,pct=parseFloat(document.getElementById("editOrcDesconto")?.value)||0,total=baseComMargem*(1-pct/100);
-  document.getElementById("editPreviewSubtotalEq").textContent=brl(eq);
-  document.getElementById("editPreviewSubtotalProv").textContent=brl(prov);
-  document.getElementById("editPreviewSubtotal").textContent=`${brl(sub)}${diarias>1?` ×${diarias}d`:""} +40% → Total: ${brl(total)}`;
+  const eEq=document.getElementById("editPreviewSubtotalEq"),eProv=document.getElementById("editPreviewSubtotalProv");
+  const eSub=document.getElementById("editPreviewSubtotal"),eMargem=document.getElementById("editPreviewComMargem");
+  if(eEq)eEq.textContent=brl(eq);if(eProv)eProv.textContent=brl(prov);
+  if(eSub)eSub.textContent=brl(sub)+(diarias>1?` × ${diarias}d = ${brl(sub*diarias)}`:"");
+  if(eMargem)eMargem.textContent=`${brl(baseComMargem)} → Final: ${brl(total)}`;
 }
 async function salvarOrcamentoEditado(){
   const titulo=document.getElementById("editOrcTitulo").value.trim();if(!titulo){showMsg("Informe o título.",true);return;}
   const cliente=document.getElementById("editOrcCliente").value.trim()||null,local=document.getElementById("editOrcLocal").value.trim()||null;
-  const descricao_servico=document.getElementById("editOrcDescricao").value.trim()||null,desconto=parseFloat(document.getElementById("editOrcDesconto").value)||0;
-  const data_evento=document.getElementById("editOrcDataEvento")?.value||null,diarias=parseInt(document.getElementById("editOrcDiarias")?.value)||1;
+  const descricao_servico=document.getElementById("editOrcDescricao").value.trim()||null;
+  const desconto=parseFloat(document.getElementById("editOrcDesconto").value)||0;
+  const data_evento=document.getElementById("editOrcDataEvento")?.value||null;
+  const diarias=Math.max(1,parseInt(document.getElementById("editOrcDiarias")?.value)||1);
   const {error}=await sb.from("orcamentos").update({titulo,cliente,local,descricao_servico,desconto,data_evento,diarias}).eq("id",editOrcId);
   if(error){showMsg("Erro: "+error.message,true);return;}
   await sb.from("orcamento_itens").delete().eq("orcamento_id",editOrcId);
@@ -1030,17 +979,158 @@ async function gerarPDFOrcamento(){
   if(!orcAtual)return;const o=orcAtual,{jsPDF}=window.jspdf,doc=new jsPDF();
   const itens=o.orcamento_itens||[],eqItens=itens.filter(i=>i.tipo==="equipamento"||!i.tipo),provItens=itens.filter(i=>i.tipo==="provedor");
   const subEq=eqItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0),subProv=provItens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
-  const sub=subEq+subProv,desc=sub*((o.desconto||0)/100),total=sub-desc;
+  const sub=subEq+subProv,diarias=o.diarias||1,baseDiarias=sub*diarias,baseComMargem=baseDiarias*1.4;
+  const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;
   let y=await adicionarHeaderPDF(doc,"Orçamento",`Gerado em ${new Date().toLocaleString("pt-BR")}`);
   doc.setFont("helvetica","bold");doc.setFontSize(15);doc.setTextColor(15,15,15);doc.text(o.titulo,14,y);y+=7;
-  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);doc.text(`Cliente: ${o.cliente||"—"}   Local: ${o.local||"—"}   Data: ${new Date(o.criado_em).toLocaleDateString("pt-BR")}`,14,y);y+=10;
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);
+  doc.text(`Cliente: ${o.cliente||"—"}   Local: ${o.local||"—"}`,14,y);y+=5;
+  if(o.data_evento||diarias>1){doc.text(`${o.data_evento?`Evento: ${fmtDt(o.data_evento)}   `:""}${diarias>1?`Diárias: ${diarias}   `:""}Emissão: ${new Date(o.criado_em).toLocaleDateString("pt-BR")}`,14,y);y+=10;}else{doc.text(`Emissão: ${new Date(o.criado_em).toLocaleDateString("pt-BR")}`,14,y);y+=10;}
   if(o.descricao_servico){doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Descrição do Serviço",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(60,60,60);const lines=doc.splitTextToSize(o.descricao_servico,178);lines.forEach(l=>{doc.text(l,14,y);y+=5;if(y>265){doc.addPage();y=20;}});y+=4;}
-  if(eqItens.length){doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Equipamentos",14,y);y+=6;doc.setFillColor(237,237,233);doc.rect(14,y-4,182,8,'F');doc.setFontSize(9);doc.setFont("helvetica","bold");doc.setTextColor(70,70,70);doc.text("EQUIPAMENTO",16,y);doc.text("QTD",148,y,{align:"center"});doc.text("VALOR",193,y,{align:"right"});y+=5;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(15,15,15);eqItens.forEach(item=>{doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y-3,196,y-3);doc.text(item.descricao.substring(0,54),16,y);doc.text(String(item.quantidade),148,y,{align:"center"});doc.text(brl(item.preco_unitario),193,y,{align:"right"});y+=7;if(y>265){doc.addPage();y=20;}});doc.setDrawColor(180);doc.line(14,y-2,196,y-2);doc.setFontSize(10);doc.setTextColor(100);doc.text("Subtotal equipamentos",148,y+3,{align:"right"});doc.text(brl(subEq),193,y+3,{align:"right"});y+=10;}
-  if(provItens.length){doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Provedores de Serviço",14,y);y+=6;doc.setFillColor(237,237,233);doc.rect(14,y-4,182,8,'F');doc.setFontSize(9);doc.setFont("helvetica","bold");doc.setTextColor(70,70,70);doc.text("FUNÇÃO",16,y);doc.text("QTD",118,y,{align:"center"});doc.text("UNIT.",155,y,{align:"right"});doc.text("TOTAL",193,y,{align:"right"});y+=5;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(15,15,15);provItens.forEach(item=>{doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y-3,196,y-3);doc.text(item.descricao,16,y);doc.text(String(item.quantidade),118,y,{align:"center"});doc.text(brl(item.preco_unitario),155,y,{align:"right"});doc.text(brl(item.quantidade*item.preco_unitario),193,y,{align:"right"});y+=7;if(y>265){doc.addPage();y=20;}});doc.setDrawColor(180);doc.line(14,y-2,196,y-2);doc.setFontSize(10);doc.setTextColor(100);doc.text("Subtotal provedores",148,y+3,{align:"right"});doc.text(brl(subProv),193,y+3,{align:"right"});y+=10;}
-  y+=2;doc.setDrawColor(190);doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=7;doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(80);doc.text("Subtotal",148,y,{align:"right"});doc.text(brl(sub),193,y,{align:"right"});y+=7;
-  if(o.desconto>0){doc.setTextColor(160,80,0);doc.text(`Desconto (${o.desconto}%)`,148,y,{align:"right"});doc.text(`-${brl(desc)}`,193,y,{align:"right"});y+=7;}
-  doc.setDrawColor(150);doc.setLineWidth(0.6);doc.line(110,y,196,y);y+=7;doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TOTAL",148,y,{align:"right"});doc.setTextColor(40,115,0);doc.text(brl(total),193,y,{align:"right"});
+  if(eqItens.length){doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Equipamentos",14,y);y+=6;doc.setFillColor(237,237,233);doc.rect(14,y-4,182,8,'F');doc.setFontSize(9);doc.setFont("helvetica","bold");doc.setTextColor(70,70,70);doc.text("EQUIPAMENTO",16,y);doc.text("QTD",148,y,{align:"center"});doc.text("VALOR",193,y,{align:"right"});y+=5;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(15,15,15);eqItens.forEach(item=>{doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y-3,196,y-3);doc.text(item.descricao.substring(0,54),16,y);doc.text(String(item.quantidade),148,y,{align:"center"});doc.text(brl(item.preco_unitario),193,y,{align:"right"});y+=7;if(y>265){doc.addPage();y=20;}});doc.setDrawColor(180,180,175);doc.line(14,y-2,196,y-2);doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text("Subtotal equipamentos",148,y+3,{align:"right"});doc.text(brl(subEq),193,y+3,{align:"right"});y+=10;}
+  if(provItens.length){doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Provedores de Serviço",14,y);y+=6;doc.setFillColor(237,237,233);doc.rect(14,y-4,182,8,'F');doc.setFontSize(9);doc.setFont("helvetica","bold");doc.setTextColor(70,70,70);doc.text("FUNÇÃO",16,y);doc.text("QTD",118,y,{align:"center"});doc.text("UNIT.",155,y,{align:"right"});doc.text("TOTAL",193,y,{align:"right"});y+=5;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(15,15,15);provItens.forEach(item=>{doc.setDrawColor(220,220,215);doc.setLineWidth(0.3);doc.line(14,y-3,196,y-3);doc.text(item.descricao,16,y);doc.text(String(item.quantidade),118,y,{align:"center"});doc.text(brl(item.preco_unitario),155,y,{align:"right"});doc.text(brl(item.quantidade*item.preco_unitario),193,y,{align:"right"});y+=7;if(y>265){doc.addPage();y=20;}});doc.setDrawColor(180,180,175);doc.line(14,y-2,196,y-2);doc.setFontSize(10);doc.setTextColor(100,100,100);doc.text("Subtotal provedores",148,y+3,{align:"right"});doc.text(brl(subProv),193,y+3,{align:"right"});y+=10;}
+  // Totais
+  y+=2;doc.setDrawColor(190,190,185);doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=7;
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);
+  doc.text("Subtotal dos itens",130,y,{align:"right"});doc.text(brl(sub),193,y,{align:"right"});y+=6;
+  if(diarias>1){doc.text(`× ${diarias} diárias`,130,y,{align:"right"});doc.text(brl(baseDiarias),193,y,{align:"right"});y+=6;}
+  doc.setTextColor(120,80,0);doc.text("+ 40% margem comercial",130,y,{align:"right"});doc.text(`+${brl(baseComMargem-baseDiarias)}`,193,y,{align:"right"});y+=6;
+  if(o.desconto>0){doc.setTextColor(40,110,0);doc.text(`− Desconto (${o.desconto}%)`,130,y,{align:"right"});doc.text(`−${brl(desc)}`,193,y,{align:"right"});y+=6;}
+  doc.setDrawColor(150,150,145);doc.setLineWidth(0.6);doc.line(110,y,196,y);y+=7;
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TOTAL",148,y,{align:"right"});doc.setTextColor(40,115,0);doc.text(brl(total),193,y,{align:"right"});
+  // Frase de validade
+  y+=12;if(y>265){doc.addPage();y=20;}
+  doc.setFont("helvetica","italic");doc.setFontSize(9);doc.setTextColor(100,100,100);
+  doc.text("Este orçamento tem validade de 30 dias. Após esse período, o valor sofrerá reajuste.",14,y,{maxWidth:182});
+  y+=8;
   rodapePDF(doc,y);doc.save(`Orcamento-${o.titulo.replace(/\s+/g,"-")}.pdf`);
+}
+
+// ── PDF RECIBO ────────────────────────────────────────
+async function gerarPDFRecibo(orcId){
+  const {data:o,error}=await sb.from("orcamentos").select("*,orcamento_itens(*)").eq("id",orcId).single();
+  if(error||!o){showMsg("Erro ao carregar orçamento.",true);return;}
+  // Número sequencial
+  let numRecibo=o.numero_recibo;
+  if(!numRecibo){
+    const {data:mx}=await sb.from("orcamentos").select("numero_recibo").not("numero_recibo","is",null).order("numero_recibo",{ascending:false}).limit(1);
+    numRecibo=((mx?.[0]?.numero_recibo)||0)+1;
+    await sb.from("orcamentos").update({numero_recibo:numRecibo}).eq("id",orcId);
+    // atualiza local
+    const local=orcamentos.find(x=>x.id===orcId);if(local)local.numero_recibo=numRecibo;
+    renderOrcamentos();
+  }
+  const ano=new Date(o.criado_em).getFullYear();
+  const numFmt=String(numRecibo).padStart(3,'0')+'.'+ano;
+  // Cálculo
+  const itens=o.orcamento_itens||[],eqItens=itens.filter(i=>i.tipo==="equipamento"||!i.tipo),provItens=itens.filter(i=>i.tipo==="provedor");
+  const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);
+  const diarias=o.diarias||1,baseComMargem=sub*diarias*1.4;
+  const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;
+  // Vencimento = 2 semanas
+  const criadoD=new Date(o.criado_em);
+  const vencD=new Date(criadoD.getTime()+14*24*60*60*1000);
+  const vencStr=`${String(vencD.getDate()).padStart(2,'0')}.${String(vencD.getMonth()+1).padStart(2,'0')}.${vencD.getFullYear()}`;
+  const {jsPDF}=window.jspdf,doc=new jsPDF();
+  const logo=await carregarLogo();
+  // ── Header empresa
+  const r=8,hcx=14+r,hcy=20;
+  if(logo){try{doc.addImage(logo,'PNG',14,12,16,16);}catch(e){_drawLens(doc,hcx,hcy,r);}}else{_drawLens(doc,hcx,hcy,r);}
+  doc.setDrawColor(160,160,160);doc.setLineWidth(0.4);doc.line(hcx+r+4,hcy-r*0.7,hcx+r+4,hcy+r*0.7);
+  doc.setFont("helvetica","bold");doc.setFontSize(14);doc.setTextColor(15,15,15);doc.text("TAKEVISION",hcx+r+8,hcy+2);
+  let hy=31;
+  doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(15,15,15);doc.text("Take Vision Filmes LTDA",14,hy);hy+=5;
+  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(50,50,50);
+  doc.text("Rua Alvarães, 02/201 – Del Castilho – Rio de Janeiro – RJ – CEP 21.051-080",14,hy);hy+=4;
+  doc.text("CNPJ:  35.433.559/0001-90",14,hy);doc.text("Insc. Mun: 1.341.287-1",100,hy);hy+=4;
+  doc.text("Telefone: (21) 97037-1132",14,hy);doc.text("e-mail: edjr.barros@gmail.com",100,hy);hy+=5;
+  doc.setDrawColor(80,80,80);doc.setLineWidth(0.7);doc.line(14,hy,196,hy);hy+=3;
+  // ── Tabela
+  const tx=14,tw=182;
+  const brd=()=>{doc.setDrawColor(80,80,80);doc.setLineWidth(0.4);};
+  // ROW 1+2: RECIBO / VALOR / VENCIMENTO
+  const hc=Math.floor(tw/3),r1h=9,r2h=12;
+  brd();doc.rect(tx,hy,tw,r1h+r2h);
+  doc.line(tx+hc,hy,tx+hc,hy+r1h+r2h);doc.line(tx+hc*2,hy,tx+hc*2,hy+r1h+r2h);
+  doc.line(tx,hy+r1h,tx+tw,hy+r1h);
+  doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(15,15,15);
+  doc.text("RECIBO N°:",tx+hc/2,hy+6.5,{align:"center"});
+  doc.text("VALOR R$",tx+hc+hc/2,hy+6.5,{align:"center"});
+  doc.text("VENCIMENTO",tx+hc*2+hc/2,hy+6.5,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(11);doc.text(numFmt,tx+hc/2,hy+r1h+8,{align:"center"});
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(brl(total),tx+hc+hc/2,hy+r1h+8,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(11);doc.text(vencStr,tx+hc*2+hc/2,hy+r1h+8,{align:"center"});
+  hy+=r1h+r2h;
+  // ROW 3: DESTINATÁRIO
+  const dlw=34,dH=38;brd();doc.rect(tx,hy,tw,dH);doc.line(tx+dlw,hy,tx+dlw,hy+dH);
+  doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(15,15,15);
+  doc.text("DESTINATÁRIO",tx+dlw/2,hy+dH/2+2,{align:"center"});
+  const cx2=tx+dlw+3;
+  doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text(`Cliente: ${(o.cliente||"—").toUpperCase()}`,cx2,hy+8);
+  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(50,50,50);
+  doc.text("Endereço:",cx2,hy+15);doc.text("Bairro:                                      UF:           Município:",cx2,hy+21);
+  doc.text("CNPJ:                                    I.E:",cx2,hy+27);
+  hy+=dH;
+  // ROW 4: VALOR POR EXTENSO
+  const exlw=38,exH=14;brd();doc.rect(tx,hy,tw,exH);doc.line(tx+exlw,hy,tx+exlw,hy+exH);
+  doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(15,15,15);
+  doc.text("VALOR POR",tx+exlw/2,hy+4.5,{align:"center"});doc.text("EXTENSO",tx+exlw/2,hy+10,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(8.5);
+  doc.text(`(${valorPorExtenso(total)})`,tx+exlw+3,hy+9,{maxWidth:tw-exlw-5});
+  hy+=exH;
+  // ROW 5: Headers itens
+  const qw=22,dw=98,vuw=34,vtw=28,cH=9;
+  brd();doc.rect(tx,hy,tw,cH);
+  doc.line(tx+qw,hy,tx+qw,hy+cH);doc.line(tx+qw+dw,hy,tx+qw+dw,hy+cH);doc.line(tx+qw+dw+vuw,hy,tx+qw+dw+vuw,hy+cH);
+  doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(15,15,15);
+  doc.text("QUANT.",tx+qw/2,hy+6,{align:"center"});doc.text("DESCRIÇÃO",tx+qw+dw/2,hy+6,{align:"center"});
+  doc.text("VALOR UNITÁRIO",tx+qw+dw+vuw/2,hy+6,{align:"center"});doc.text("VALOR TOTAL",tx+qw+dw+vuw+vtw/2,hy+6,{align:"center"});
+  hy+=cH;
+  // ROW 6: Conteúdo
+  const contH=110;brd();doc.rect(tx,hy,tw,contH);
+  doc.line(tx+qw,hy,tx+qw,hy+contH);doc.line(tx+qw+dw,hy,tx+qw+dw,hy+contH);doc.line(tx+qw+dw+vuw,hy,tx+qw+dw+vuw,hy+contH);
+  let cy2=hy+8;const cx3=tx+qw+3;
+  // Equipamentos
+  if(eqItens.length>0){
+    doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(50,50,50);
+    doc.text("Locação de Equipamentos:",cx3,cy2);cy2+=6;
+    eqItens.forEach(item=>{
+      doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(15,15,15);
+      doc.text(String(item.quantidade).padStart(2,'0'),tx+qw/2,cy2,{align:"center"});
+      doc.setFont("helvetica","normal");
+      doc.text(item.descricao.toUpperCase(),cx3,cy2,{maxWidth:dw-5});
+      doc.text(brl(item.preco_unitario),tx+qw+dw+vuw/2,cy2,{align:"center"});
+      doc.text(brl(item.quantidade*item.preco_unitario),tx+qw+dw+vuw+vtw/2,cy2,{align:"center"});
+      cy2+=7;
+    });
+  }
+  // Diárias
+  if(diarias>1){cy2+=2;doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(15,15,15);doc.text(String(diarias).padStart(2,'0'),tx+qw/2,cy2,{align:"center"});doc.text("DIÁRIAS DE ALUGUEL",cx3,cy2);cy2+=8;}
+  // Provedores
+  if(provItens.length>0){provItens.forEach(item=>{doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(15,15,15);doc.text(String(item.quantidade).padStart(2,'0'),tx+qw/2,cy2,{align:"center"});doc.setFont("helvetica","normal");doc.text(item.descricao.toUpperCase(),cx3,cy2,{maxWidth:dw-5});doc.text(brl(item.preco_unitario),tx+qw+dw+vuw/2,cy2,{align:"center"});doc.text(brl(item.quantidade*item.preco_unitario),tx+qw+dw+vuw+vtw/2,cy2,{align:"center"});cy2+=7;});}
+  // Dados bancários
+  cy2+=4;doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(50,50,50);
+  doc.text("Dados para Depósito:",cx3,cy2);cy2+=5;
+  doc.text("Banco: Itaú S/A - Agencia: 8113 – C/C: 98778-1",cx3,cy2);cy2+=5;
+  doc.text("Favorecido: Take Vision Filmes LTDA",cx3,cy2);cy2+=5;
+  doc.setTextColor(30,100,200);doc.text("Pix: Edjr.barros@gmail.com",cx3,cy2);cy2+=5;
+  doc.setTextColor(15,15,15);doc.setFont("helvetica","bold");doc.setFontSize(8);
+  doc.text("Empresa Optante Simples Nacional Lei",cx3,cy2);cy2+=5;
+  doc.text("Complementar 123 de 14/12/2006",cx3,cy2);cy2+=8;
+  doc.setFont("helvetica","bold");doc.setFontSize(8);
+  doc.text("Contra apresentação de fatura de locação",cx3,cy2);cy2+=5;
+  doc.text(`Vencimento ${vencStr}`,cx3,cy2);
+  hy+=contH;
+  // ROW 7: Footer
+  const footH=24;brd();doc.rect(tx,hy,tw,footH);
+  doc.line(tx+qw+dw,hy,tx+qw+dw,hy+footH);doc.line(tx+qw+dw+vuw,hy,tx+qw+dw+vuw,hy+footH);
+  doc.setFont("helvetica","italic");doc.setFontSize(7.5);doc.setTextColor(40,40,40);
+  const legal='"Operação não sujeita a emissão de Nota Fiscal de Serviços. Vetada a cobrançadeISS conforme Lei Complementar 116/03 de 31/07/2003".';
+  doc.text(doc.splitTextToSize(legal,qw+dw-4),tx+2,hy+8);
+  doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(15,15,15);
+  doc.text("VALOR TOTAL",tx+qw+dw+vuw/2,hy+9,{align:"center"});
+  doc.setFontSize(9);doc.text(brl(total),tx+qw+dw+vuw+vtw/2,hy+9,{align:"center"});
+  doc.save(`Recibo-${numFmt}-${(o.cliente||"cliente").replace(/\s+/g,"-")}.pdf`);
 }
 
 // ── BACKUP ────────────────────────────────────────────
