@@ -568,14 +568,26 @@ function valorPorExtenso(v){
 
 // ── LOGO / PDF ────────────────────────────────────────
 async function carregarLogo(){if(logoDataUrl)return logoDataUrl;try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(r=>{const rd=new FileReader();rd.onloadend=()=>{logoDataUrl=rd.result;r(logoDataUrl);};rd.readAsDataURL(blob);});}catch(e){return null;}}
-async function adicionarHeaderPDF(doc,sub,dt){
-  const logo=await carregarLogo();const r=8,cx=14+r,cy=22;
-  if(logo){try{doc.addImage(logo,'PNG',14,14,16,16);}catch(e){_drawLens(doc,cx,cy,r);}}else{_drawLens(doc,cx,cy,r);}
-  doc.setDrawColor(160,160,160);doc.setLineWidth(0.4);doc.line(cx+r+4,cy-r*0.7,cx+r+4,cy+r*0.7);
-  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TAKEVISION",cx+r+8,cy+1.5);
-  if(sub){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(sub,cx+r+8,cy+6);}
-  if(dt){doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(dt,196,cy,{align:"right"});}
-  const y=cy+r+5;doc.setDrawColor(200,200,195);doc.setLineWidth(0.5);doc.line(14,y,196,y);return y+8;
+async function adicionarHeaderPDF(doc,subtitulo,dtGerado){
+  const logo=await carregarLogo();
+  const r=7,cx=14+r,cy=16;
+  if(logo){try{doc.addImage(logo,'PNG',14,9,14,14);}catch(e){_drawLens(doc,cx,cy,r);}}else{_drawLens(doc,cx,cy,r);}
+  doc.setDrawColor(80,80,80);doc.setLineWidth(0.5);doc.line(cx+r+4,cy-r*0.8,cx+r+4,cy+r*0.8);
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TAKEVISION",cx+r+8,cy+2);
+  let hy=27;
+  doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(15,15,15);
+  doc.text("Take Vision Filmes LTDA",14,hy);hy+=4.5;
+  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(40,40,40);
+  doc.text("Rua Alvarães, 02/201 - Del Castilho - Rio de Janeiro - RJ - CEP 21.051-080",14,hy);hy+=4;
+  doc.text("CNPJ:  35.433.559/0001-90",14,hy);doc.text("Insc. Mun: 1.341.287-1",100,hy);hy+=4;
+  doc.text("Telefone: (21) 97037-1132",14,hy);doc.text("e-mail: edjr.barros@gmail.com",100,hy);hy+=4;
+  doc.setDrawColor(80,80,80);doc.setLineWidth(0.6);doc.line(14,hy,196,hy);hy+=4;
+  if(subtitulo||dtGerado){
+    if(subtitulo){doc.setFont("helvetica","italic");doc.setFontSize(8);doc.setTextColor(100,100,100);doc.text(subtitulo,14,hy);}
+    if(dtGerado){doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(100,100,100);doc.text(dtGerado,196,hy,{align:"right"});}
+    hy+=6;
+  }
+  return hy;
 }
 function _drawLens(doc,cx,cy,r){doc.setFillColor(15,15,15);doc.circle(cx,cy,r,'F');doc.setDrawColor(255,255,255);doc.setLineWidth(r*0.28);for(let i=0;i<6;i++){const a1=(i*60-10)*Math.PI/180,a2=(i*60+45)*Math.PI/180;doc.line(cx+r*0.2*Math.cos(a1),cy+r*0.2*Math.sin(a1),cx+r*0.8*Math.cos(a2),cy+r*0.8*Math.sin(a2));}doc.setFillColor(15,15,15);doc.circle(cx,cy,r*0.28,'F');}
 function rodapePDF(doc,y){
