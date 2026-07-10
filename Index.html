@@ -154,6 +154,10 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <!-- ESTOQUE -->
     <div id="tab-estoque">
       <div class="metrics" id="metricsArea"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="buscaEq" placeholder="🔍 Buscar equipamento..." oninput="renderEquipamentos()" style="flex:1;max-width:340px"/>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('buscaEq').value='';renderEquipamentos()">Limpar</button>
+      </div>
       <div class="filters" id="filtrosArea"></div>
       <div id="listaEquipamentos"></div>
       <div class="section-sub">Gerenciar equipamentos</div>
