@@ -354,7 +354,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         <div class="row">
           <div class="col" style="max-width:200px">
             <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem comercial (%)</label>
-            <input id="orcMargem" type="number" min="0" max="500" value="40" oninput="atualizarSubtotal()" style="max-width:120px"/>
+            <input id="orcMargem" type="number" min="0" max="500" value="0" oninput="atualizarSubtotal()" style="max-width:120px"/>
           </div>
         </div>
         <div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Descrição do serviço</label><textarea id="orcDescricao" placeholder="Descreva o serviço..."></textarea></div>
@@ -505,7 +505,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
   <div class="row">
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data do evento</label><input id="editOrcDataEvento" type="date"/></div>
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de diárias</label><input id="editOrcDiarias" type="number" min="1" value="1" oninput="atualizarSubtotalEdit()"/></div>
-    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem (%)</label><input id="editOrcMargem" type="number" min="0" value="40" oninput="atualizarSubtotalEdit()"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem (%)</label><input id="editOrcMargem" type="number" min="0" value="0" oninput="atualizarSubtotalEdit()"/></div>
   </div>
   <div class="field"><label>Descrição do serviço</label><textarea id="editOrcDescricao"></textarea></div>
   <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
@@ -565,8 +565,8 @@ const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agos
 const fmtDt=ds=>ds?new Date(ds+"T12:00:00").toLocaleDateString("pt-BR"):"—";
 const fmtRange=(ini,fim)=>fim&&fim!==ini?`${fmtDt(ini)} → ${fmtDt(fim)}`:fmtDt(ini);
 
-function getMargem(id="orcMargem"){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?1.4:1+(v/100);}
-function calcTotalOrc(o){const itens=o.orcamento_itens||[];const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);const diarias=o.diarias||1,margem=o.margem!=null?1+(o.margem/100):1.4;const baseDiarias=sub*diarias,baseComMargem=baseDiarias*margem;const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;return{sub,diarias,margem,baseDiarias,baseComMargem,desc,total};}
+function getMargem(id="orcMargem"){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?1:1+(v/100);}
+function calcTotalOrc(o){const itens=o.orcamento_itens||[];const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);const diarias=o.diarias||1,margem=o.margem!=null?1+(o.margem/100):1;const baseDiarias=sub*diarias,baseComMargem=baseDiarias*margem;const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;return{sub,diarias,margem,baseDiarias,baseComMargem,desc,total};}
 function abrirConfirm(msg,onOk){document.getElementById("modalConfirmMsg").textContent=msg;document.getElementById("modalConfirmOk").onclick=()=>{fecharModal("modalConfirm");onOk();};abrirModal("modalConfirm");}
 
 async function carregarLogo(){if(logoDataUrl)return logoDataUrl;try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(r=>{const rd=new FileReader();rd.onloadend=()=>{logoDataUrl=rd.result;r(logoDataUrl);};rd.readAsDataURL(blob);});}catch(e){return null;}}
@@ -879,4 +879,4 @@ async function abrirFormEvento(ds,eventoId){fecharModal("modalDia");const ev=eve
 async function salvarEvento(){const idStr=document.getElementById("formEventoId").value,ds=document.getElementById("formEventoData").value,titulo=document.getElementById("formEventoTitulo").value.trim();if(!titulo){showMsg("Informe o título do evento.",true);return;}const obs=document.getElementById("formEventoObs").value.trim(),projId=document.getElementById("formEventoProj").value||null,checkId=document.getElementById("formEventoCheck").value||null;let eventoId=idStr?parseInt(idStr):null;if(eventoId){await sb.from("calendario_eventos").update({titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).eq("id",eventoId);await sb.from("calendario_equipe").delete().eq("evento_id",eventoId);}else{const {data:ev,error}=await sb.from("calendario_eventos").insert({data:ds,titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).select().single();if(error){showMsg("Erro: "+error.message,true);return;}eventoId=ev.id;}const cbs=document.querySelectorAll("#formEventoEquipe input[type=checkbox]:checked");const equipe=Array.from(cbs).map(cb=>({evento_id:eventoId,freelancer_id:parseInt(cb.value),funcao_no_evento:document.getElementById(`calfunc-${cb.value}`)?.value||null}));if(equipe.length)await sb.from("calendario_equipe").insert(equipe);fecharModal("modalFormEvento");await carregarCalEventos();renderCalendario();showMsg("Evento salvo!");diaAtual=ds;setTimeout(()=>abrirDia(ds),300);}
 async function excluirEvento(id){await sb.from("calendario_equipe").delete().eq("evento_id",id);await sb.from("calendario_eventos").delete().eq("id",id);await carregarCalEventos();renderCalendario();fecharModal("modalDia");showMsg("Evento excluído.");}
 function abrirResumoPasta(pid){const p=pastas.find(x=>x.id===pid);document.getElementById("modalResumoPastaTitulo").textContent=`Resumo mensal — ${p.nome}`;document.getElementById("resumoPastaId").value=pid;document.getElementById("resumoMes").value=new Date().getMonth();document.getElementById("resumoAno").value=new Date().getFullYear();abrirModal("modalResumoPasta");}
-async function gerarPDFResumoPasta(){const pid=parseInt(document.getElementById("resu
+async function gerarPDFResumoPasta(){const pid=parseInt(document.getElementById("resumoPast
