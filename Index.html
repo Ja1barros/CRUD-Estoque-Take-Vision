@@ -4,6 +4,15 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Take Vision Imagem</title>
+<script>
+window.onerror = function(msg, url, line, col, error) {
+  var div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#a32d2d;color:#fff;padding:16px;z-index:99999;font-family:monospace;font-size:13px;white-space:pre-wrap;max-height:80vh;overflow:auto;';
+  div.textContent = 'ERRO DE JAVASCRIPT:\n' + msg + '\nLinha: ' + line + ', Coluna: ' + col + '\n' + (error && error.stack ? error.stack : '');
+  document.body.appendChild(div);
+  return false;
+};
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -1122,8 +1131,4 @@ async function abrirFormEvento(ds,eventoId){
   document.getElementById("formEventoEquipe").innerHTML=freelancers.map(function(f){
     var checked=equipeMap.hasOwnProperty(f.id);
     var funcao=equipeMap[f.id]||((f.funcoes_lista||[])[0]||"");
-    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid #f1efe8"><input type="checkbox" id="calfl-'+f.id+'" value="'+f.id+'" '+(checked?"checked":"")+' style="width:auto"/><label for="calfl-'+f.id+'" style="flex:1;font-size:13px">'+f.nome+'</label><input id="calfunc-'+f.id+'" type="text" value="'+funcao+'" placeholder="Função" style="width:120px;font-size:12px;padding:4px 8px"/></div>';
-  }).join("")||'<div style="color:#888;font-size:13px">Nenhum freelancer cadastrado.</div>';
-  abrirModal("modalFormEvento");
-}
-async function salvarEve
+    return '<div style="display:flex;align-items:center;gap:8px;padd
