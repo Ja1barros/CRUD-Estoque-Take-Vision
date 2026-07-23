@@ -637,14 +637,14 @@ function rodapePDF(doc,y){
 }
 
 var modoLogin=true;
-function toggleAuthMode(){
+window.toggleAuthMode = function toggleAuthMode(){
   modoLogin=!modoLogin;
   document.getElementById("authSub").textContent=modoLogin?"Entre com sua conta":"Crie sua conta";
   document.getElementById("toggleBtn").textContent=modoLogin?"Não tem conta? Cadastre-se":"Já tem conta? Entrar";
   document.getElementById("nomeField").style.display=modoLogin?"none":"block";
   document.getElementById("authBtn").textContent=modoLogin?"Entrar":"Cadastrar";
-}
-async function handleAuth(){
+};
+window.handleAuth = async function handleAuth(){
   var email=document.getElementById("emailInput").value.trim();
   var senha=document.getElementById("senhaInput").value;
   var nome=document.getElementById("nomeInput").value.trim();
@@ -670,7 +670,7 @@ async function handleAuth(){
     }
   }catch(e){msg.innerHTML='<div class="err">Erro: '+e.message+'</div>';}
   finally{btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";}
-}
+};
 async function iniciarApp(user){
   usuario=user;
   var r=await sb.from("perfis").select("*").eq("id",user.id).single();
@@ -704,6 +704,7 @@ async function iniciarApp(user){
   carregarLogo();
 }
 async function sair(){await sb.auth.signOut();location.reload();}
+window.sair = sair;
 window.addEventListener("load",async function(){
   var r=await sb.auth.getSession();
   if(r.data && r.data.session && r.data.session.user)await iniciarApp(r.data.session.user);
@@ -1131,4 +1132,4 @@ async function abrirFormEvento(ds,eventoId){
   document.getElementById("formEventoEquipe").innerHTML=freelancers.map(function(f){
     var checked=equipeMap.hasOwnProperty(f.id);
     var funcao=equipeMap[f.id]||((f.funcoes_lista||[])[0]||"");
-    return '<div style="display:flex;align-items:center;gap:8px;padd
+  
