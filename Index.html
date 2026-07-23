@@ -12,6 +12,12 @@ window.onerror = function(msg, url, line, col, error) {
   document.body.appendChild(div);
   return false;
 };
+function _diag(txt){
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#185fa5;color:#fff;padding:6px 12px;z-index:99998;font-family:monospace;font-size:11px;';
+  d.textContent='DIAG: '+txt;
+  document.body.appendChild(d);
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -545,6 +551,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 </div></div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function(){ if(window._diag) _diag('script principal chegou ao fim (DOMContentLoaded)'); });
 const SUPA_URL="https://wikmeymvknuujbnwmfjx.supabase.co";
 const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa21leW12a251dWpibndtZmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzI5MDEsImV4cCI6MjA5MTg0ODkwMX0.GaOJArnrhjsJ2gCs0dLNGvaLuIuekINW1VNfmdPdIgU";
 var createClient = supabase.createClient;
@@ -637,6 +644,7 @@ function rodapePDF(doc,y){
 }
 
 var modoLogin=true;
+if(window._diag)_diag('chegou antes de toggleAuthMode');
 window.toggleAuthMode = function toggleAuthMode(){
   modoLogin=!modoLogin;
   document.getElementById("authSub").textContent=modoLogin?"Entre com sua conta":"Crie sua conta";
@@ -671,6 +679,7 @@ window.handleAuth = async function handleAuth(){
   }catch(e){msg.innerHTML='<div class="err">Erro: '+e.message+'</div>';}
   finally{btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";}
 };
+if(window._diag)_diag('window.handleAuth foi definido com sucesso, typeof='+typeof window.handleAuth);
 async function iniciarApp(user){
   usuario=user;
   var r=await sb.from("perfis").select("*").eq("id",user.id).single();
@@ -1125,11 +1134,4 @@ async function abrirFormEvento(ds,eventoId){
   document.getElementById("formEventoObs").value=ev?(ev.observacao||""):"";
   document.getElementById("modalFormEventoTitulo").textContent=eventoId?"Editar evento":"Novo evento";
   document.getElementById("formEventoProj").innerHTML='<option value="">Nenhum</option>'+projetos.map(function(p){return '<option value="'+p.id+'" '+(ev&&ev.projeto_id===p.id?"selected":"")+'>'+p.nome+'</option>';}).join("");
-  document.getElementById("formEventoCheck").innerHTML='<option value="">Nenhum</option>'+checklists.map(function(c){return '<option value="'+c.id+'" '+(ev&&ev.checklist_id===c.id?"selected":"")+'>'+c.nome+'</option>';}).join("");
-  var equipeExistente=[];
-  if(eventoId){var r=await sb.from("calendario_equipe").select("*").eq("evento_id",eventoId);equipeExistente=r.data||[];}
-  var equipeMap={};equipeExistente.forEach(function(e){equipeMap[e.freelancer_id]=e.funcao_no_evento;});
-  document.getElementById("formEventoEquipe").innerHTML=freelancers.map(function(f){
-    var checked=equipeMap.hasOwnProperty(f.id);
-    var funcao=equipeMap[f.id]||((f.funcoes_lista||[])[0]||"");
-  
+  document.getElementById("formEventoCheck").innerHTML='<option value="">Nenhum</option>'+checklists.
