@@ -28,7 +28,49 @@ input{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:8px 12px;f
 .btn{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:9px 18px;font-size:14px;background:#1a1a1a;color:#fff;cursor:pointer;font-weight:500}
 .err{background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
 .ok{background:#eaf3de;color:#3b6d11;border:0.5px solid #97c459;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
-.app{display:none;padding:2rem;text-align:center}
+.app{display:none;min-height:100vh}
+header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.header-title{font-size:16px;font-weight:500}
+.header-user{font-size:13px;color:#666;display:flex;align-items:center;gap:12px}
+.tabs{display:flex;border-bottom:0.5px solid #e0e0d8;background:#fff;padding:0 1.5rem;overflow-x:auto}
+.tab{padding:12px 18px;font-size:14px;border:none;background:none;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500}
+.content{padding:1.5rem;max-width:1100px;margin:0 auto}
+.btn-outline{background:transparent;color:#1a1a1a}
+.btn-sm{width:auto;padding:5px 14px;font-size:13px}
+.btn-danger{background:#e24b4a;border-color:#e24b4a;color:#fff}
+.btn-edit{background:#f5a623;border-color:#f5a623;color:#fff}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.metric{background:#fff;border:0.5px solid #e0e0d8;border-radius:10px;padding:1rem}
+.metric-label{font-size:12px;color:#888;margin-bottom:4px}
+.metric-value{font-size:22px;font-weight:500}
+.card{background:#fff;border:0.5px solid #e0e0d8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px}
+.card-dashed{border-style:dashed;margin-top:16px}
+.row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.col{flex:1;min-width:140px}
+.badge{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:500}
+.badge-ok{background:#eaf3de;color:#3b6d11}
+.badge-warn{background:#faeeda;color:#854f0b}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.filter-btn{border:0.5px solid #d0d0c8;border-radius:8px;padding:5px 12px;font-size:12px;background:transparent;cursor:pointer}
+.filter-btn.active{background:#f1efe8}
+.section-title{font-size:16px;font-weight:500;margin-bottom:14px}
+.section-sub{font-size:13px;font-weight:600;color:#444;margin:20px 0 10px;padding-bottom:6px;border-bottom:0.5px solid #e0e0d8;text-transform:uppercase}
+.empty{color:#888;font-size:14px;padding:2rem 0;text-align:center}
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tag-item{display:flex;align-items:center;gap:6px;background:#f1efe8;border-radius:8px;padding:5px 10px;font-size:13px}
+.tag-x{background:none;border:none;color:#a32d2d;cursor:pointer;font-size:15px}
+.item-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.item-name{font-weight:500;font-size:15px}
+.item-sub{font-size:12px;color:#888;margin-top:2px}
+.actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.progress-wrap{background:#f1efe8;border-radius:4px;height:6px;overflow:hidden;margin-top:10px}
+.progress-bar{height:100%;border-radius:4px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.modal-box{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:1rem}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.modal-title{font-size:17px;font-weight:500}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#888}
 </style>
 </head>
 <body>
@@ -45,9 +87,58 @@ input{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:8px 12px;f
   </div>
 </div>
 <div class="app" id="appScreen">
-  <h2>Login funcionou! (versão de teste mínima)</h2>
-  <p style="margin-top:10px;color:#666">Se você está vendo isso, o problema estava no arquivo grande anterior. Me avise que eu reconstruo o app completo por cima desta base limpa.</p>
+  <header>
+    <div class="header-title">Take Vision Imagem</div>
+    <div class="header-user"><span id="userNome"></span><button class="btn btn-outline btn-sm" id="btnSair" style="width:auto">Sair</button></div>
+  </header>
+  <div class="tabs">
+    <button class="tab active" data-tab="estoque">Estoque</button>
+  </div>
+  <div class="content">
+    <div id="appMsg"></div>
+    <div id="tab-estoque">
+      <div class="metrics" id="metricsArea"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="buscaEq" placeholder="🔍 Buscar equipamento..." style="flex:1;max-width:340px"/>
+      </div>
+      <div class="filters" id="filtrosArea"></div>
+      <div id="listaEquipamentos"></div>
+      <div class="section-sub">Gerenciar equipamentos</div>
+      <div id="gerenciarEquipamentos"></div>
+      <div class="card card-dashed">
+        <div class="section-title">Adicionar equipamento</div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666">Nome</label><input id="eqNome" placeholder="Ex: Canon R5"/></div>
+          <div class="col"><label style="font-size:13px;color:#666">Categoria</label><select id="eqCat"></select></div>
+          <div style="width:90px"><label style="font-size:13px;color:#666">Qtd</label><input id="eqQtd" type="number" min="1" value="1"/></div>
+        </div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666">Nº de série</label><input id="eqSerie" placeholder="Opcional"/></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" id="btnCadastrarEq" style="width:auto">+ Adicionar</button></div>
+        </div>
+      </div>
+      <div class="section-sub">Gerenciar categorias</div>
+      <div class="tag-list" id="listaCategorias"></div>
+      <div class="card card-dashed">
+        <div class="section-title">Adicionar categoria</div>
+        <div class="row">
+          <div class="col"><input id="catNome" placeholder="Ex: Drones"/></div>
+          <div style="display:flex;align-items:center"><button class="btn btn-sm btn-outline" id="btnCriarCategoria" style="width:auto">+ Adicionar</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" data-close="modalEq">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" id="btnSalvarEq" style="width:auto">Salvar</button><button class="btn btn-sm btn-outline" data-close="modalEq" style="width:auto">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalCat"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" data-close="modalCat">×</button></div><div class="field"><label>Nome</label><input id="editCatNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" id="btnSalvarCategoria" style="width:auto">Salvar</button><button class="btn btn-sm btn-outline" data-close="modalCat" style="width:auto">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalConfirm"><div class="modal-box" style="max-width:380px">
+  <p id="modalConfirmMsg" style="font-size:14px;margin-bottom:20px;color:#555;text-align:center;line-height:1.6"></p>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button class="btn btn-sm btn-danger" id="modalConfirmOk" style="width:auto;min-width:110px">Sim, excluir</button>
+    <button class="btn btn-sm btn-outline" data-close="modalConfirm" style="width:auto;min-width:90px">Cancelar</button>
+  </div>
+</div></div>
 
 <script>
 try{
@@ -83,8 +174,7 @@ try{
         if(r.error){
           msg.innerHTML = '<div class="err">' + (r.error.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : "Erro: " + r.error.message) + '</div>';
         } else if(r.data && r.data.session){
-          document.getElementById("authScreen").style.display = "none";
-          document.getElementById("appScreen").style.display = "block";
+          await mostrarApp(r.data.session.user);
         } else {
           msg.innerHTML = '<div class="err">Login falhou.</div>';
         }
@@ -111,11 +201,149 @@ try{
   document.getElementById("authBtn").addEventListener("click", handleAuth);
   document.getElementById("toggleBtn").addEventListener("click", toggleAuthMode);
 
+  var usuario=null, equipamentos=[], categorias=[], filtroAtivo="Todas", editEqId=null, editCatId=null;
+
+  function brl(v){return"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function esc(s){return(s||"").replace(/'/g,"\\'");}
+  function showMsg(txt,erro){var el=document.getElementById("appMsg");el.innerHTML='<div class="'+(erro?"err":"ok")+'">'+txt+'</div>';setTimeout(function(){el.innerHTML="";},3000);}
+  function abrirModal(id){var el=document.getElementById(id);if(el)el.style.display="flex";}
+  function fecharModal(id){var el=document.getElementById(id);if(el)el.style.display="none";}
+  document.querySelectorAll('[data-close]').forEach(function(btn){
+    btn.addEventListener('click', function(){ fecharModal(btn.getAttribute('data-close')); });
+  });
+  function abrirConfirm(msg,onOk){
+    document.getElementById("modalConfirmMsg").textContent=msg;
+    document.getElementById("modalConfirmOk").onclick=function(){fecharModal("modalConfirm");onOk();};
+    abrirModal("modalConfirm");
+  }
+
+  async function carregarEquipamentos(){var r=await sb.from("equipamentos").select("*").order("nome");equipamentos=r.data||[];}
+  async function carregarCategorias(){var r=await sb.from("categorias").select("*").order("nome");categorias=r.data||[];renderCategorias();}
+
+  function renderMetrics(){
+    var total=equipamentos.reduce(function(a,e){return a+e.qtd_total;},0);
+    var disp=equipamentos.reduce(function(a,e){return a+e.qtd_disponivel;},0);
+    document.getElementById("metricsArea").innerHTML='<div class="metric"><div class="metric-label">Total</div><div class="metric-value">'+total+'</div></div><div class="metric"><div class="metric-label" style="color:#3b6d11">Disponíveis</div><div class="metric-value" style="color:#3b6d11">'+disp+'</div></div><div class="metric"><div class="metric-label" style="color:#854f0b">Alocados</div><div class="metric-value" style="color:#854f0b">'+(total-disp)+'</div></div>';
+  }
+  function renderEquipamentos(){
+    var cats=["Todas"];
+    equipamentos.forEach(function(e){if(cats.indexOf(e.categoria)===-1)cats.push(e.categoria);});
+    document.getElementById("filtrosArea").innerHTML=cats.map(function(c){return '<button class="filter-btn'+(filtroAtivo===c?" active":"")+'" data-cat="'+c+'">'+c+'</button>';}).join("");
+    document.querySelectorAll("#filtrosArea .filter-btn").forEach(function(b){b.addEventListener("click",function(){filtroAtivo=b.getAttribute("data-cat");renderEquipamentos();});});
+    var busca=document.getElementById("buscaEq").value.toLowerCase();
+    var lista=filtroAtivo==="Todas"?equipamentos:equipamentos.filter(function(e){return e.categoria===filtroAtivo;});
+    if(busca)lista=lista.filter(function(e){return e.nome.toLowerCase().indexOf(busca)!==-1;});
+    document.getElementById("listaEquipamentos").innerHTML=lista.map(function(eq){
+      var aloc=eq.qtd_total-eq.qtd_disponivel,pct=Math.round((eq.qtd_disponivel/eq.qtd_total)*100);
+      var cor=eq.qtd_disponivel===0?"#e24b4a":(aloc>0?"#EF9F27":"#639922");
+      return '<div class="card"><div class="item-row"><div><div class="item-name">'+eq.nome+'</div><div class="item-sub">'+eq.categoria+' · Série: '+(eq.numero_serie||"—")+'</div></div><div class="actions"><span class="badge badge-ok">'+eq.qtd_disponivel+' disp.</span></div></div><div class="progress-wrap"><div class="progress-bar" style="width:'+pct+'%;background:'+cor+'"></div></div></div>';
+    }).join("")||'<div class="empty">Nenhum equipamento.</div>';
+  }
+  function renderGerenciarEquipamentos(){
+    document.getElementById("gerenciarEquipamentos").innerHTML=equipamentos.map(function(eq){
+      return '<div class="card"><div class="item-row"><div><div class="item-name">'+eq.nome+'</div><div class="item-sub">'+eq.categoria+' · Qtd: '+eq.qtd_total+'</div></div><div class="actions"><button class="btn btn-sm btn-edit" style="width:auto" data-editeq="'+eq.id+'">Editar</button><button class="btn btn-sm btn-danger" style="width:auto" data-delEq="'+eq.id+'">Excluir</button></div></div></div>';
+    }).join("")||'<div class="empty">Nenhum.</div>';
+    document.querySelectorAll("[data-editeq]").forEach(function(b){b.addEventListener("click",function(){abrirEditarEq(parseInt(b.getAttribute("data-editeq")));});});
+    document.querySelectorAll("[data-delEq]").forEach(function(b){b.addEventListener("click",function(){
+      var id=parseInt(b.getAttribute("data-delEq"));
+      var eq=equipamentos.find(function(e){return e.id===id;});
+      abrirConfirm('Excluir "'+esc(eq.nome)+'"?',function(){excluirEq(id);});
+    });});
+  }
+  function renderCategorias(){
+    document.getElementById("eqCat").innerHTML=categorias.map(function(c){return '<option value="'+c.nome+'">'+c.nome+'</option>';}).join("");
+    document.getElementById("editEqCat").innerHTML=categorias.map(function(c){return '<option value="'+c.nome+'">'+c.nome+'</option>';}).join("");
+    document.getElementById("listaCategorias").innerHTML=categorias.map(function(c){
+      return '<div class="tag-item">'+c.nome+'<button class="tag-x" data-editcat="'+c.id+'" style="color:#185fa5">✏</button><button class="tag-x" data-delcat="'+c.id+'">×</button></div>';
+    }).join("")||"<span style='color:#888;font-size:13px'>Nenhuma.</span>";
+    document.querySelectorAll("[data-editcat]").forEach(function(b){b.addEventListener("click",function(){
+      var id=parseInt(b.getAttribute("data-editcat"));
+      var c=categorias.find(function(x){return x.id===id;});
+      editCatId=id;document.getElementById("editCatNome").value=c.nome;abrirModal("modalCat");
+    });});
+    document.querySelectorAll("[data-delcat]").forEach(function(b){b.addEventListener("click",function(){
+      var id=parseInt(b.getAttribute("data-delcat"));
+      var c=categorias.find(function(x){return x.id===id;});
+      if(equipamentos.some(function(e){return e.categoria===c.nome;})){showMsg('"'+c.nome+'" está em uso.',true);return;}
+      abrirConfirm('Excluir a categoria "'+esc(c.nome)+'"?',async function(){
+        await sb.from("categorias").delete().eq("id",id);await carregarCategorias();showMsg("Categoria excluída.");
+      });
+    });});
+  }
+  function abrirEditarEq(id){
+    var eq=equipamentos.find(function(e){return e.id===id;});
+    editEqId=id;
+    document.getElementById("editEqNome").value=eq.nome;
+    document.getElementById("editEqCat").value=eq.categoria;
+    document.getElementById("editEqQtd").value=eq.qtd_total;
+    document.getElementById("editEqSerie").value=eq.numero_serie||"";
+    abrirModal("modalEq");
+  }
+  async function excluirEq(id){
+    var mr=await sb.from("movimentacoes").select("id").eq("equipamento_id",id).limit(1);
+    if(mr.data&&mr.data.length>0)await sb.from("movimentacoes").delete().eq("equipamento_id",id);
+    await sb.from("equipamentos").delete().eq("id",id);
+    await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
+    showMsg("Equipamento excluído.");
+  }
+
+  document.getElementById("buscaEq").addEventListener("input",renderEquipamentos);
+  document.getElementById("btnCadastrarEq").addEventListener("click", async function(){
+    var nome=document.getElementById("eqNome").value.trim();
+    var cat=document.getElementById("eqCat").value;
+    var qtd=parseInt(document.getElementById("eqQtd").value);
+    var serie=document.getElementById("eqSerie").value.trim();
+    if(!nome)return;
+    var r=await sb.from("equipamentos").insert({nome:nome,categoria:cat,qtd_total:qtd,qtd_disponivel:qtd,numero_serie:serie||null});
+    if(r.error){showMsg("Erro: "+r.error.message,true);return;}
+    document.getElementById("eqNome").value="";document.getElementById("eqSerie").value="";document.getElementById("eqQtd").value=1;
+    await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
+    showMsg("Equipamento adicionado!");
+  });
+  document.getElementById("btnSalvarEq").addEventListener("click", async function(){
+    var nome=document.getElementById("editEqNome").value.trim();
+    var categoria=document.getElementById("editEqCat").value;
+    var qtd_total=parseInt(document.getElementById("editEqQtd").value);
+    var numero_serie=document.getElementById("editEqSerie").value.trim()||null;
+    var eq=equipamentos.find(function(e){return e.id===editEqId;});
+    var qtd_disponivel=Math.max(0,eq.qtd_disponivel+(qtd_total-eq.qtd_total));
+    await sb.from("equipamentos").update({nome:nome,categoria:categoria,qtd_total:qtd_total,qtd_disponivel:qtd_disponivel,numero_serie:numero_serie}).eq("id",editEqId);
+    fecharModal("modalEq");
+    await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
+    showMsg("Equipamento atualizado!");
+  });
+  document.getElementById("btnCriarCategoria").addEventListener("click", async function(){
+    var nome=document.getElementById("catNome").value.trim();if(!nome)return;
+    var r=await sb.from("categorias").insert({nome:nome});
+    if(r.error){showMsg("Categoria já existe.",true);return;}
+    document.getElementById("catNome").value="";
+    await carregarCategorias();showMsg("Categoria adicionada!");
+  });
+  document.getElementById("btnSalvarCategoria").addEventListener("click", async function(){
+    var nome=document.getElementById("editCatNome").value.trim();if(!nome)return;
+    await sb.from("categorias").update({nome:nome}).eq("id",editCatId);
+    fecharModal("modalCat");await carregarCategorias();showMsg("Categoria atualizada!");
+  });
+
+  document.getElementById("btnSair").addEventListener("click", async function(){await sb.auth.signOut();location.reload();});
+
+  async function carregarTudo(){
+    await Promise.all([carregarEquipamentos(),carregarCategorias()]);
+    renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
+  }
+
+  async function mostrarApp(user){
+    usuario=user;
+    document.getElementById("authScreen").style.display="none";
+    document.getElementById("appScreen").style.display="block";
+    document.getElementById("userNome").textContent=user.email;
+    await carregarTudo();
+  }
+
   window.addEventListener("load", async function(){
     var r = await sb.auth.getSession();
     if(r.data && r.data.session && r.data.session.user){
-      document.getElementById("authScreen").style.display = "none";
-      document.getElementById("appScreen").style.display = "block";
+      await mostrarApp(r.data.session.user);
     }
   });
 
