@@ -93,6 +93,8 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
   </header>
   <div class="tabs">
     <button class="tab active" data-tab="estoque">Estoque</button>
+    <button class="tab" data-tab="projetos">Projetos</button>
+    <button class="tab" data-tab="freelancers">Freelancers</button>
   </div>
   <div class="content">
     <div id="appMsg"></div>
@@ -127,10 +129,36 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" data-close="modalEq">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" id="btnSalvarEq" style="width:auto">Salvar</button><button class="btn btn-sm btn-outline" data-close="modalEq" style="width:auto">Cancelar</button></div></div></div>
+    <div id="tab-projetos" style="display:none">
+      <div class="section-sub">Projetos</div>
+      <div id="listaProjetos"></div>
+      <div class="card card-dashed">
+        <div class="section-title">Criar projeto</div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666">Nome</label><input id="projNome" placeholder="Ex: Clip Musical"/></div>
+          <div class="col"><label style="font-size:13px;color:#666">Cliente</label><input id="projCliente" placeholder="Ex: Empresa XYZ"/></div>
+        </div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666">Data</label><input id="projData" type="date"/></div>
+        </div>
+        <button class="btn btn-sm btn-outline" id="btnCriarProjeto" style="width:auto">+ Criar projeto</button>
+      </div>
+    </div>
+
+    <div id="tab-freelancers" style="display:none">
+      <div class="section-sub">Freelancers cadastrados</div>
+      <div id="listaFreelancers"></div>
+      <div class="card card-dashed">
+        <div class="section-title">Cadastrar freelancer</div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666">Nome</label><input id="flNome" placeholder="Ex: João Silva"/></div>
+          <div class="col"><label style="font-size:13px;color:#666">Telefone</label><input id="flTel" placeholder="(21) 99999-9999"/></div>
+          <div class="col"><label style="font-size:13px;color:#666">Função</label><input id="flFuncao" placeholder="Ex: Cinegrafista"/></div>
+        </div>
+        <button class="btn btn-sm btn-outline" id="btnCadastrarFl" style="width:auto">+ Cadastrar</button>
+      </div>
+    </div><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" data-close="modalEq">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" id="btnSalvarEq" style="width:auto">Salvar</button><button class="btn btn-sm btn-outline" data-close="modalEq" style="width:auto">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalCat"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" data-close="modalCat">×</button></div><div class="field"><label>Nome</label><input id="editCatNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" id="btnSalvarCategoria" style="width:auto">Salvar</button><button class="btn btn-sm btn-outline" data-close="modalCat" style="width:auto">Cancelar</button></div></div></div>
 <div class="modal-bg" id="modalConfirm"><div class="modal-box" style="max-width:380px">
   <p id="modalConfirmMsg" style="font-size:14px;margin-bottom:20px;color:#555;text-align:center;line-height:1.6"></p>
@@ -327,9 +355,73 @@ try{
 
   document.getElementById("btnSair").addEventListener("click", async function(){await sb.auth.signOut();location.reload();});
 
+  var projetos=[], freelancers=[];
+
+  document.querySelectorAll(".tab").forEach(function(t){
+    t.addEventListener("click", function(){
+      document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});
+      t.classList.add("active");
+      var nome=t.getAttribute("data-tab");
+      ["estoque","projetos","freelancers"].forEach(function(n){
+        var d=document.getElementById("tab-"+n);
+        if(d)d.style.display=(n===nome)?"block":"none";
+      });
+    });
+  });
+
+  async function carregarProjetos(){var r=await sb.from("projetos").select("*").order("id");projetos=r.data||[];}
+  async function carregarFreelancers(){var r=await sb.from("freelancers").select("*").order("nome");freelancers=r.data||[];}
+
+  function renderProjetos(){
+    document.getElementById("listaProjetos").innerHTML=projetos.map(function(p){
+      var dt=p.data_projeto?new Date(p.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"—";
+      return '<div class="card"><div class="item-row"><div><div class="item-name">'+p.nome+'</div><div class="item-sub">Cliente: '+(p.cliente||"—")+' · '+dt+'</div></div><div class="actions"><span class="badge '+(p.status==="ativo"?"badge-ok":"")+'">'+p.status+'</span><button class="btn btn-sm btn-danger" style="width:auto" data-delProj="'+p.id+'">Excluir</button></div></div></div>';
+    }).join("")||'<div class="empty">Nenhum projeto.</div>';
+    document.querySelectorAll("[data-delProj]").forEach(function(b){b.addEventListener("click",function(){
+      var id=parseInt(b.getAttribute("data-delProj"));
+      var p=projetos.find(function(x){return x.id===id;});
+      abrirConfirm('Excluir "'+esc(p.nome)+'"?',async function(){
+        await sb.from("projetos").delete().eq("id",id);await carregarProjetos();renderProjetos();showMsg("Projeto excluído.");
+      });
+    });});
+  }
+  function renderFreelancers(){
+    document.getElementById("listaFreelancers").innerHTML=freelancers.map(function(f){
+      return '<div class="card"><div class="item-row"><div><div class="item-name">'+f.nome+'</div><div class="item-sub">'+(f.funcao||"—")+' · Tel: '+(f.telefone||"—")+'</div></div><button class="btn btn-sm btn-danger" style="width:auto" data-delFl="'+f.id+'">Excluir</button></div></div>';
+    }).join("")||'<div class="empty">Nenhum freelancer.</div>';
+    document.querySelectorAll("[data-delFl]").forEach(function(b){b.addEventListener("click",function(){
+      var id=parseInt(b.getAttribute("data-delFl"));
+      var f=freelancers.find(function(x){return x.id===id;});
+      abrirConfirm('Excluir "'+esc(f.nome)+'"?',async function(){
+        await sb.from("freelancers").delete().eq("id",id);await carregarFreelancers();renderFreelancers();showMsg("Freelancer excluído.");
+      });
+    });});
+  }
+
+  document.getElementById("btnCriarProjeto").addEventListener("click", async function(){
+    var nome=document.getElementById("projNome").value.trim();
+    var cliente=document.getElementById("projCliente").value.trim();
+    var data=document.getElementById("projData").value||null;
+    if(!nome)return;
+    var r=await sb.from("projetos").insert({nome:nome,cliente:cliente||null,data_projeto:data});
+    if(r.error){showMsg("Erro: "+r.error.message,true);return;}
+    document.getElementById("projNome").value="";document.getElementById("projCliente").value="";
+    await carregarProjetos();renderProjetos();showMsg("Projeto criado!");
+  });
+  document.getElementById("btnCadastrarFl").addEventListener("click", async function(){
+    var nome=document.getElementById("flNome").value.trim();
+    var tel=document.getElementById("flTel").value.trim();
+    var funcao=document.getElementById("flFuncao").value.trim();
+    if(!nome)return;
+    var r=await sb.from("freelancers").insert({nome:nome,telefone:tel||null,funcao:funcao||null});
+    if(r.error){showMsg("Erro: "+r.error.message,true);return;}
+    document.getElementById("flNome").value="";document.getElementById("flTel").value="";document.getElementById("flFuncao").value="";
+    await carregarFreelancers();renderFreelancers();showMsg("Freelancer cadastrado!");
+  });
+
   async function carregarTudo(){
-    await Promise.all([carregarEquipamentos(),carregarCategorias()]);
-    renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
+    await Promise.all([carregarEquipamentos(),carregarCategorias(),carregarProjetos(),carregarFreelancers()]);
+    renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderProjetos();renderFreelancers();
   }
 
   async function mostrarApp(user){
