@@ -97,6 +97,10 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <button class="tab" data-tab="freelancers">Freelancers</button>
     <button class="tab" data-tab="movimentar">Movimentar</button>
     <button class="tab" data-tab="historico">Histórico</button>
+    <button class="tab" data-tab="calendario">Calendário</button>
+    <button class="tab" data-tab="orcamentos">Orçamentos</button>
+    <button class="tab" data-tab="financas">Finanças</button>
+    <button class="tab" data-tab="usuarios">Usuários</button>
   </div>
   <div class="content">
     <div id="appMsg"></div>
@@ -367,12 +371,16 @@ try{
       document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});
       t.classList.add("active");
       var nome=t.getAttribute("data-tab");
-      ["estoque","projetos","freelancers","movimentar","historico"].forEach(function(n){
+      ["estoque","projetos","freelancers","movimentar","historico","calendario","orcamentos","financas","usuarios"].forEach(function(n){
         var d=document.getElementById("tab-"+n);
         if(d)d.style.display=(n===nome)?"block":"none";
       });
       if(nome==="historico")renderHistorico();
       if(nome==="movimentar")preencherSelectsMov();
+      if(nome==="calendario")renderCalendario();
+      if(nome==="orcamentos")renderOrcamentos();
+      if(nome==="financas")renderFinancas();
+      if(nome==="usuarios")renderUsuarios();
     });
   });
 
@@ -427,8 +435,117 @@ try{
   });
 
   async function carregarTudo(){
-    await Promise.all([carregarEquipamentos(),carregarCategorias(),carregarProjetos(),carregarFreelancers(),carregarMovs()]);
+    await Promise.all([carregarEquipamentos(),carregarCategorias(),carregarProjetos(),carregarFreelancers(),carregarMovs(),carregarEventos(),carregarOrcamentos(),carregarPagFl(),carregarReceitas()]);
     renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderProjetos();renderFreelancers();
+  }
+
+  // ── CALENDÁRIO ──
+  var calEventos=[], calAno=new Date().getFullYear(), calMes=new Date().getMonth();
+  var MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  async function carregarEventos(){var r=await sb.from("calendario_eventos").select("*").order("data");calEventos=r.data||[];}
+  function renderCalendario(){
+    var tEl=document.getElementById("calTitulo");if(!tEl)return;
+    tEl.textContent=MESES[calMes]+" "+calAno;
+    var primeiroDia=new Date(calAno,calMes,1).getDay(),diasNoMes=new Date(calAno,calMes+1,0).getDate();
+    var html="";
+    for(var i=0;i<primeiroDia;i++)html+='<div></div>';
+    for(var d=1;d<=diasNoMes;d++){
+      var ds=calAno+"-"+String(calMes+1).padStart(2,'0')+"-"+String(d).padStart(2,'0');
+      var evsD=calEventos.filter(function(e){return e.data===ds;});
+      html+='<div style="border:0.5px solid #e0e0d8;border-radius:6px;padding:4px;min-height:50px;font-size:11px"><div>'+d+'</div>'+evsD.map(function(e){return '<div style="background:#eaf3de;border-radius:3px;padding:1px 3px;margin-top:2px;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.titulo+'</div>';}).join("")+'</div>';
+    }
+    document.getElementById("calGrid").innerHTML=html;
+    var evsMes=calEventos.filter(function(e){var dt=new Date(e.data+"T12:00:00");return dt.getMonth()===calMes&&dt.getFullYear()===calAno;});
+    document.getElementById("listaEventos").innerHTML=evsMes.map(function(e){
+      var dt=new Date(e.data+"T12:00:00").toLocaleDateString("pt-BR");
+      return '<div class="card"><div class="item-row"><div><div class="item-name">'+e.titulo+'</div><div class="item-sub">'+dt+'</div></div><button class="btn btn-sm btn-danger" style="width:auto" data-delEv="'+e.id+'">Excluir</button></div></div>';
+    }).join("")||'<div class="empty">Nenhum evento neste mês.</div>';
+    document.querySelectorAll("[data-delEv]").forEach(function(b){b.addEventListener("click",async function(){
+      await sb.from("calendario_eventos").delete().eq("id",parseInt(b.getAttribute("data-delEv")));
+      await carregarEventos();renderCalendario();showMsg("Evento excluído.");
+    });});
+  }
+  on("btnMesAnt","click",function(){calMes--;if(calMes<0){calMes=11;calAno--;}renderCalendario();});
+  on("btnMesProx","click",function(){calMes++;if(calMes>11){calMes=0;calAno++;}renderCalendario();});
+  on("btnCriarEvento","click",async function(){
+    var titulo=document.getElementById("evTitulo").value.trim();
+    var data=document.getElementById("evData").value;
+    if(!titulo||!data){showMsg("Preencha título e data.",true);return;}
+    await sb.from("calendario_eventos").insert({titulo:titulo,data:data});
+    document.getElementById("evTitulo").value="";document.getElementById("evData").value="";
+    await carregarEventos();renderCalendario();showMsg("Evento criado!");
+  });
+
+  // ── ORÇAMENTOS ──
+  var orcamentos=[];
+  async function carregarOrcamentos(){var r=await sb.from("orcamentos").select("*");orcamentos=r.data||[];}
+  function renderOrcamentos(){
+    var el=document.getElementById("listaOrcamentos");if(!el)return;
+    el.innerHTML=orcamentos.map(function(o){
+      var margem=o.margem||0,valor=Number(o.valor||0),total=valor*(1+margem/100);
+      return '<div class="card"><div class="item-row"><div><div class="item-name">'+o.titulo+'</div><div class="item-sub">Cliente: '+(o.cliente||"—")+' · +'+margem+'%</div></div><div class="actions"><strong>'+brl(total)+'</strong><button class="btn btn-sm btn-danger" style="width:auto" data-delOrc="'+o.id+'">Excluir</button></div></div></div>';
+    }).join("")||'<div class="empty">Nenhum orçamento.</div>';
+    document.querySelectorAll("[data-delOrc]").forEach(function(b){b.addEventListener("click",async function(){
+      await sb.from("orcamentos").delete().eq("id",parseInt(b.getAttribute("data-delOrc")));
+      await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento excluído.");
+    });});
+  }
+  on("btnCriarOrc","click",async function(){
+    var titulo=document.getElementById("orcTitulo").value.trim();
+    var cliente=document.getElementById("orcCliente").value.trim();
+    var valor=parseFloat(document.getElementById("orcValor").value)||0;
+    var margem=parseFloat(document.getElementById("orcMargem").value)||0;
+    if(!titulo||!valor){showMsg("Preencha título e valor.",true);return;}
+    await sb.from("orcamentos").insert({titulo:titulo,cliente:cliente||null,valor:valor,margem:margem,criado_por:usuario.id});
+    document.getElementById("orcTitulo").value="";document.getElementById("orcCliente").value="";document.getElementById("orcValor").value="";document.getElementById("orcMargem").value=0;
+    await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento criado!");
+  });
+
+  // ── FINANÇAS ──
+  var pagamentosFl=[], receitasList=[];
+  async function carregarPagFl(){var r=await sb.from("pagamentos_freelancer").select("*");pagamentosFl=r.data||[];}
+  async function carregarReceitas(){var r=await sb.from("receitas").select("*");receitasList=r.data||[];}
+  function renderFinancas(){
+    var pagSel=document.getElementById("pagFlSel");
+    if(pagSel)pagSel.innerHTML=freelancers.map(function(f){return '<option value="'+f.id+'">'+f.nome+'</option>';}).join("");
+    var totRec=receitasList.reduce(function(s,r){return s+Number(r.valor);},0);
+    var totPag=pagamentosFl.reduce(function(s,p){return s+Number(p.valor);},0);
+    document.getElementById("finCards").innerHTML='<div class="metric"><div class="metric-label" style="color:#3b6d11">Recebido</div><div class="metric-value" style="color:#3b6d11">'+brl(totRec)+'</div></div><div class="metric"><div class="metric-label" style="color:#854f0b">Pago</div><div class="metric-value" style="color:#854f0b">'+brl(totPag)+'</div></div><div class="metric"><div class="metric-label">Saldo</div><div class="metric-value">'+brl(totRec-totPag)+'</div></div>';
+    document.getElementById("listaPagFl").innerHTML=pagamentosFl.map(function(p){
+      var f=freelancers.find(function(x){return x.id===p.freelancer_id;});
+      return '<div class="card"><div class="item-row"><div>'+(f?f.nome:"—")+'</div><div class="actions"><strong>'+brl(p.valor)+'</strong><button class="btn btn-sm btn-danger" style="width:auto" data-delPag="'+p.id+'">×</button></div></div></div>';
+    }).join("")||'<div class="empty">Nenhum pagamento.</div>';
+    document.getElementById("listaReceitas").innerHTML=receitasList.map(function(r){
+      return '<div class="card"><div class="item-row"><div>'+r.descricao+'</div><div class="actions"><strong style="color:#3b6d11">'+brl(r.valor)+'</strong><button class="btn btn-sm btn-danger" style="width:auto" data-delRec="'+r.id+'">×</button></div></div></div>';
+    }).join("")||'<div class="empty">Nenhuma receita.</div>';
+    document.querySelectorAll("[data-delPag]").forEach(function(b){b.addEventListener("click",async function(){await sb.from("pagamentos_freelancer").delete().eq("id",parseInt(b.getAttribute("data-delPag")));await carregarPagFl();renderFinancas();});});
+    document.querySelectorAll("[data-delRec]").forEach(function(b){b.addEventListener("click",async function(){await sb.from("receitas").delete().eq("id",parseInt(b.getAttribute("data-delRec")));await carregarReceitas();renderFinancas();});});
+  }
+  on("btnNovoPagto","click",async function(){
+    var flId=parseInt(document.getElementById("pagFlSel").value);
+    var valor=parseFloat(document.getElementById("pagFlValor").value)||0;
+    if(!flId||!valor){showMsg("Preencha os campos.",true);return;}
+    await sb.from("pagamentos_freelancer").insert({freelancer_id:flId,valor:valor,status:"pendente"});
+    document.getElementById("pagFlValor").value="";
+    await carregarPagFl();renderFinancas();showMsg("Pagamento registrado!");
+  });
+  on("btnNovaReceita","click",async function(){
+    var desc=document.getElementById("receitaDesc").value.trim();
+    var valor=parseFloat(document.getElementById("receitaValor").value)||0;
+    if(!desc||!valor){showMsg("Preencha os campos.",true);return;}
+    await sb.from("receitas").insert({descricao:desc,valor:valor,status:"recebida"});
+    document.getElementById("receitaDesc").value="";document.getElementById("receitaValor").value="";
+    await carregarReceitas();renderFinancas();showMsg("Receita registrada!");
+  });
+
+  // ── USUÁRIOS ──
+  function renderUsuarios(){
+    sb.from("perfis").select("*").then(function(r){
+      var data=r.data||[];
+      document.getElementById("listaUsuarios").innerHTML=data.map(function(u){
+        return '<div class="card"><div class="item-row"><div>'+u.nome+'</div><span class="badge badge-ok">'+(u.papel||"usuario")+'</span></div></div>';
+      }).join("")||'<div class="empty">Nenhum usuário.</div>';
+    });
   }
 
   var todasMovs=[];
