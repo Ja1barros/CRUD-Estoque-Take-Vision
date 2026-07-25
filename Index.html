@@ -95,6 +95,8 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <button class="tab active" data-tab="estoque">Estoque</button>
     <button class="tab" data-tab="projetos">Projetos</button>
     <button class="tab" data-tab="freelancers">Freelancers</button>
+    <button class="tab" data-tab="movimentar">Movimentar</button>
+    <button class="tab" data-tab="historico">Histórico</button>
   </div>
   <div class="content">
     <div id="appMsg"></div>
@@ -362,10 +364,12 @@ try{
       document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});
       t.classList.add("active");
       var nome=t.getAttribute("data-tab");
-      ["estoque","projetos","freelancers"].forEach(function(n){
+      ["estoque","projetos","freelancers","movimentar","historico"].forEach(function(n){
         var d=document.getElementById("tab-"+n);
         if(d)d.style.display=(n===nome)?"block":"none";
       });
+      if(nome==="historico")renderHistorico();
+      if(nome==="movimentar")preencherSelectsMov();
     });
   });
 
@@ -420,9 +424,75 @@ try{
   });
 
   async function carregarTudo(){
-    await Promise.all([carregarEquipamentos(),carregarCategorias(),carregarProjetos(),carregarFreelancers()]);
+    await Promise.all([carregarEquipamentos(),carregarCategorias(),carregarProjetos(),carregarFreelancers(),carregarMovs()]);
     renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderProjetos();renderFreelancers();
   }
+
+  var todasMovs=[];
+  async function carregarMovs(){var r=await sb.from("movimentacoes").select("*,equipamentos(nome),projetos(nome)").order("criado_em",{ascending:false}).limit(200);todasMovs=r.data||[];}
+
+  function preencherSelectsMov(){
+    var opts=projetos.filter(function(p){return p.status==="ativo";}).map(function(p){return '<option value="'+p.id+'">'+p.nome+'</option>';}).join("");
+    document.getElementById("movProj").innerHTML='<option value="">Selecione...</option>'+opts;
+    document.getElementById("devProj").innerHTML='<option value="">Selecione...</option>'+opts;
+    document.getElementById("movEq").innerHTML='<option value="">Selecione...</option>'+equipamentos.map(function(e){return '<option value="'+e.id+'">'+e.nome+' ('+e.qtd_disponivel+' disp.)</option>';}).join("");
+    document.getElementById("movData").value=new Date().toISOString().split("T")[0];
+  }
+
+  function renderHistorico(){
+    document.getElementById("listaHistorico").innerHTML=todasMovs.map(function(m){
+      return '<div class="card" style="margin-bottom:8px"><div class="item-name" style="font-size:14px">'+(m.equipamentos?m.equipamentos.nome:"—")+'</div><div class="item-sub">'+(m.projetos?m.projetos.nome:"—")+' · '+m.responsavel+' · '+m.data+' · '+m.tipo+' · ×'+m.quantidade+'</div></div>';
+    }).join("")||'<div class="empty">Nenhuma movimentação.</div>';
+  }
+
+  document.getElementById("btnRegistrarSaida").addEventListener("click", async function(){
+    var projId=parseInt(document.getElementById("movProj").value);
+    var eqId=parseInt(document.getElementById("movEq").value);
+    var qtd=parseInt(document.getElementById("movQtd").value);
+    var resp=document.getElementById("movResp").value.trim();
+    var data=document.getElementById("movData").value;
+    if(!projId||!eqId||!resp){showMsg("Preencha todos os campos.",true);return;}
+    var eq=equipamentos.find(function(e){return e.id===eqId;});
+    if(eq.qtd_disponivel<qtd){showMsg("Quantidade insuficiente.",true);return;}
+    await sb.from("movimentacoes").insert({tipo:"saída",equipamento_id:eqId,projeto_id:projId,quantidade:qtd,responsavel:resp,data:data,criado_por:usuario.id});
+    await sb.from("equipamentos").update({qtd_disponivel:eq.qtd_disponivel-qtd}).eq("id",eqId);
+    await carregarEquipamentos();await carregarMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();preencherSelectsMov();
+    document.getElementById("movResp").value="";
+    showMsg("Saída registrada!");
+  });
+
+  async function carregarEqProjeto(){
+    var projId=parseInt(document.getElementById("devProj").value);
+    var lista=document.getElementById("devLista");
+    if(!projId){lista.innerHTML="";return;}
+    var r=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
+    var movs=r.data||[];
+    var alocMap={};
+    movs.forEach(function(m){if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
+    var eqsAloc=Object.keys(alocMap).map(function(id){return{eq:equipamentos.find(function(e){return e.id===parseInt(id);}),alocado:alocMap[id]};}).filter(function(x){return x.alocado>0&&x.eq;});
+    if(!eqsAloc.length){lista.innerHTML='<div class="empty">Nenhum equipamento alocado.</div>';return;}
+    lista.innerHTML=eqsAloc.map(function(x){return '<div class="item-row" style="padding:6px 0;border-bottom:0.5px solid #f1efe8"><span>'+x.eq.nome+'</span><span class="badge badge-warn">× '+x.alocado+'</span></div>';}).join("");
+  }
+  document.getElementById("devProj").addEventListener("change", carregarEqProjeto);
+
+  document.getElementById("btnDevolver").addEventListener("click", async function(){
+    var projId=parseInt(document.getElementById("devProj").value);
+    if(!projId){showMsg("Selecione um projeto.",true);return;}
+    var r=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
+    var movs=r.data||[];
+    var alocMap={};
+    movs.forEach(function(m){if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
+    var ids=Object.keys(alocMap).filter(function(id){return alocMap[id]>0;});
+    for(var i=0;i<ids.length;i++){
+      var eqId=parseInt(ids[i]),qtd=alocMap[ids[i]];
+      var eq=equipamentos.find(function(e){return e.id===eqId;});
+      await sb.from("movimentacoes").insert({tipo:"entrada",equipamento_id:eqId,projeto_id:projId,quantidade:qtd,responsavel:"Sistema",data:new Date().toISOString().split("T")[0],criado_por:usuario.id});
+      await sb.from("equipamentos").update({qtd_disponivel:Math.min(eq.qtd_total,eq.qtd_disponivel+qtd)}).eq("id",eqId);
+    }
+    await carregarEquipamentos();await carregarMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();preencherSelectsMov();
+    document.getElementById("devLista").innerHTML="";
+    showMsg("Devolução registrada!");
+  });
 
   async function mostrarApp(user){
     usuario=user;
