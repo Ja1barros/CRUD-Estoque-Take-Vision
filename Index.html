@@ -4,42 +4,40 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Take Vision Imagem</title>
-<script>
-window.onerror = function(msg, url, line, col, error) {
-  var div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#a32d2d;color:#fff;padding:16px;z-index:99999;font-family:monospace;font-size:13px;white-space:pre-wrap;max-height:80vh;overflow:auto;';
-  div.textContent = 'ERRO DE JAVASCRIPT:\n' + msg + '\nLinha: ' + line + ', Coluna: ' + col;
-  document.body.appendChild(div);
-  return false;
-};
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+.app{display:none;min-height:100vh}
 .auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
 .auth-card{background:#fff;border-radius:16px;border:0.5px solid #e0e0d8;padding:2rem;width:100%;max-width:400px}
 .auth-title{font-size:22px;font-weight:500;margin-bottom:6px}
 .auth-sub{font-size:14px;color:#666;margin-bottom:24px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
-input{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:8px 12px;font-size:14px}
-.btn{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:9px 18px;font-size:14px;background:#1a1a1a;color:#fff;cursor:pointer;font-weight:500}
+input,select,textarea{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:8px 12px;font-size:14px;background:#fff;color:#1a1a1a;outline:none;font-family:inherit}
+textarea{resize:vertical;min-height:70px}
+input:focus,select:focus,textarea:focus{border-color:#888}
+.btn{width:100%;border:0.5px solid #d0d0c8;border-radius:8px;padding:9px 18px;font-size:14px;background:#1a1a1a;color:#fff;cursor:pointer;font-weight:500;transition:opacity .2s}
+.btn:hover{opacity:.85}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{background:transparent;color:#1a1a1a}
+.btn-sm{width:auto;padding:5px 14px;font-size:13px}
+.btn-danger{background:#e24b4a;border-color:#e24b4a;color:#fff}
+.btn-blue{background:#185fa5;border-color:#185fa5;color:#fff}
+.btn-edit{background:#f5a623;border-color:#f5a623;color:#fff}
+.btn-green{background:#639922;border-color:#639922;color:#fff}
+.btn-purple{background:#534ab7;border-color:#534ab7;color:#fff}
+.btn-recibo{background:#b8860b;border-color:#b8860b;color:#fff}
 .err{background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
 .ok{background:#eaf3de;color:#3b6d11;border:0.5px solid #97c459;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
-.app{display:none;min-height:100vh}
 header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
 .header-title{font-size:16px;font-weight:500}
 .header-user{font-size:13px;color:#666;display:flex;align-items:center;gap:12px}
 .tabs{display:flex;border-bottom:0.5px solid #e0e0d8;background:#fff;padding:0 1.5rem;overflow-x:auto}
-.tab{padding:12px 18px;font-size:14px;border:none;background:none;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab{padding:12px 18px;font-size:14px;border:none;background:none;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:400;white-space:nowrap}
 .tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500}
 .content{padding:1.5rem;max-width:1100px;margin:0 auto}
-.btn-outline{background:transparent;color:#1a1a1a}
-.btn-sm{width:auto;padding:5px 14px;font-size:13px}
-.btn-danger{background:#e24b4a;border-color:#e24b4a;color:#fff}
-.btn-edit{background:#f5a623;border-color:#f5a623;color:#fff}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
 .metric{background:#fff;border:0.5px solid #e0e0d8;border-radius:10px;padding:1rem}
 .metric-label{font-size:12px;color:#888;margin-bottom:4px}
@@ -51,26 +49,77 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .badge{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:500}
 .badge-ok{background:#eaf3de;color:#3b6d11}
 .badge-warn{background:#faeeda;color:#854f0b}
+.badge-info{background:#e6f1fb;color:#185fa5}
+.badge-gray{background:#f1efe8;color:#5f5e5a}
+.badge-purple{background:#eeedfe;color:#534ab7}
+.badge-danger{background:#fcebeb;color:#a32d2d}
+.admin-badge{background:#534ab7;color:#eeedfe;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500}
+.supremo-badge{background:#b8860b;color:#fff8dc;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500}
+.progress-wrap{background:#f1efe8;border-radius:4px;height:6px;overflow:hidden;margin-top:10px}
+.progress-bar{height:100%;border-radius:4px;transition:width .3s}
 .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .filter-btn{border:0.5px solid #d0d0c8;border-radius:8px;padding:5px 12px;font-size:12px;background:transparent;cursor:pointer}
 .filter-btn.active{background:#f1efe8}
 .section-title{font-size:16px;font-weight:500;margin-bottom:14px}
-.section-sub{font-size:13px;font-weight:600;color:#444;margin:20px 0 10px;padding-bottom:6px;border-bottom:0.5px solid #e0e0d8;text-transform:uppercase}
+.section-sub{font-size:13px;font-weight:600;color:#444;margin:20px 0 10px;padding-bottom:6px;border-bottom:0.5px solid #e0e0d8;text-transform:uppercase;letter-spacing:.4px}
 .empty{color:#888;font-size:14px;padding:2rem 0;text-align:center}
 .tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .tag-item{display:flex;align-items:center;gap:6px;background:#f1efe8;border-radius:8px;padding:5px 10px;font-size:13px}
-.tag-x{background:none;border:none;color:#a32d2d;cursor:pointer;font-size:15px}
+.tag-x{background:none;border:none;color:#a32d2d;cursor:pointer;font-size:15px;line-height:1}
 .item-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .item-name{font-weight:500;font-size:15px}
 .item-sub{font-size:12px;color:#888;margin-top:2px}
 .actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.progress-wrap{background:#f1efe8;border-radius:4px;height:6px;overflow:hidden;margin-top:10px}
-.progress-bar{height:100%;border-radius:4px}
+.check-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:10px}
+.check-item{display:flex;align-items:center;gap:8px;font-size:14px}
+.check-item input[type=checkbox]{width:auto}
+.search-bar{display:flex;gap:8px;margin-bottom:14px}
+.search-bar input{flex:1}
+.mov-lista-item{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:0.5px solid #f1efe8;flex-wrap:wrap}
+.mov-lista-item:last-child{border-bottom:none}
+.orc-item-row{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:0.5px solid #f1efe8;flex-wrap:wrap}
+.orc-item-row:last-child{border-bottom:none}
+.orc-subtotal{background:#f5f5f0;border-radius:8px;padding:12px 16px;margin-top:10px}
+.pasta-card{background:#fff;border:0.5px solid #e0e0d8;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.pasta-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.pasta-body{padding:0 16px 12px;border-top:0.5px solid #f1efe8}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.checklist-eq-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #f1efe8;font-size:14px}
+.checklist-eq-item:last-child{border-bottom:none}
+.checklist-eq-item input[type=checkbox]{width:auto;cursor:pointer}
+.toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.toggle-row input[type=checkbox]{width:auto;cursor:pointer}
+.toggle-row label{font-size:13px;color:#555;cursor:pointer}
+.fin-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.5rem}
+.fin-section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.fin-section-title{font-size:13px;font-weight:600;color:#444;text-transform:uppercase;letter-spacing:.4px}
+.anexo-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border:0.5px solid #e0e0d8;border-radius:8px;margin-bottom:6px;font-size:13px}
+.anexo-item a{color:#185fa5;text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anexo-item a:hover{text-decoration:underline}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.cal-head-cell{text-align:center;font-size:11px;font-weight:600;color:#888;padding:4px 0}
+.cal-day{min-height:90px;border:0.5px solid #e0e0d8;border-radius:8px;padding:6px;cursor:pointer;background:#fff;transition:background .15s;position:relative;overflow:hidden}
+.cal-day:hover{background:#f5f5f0}
+.cal-day-hoje{border-color:#185fa5!important;background:#e8f3fc!important}
+.cal-day-num{font-size:13px;font-weight:400;color:#333;margin-bottom:4px}
+.cal-day-hoje .cal-day-num{font-weight:700;color:#185fa5}
+.cal-ev{font-size:9px;border-radius:3px;padding:2px 4px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%;display:flex;align-items:center;gap:2px}
+.cal-ev span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.cal-ev-proj{background:#e6f1fb;color:#185fa5}
+.cal-ev-cal{background:#eaf3de;color:#3b6d11}
+.cal-empty{pointer-events:none;border-color:transparent!important;background:transparent!important}
+.cal-ev-actions{display:none;gap:1px;flex-shrink:0}
+.cal-ev:hover .cal-ev-actions{display:flex}
+.cal-ev-action-btn{background:none;border:none;cursor:pointer;font-size:9px;padding:0 2px;line-height:1.4;border-radius:2px;opacity:.7;transition:opacity .15s}
+.cal-ev-action-btn:hover{opacity:1;background:rgba(0,0,0,.12)}
+.modal-confirm-icon{font-size:36px;text-align:center;margin-bottom:12px}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
-.modal-box{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:1rem}
+.modal-box{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;margin:1rem}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
 .modal-title{font-size:17px;font-weight:500}
 .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#888}
+@media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}.fin-cards{grid-template-columns:repeat(2,1fr)}.row{flex-direction:column}.two-col{grid-template-columns:1fr}.cal-day{min-height:55px}}
 </style>
 </head>
 <body>
@@ -82,32 +131,38 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <div class="field" id="nomeField" style="display:none"><label>Nome</label><input type="text" id="nomeInput" placeholder="Seu nome"/></div>
     <div class="field"><label>E-mail</label><input type="email" id="emailInput" placeholder="seu@email.com"/></div>
     <div class="field"><label>Senha</label><input type="password" id="senhaInput" placeholder="••••••••"/></div>
-    <button class="btn" id="authBtn">Entrar</button>
-    <div style="text-align:center;margin-top:14px"><button id="toggleBtn" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer">Não tem conta? Cadastre-se</button></div>
+    <button class="btn" id="authBtn" onclick="handleAuth()">Entrar</button>
+    <div style="text-align:center;margin-top:14px"><button onclick="toggleAuthMode()" style="background:none;border:none;color:#888;font-size:13px;cursor:pointer" id="toggleBtn">Não tem conta? Cadastre-se</button></div>
   </div>
 </div>
+
 <div class="app" id="appScreen">
   <header>
     <div class="header-title">Take Vision Imagem</div>
-    <div class="header-user"><span id="userNome"></span><button class="btn btn-outline btn-sm" id="btnSair" style="width:auto">Sair</button></div>
+    <div class="header-user"><span id="userNome"></span><span id="userPapel"></span>
+      <button class="btn btn-outline btn-sm" onclick="sair()">Sair</button>
+    </div>
   </header>
   <div class="tabs">
-    <button class="tab active" data-tab="estoque">Estoque</button>
-    <button class="tab" data-tab="projetos">Projetos</button>
-    <button class="tab" data-tab="freelancers">Freelancers</button>
-    <button class="tab" data-tab="movimentar">Movimentar</button>
-    <button class="tab" data-tab="historico">Histórico</button>
-    <button class="tab" data-tab="calendario">Calendário</button>
-    <button class="tab" data-tab="orcamentos">Orçamentos</button>
-    <button class="tab" data-tab="financas">Finanças</button>
-    <button class="tab" data-tab="usuarios">Usuários</button>
+    <button class="tab active" onclick="mudarTab('estoque',this)">Estoque</button>
+    <button class="tab" onclick="mudarTab('projetos',this)">Projetos</button>
+    <button class="tab" onclick="mudarTab('freelancers',this)">Freelancers</button>
+    <button class="tab" onclick="mudarTab('movimentar',this)">Movimentar</button>
+    <button class="tab" onclick="mudarTab('historico',this)">Histórico</button>
+    <button class="tab" onclick="mudarTab('calendario',this)">Calendário</button>
+    <button class="tab" id="tabOrcamentos" style="display:none" onclick="mudarTab('orcamentos',this)">Orçamentos</button>
+    <button class="tab" id="tabFinancas" style="display:none" onclick="mudarTab('financas',this)">Finanças</button>
+    <button class="tab" id="tabUsuarios" style="display:none" onclick="mudarTab('usuarios',this)">Usuários</button>
   </div>
   <div class="content">
     <div id="appMsg"></div>
+
+    <!-- ESTOQUE -->
     <div id="tab-estoque">
       <div class="metrics" id="metricsArea"></div>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="buscaEq" placeholder="🔍 Buscar equipamento..." style="flex:1;max-width:340px"/>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <input id="buscaEq" placeholder="🔍 Buscar equipamento..." oninput="renderEquipamentos()" style="flex:1;max-width:340px"/>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('buscaEq').value='';renderEquipamentos()">Limpar</button>
       </div>
       <div class="filters" id="filtrosArea"></div>
       <div id="listaEquipamentos"></div>
@@ -116,13 +171,14 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
       <div class="card card-dashed">
         <div class="section-title">Adicionar equipamento</div>
         <div class="row">
-          <div class="col"><label style="font-size:13px;color:#666">Nome</label><input id="eqNome" placeholder="Ex: Canon R5"/></div>
-          <div class="col"><label style="font-size:13px;color:#666">Categoria</label><select id="eqCat"></select></div>
-          <div style="width:90px"><label style="font-size:13px;color:#666">Qtd</label><input id="eqQtd" type="number" min="1" value="1"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="eqNome" placeholder="Ex: Canon R5"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Categoria</label><select id="eqCat"></select></div>
+          <div style="width:90px"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Qtd</label><input id="eqQtd" type="number" min="1" value="1"/></div>
         </div>
         <div class="row">
-          <div class="col"><label style="font-size:13px;color:#666">Nº de série</label><input id="eqSerie" placeholder="Opcional"/></div>
-          <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" id="btnCadastrarEq" style="width:auto">+ Adicionar</button></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de série</label><input id="eqSerie" placeholder="Opcional"/></div>
+          <div class="col" id="eqPrecoBaseWrap" style="display:none"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Preço base (R$)</label><input id="eqPrecoBase" type="number" min="0" step="0.01" value="0"/></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" onclick="cadastrarEq()">+ Adicionar</button></div>
         </div>
       </div>
       <div class="section-sub">Gerenciar categorias</div>
@@ -131,514 +187,696 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         <div class="section-title">Adicionar categoria</div>
         <div class="row">
           <div class="col"><input id="catNome" placeholder="Ex: Drones"/></div>
-          <div style="display:flex;align-items:center"><button class="btn btn-sm btn-outline" id="btnCriarCategoria" style="width:auto">+ Adicionar</button></div>
+          <div style="display:flex;align-items:center"><button class="btn btn-sm btn-outline" onclick="criarCategoria()">+ Adicionar</button></div>
         </div>
       </div>
     </div>
 
+    <!-- PROJETOS -->
     <div id="tab-projetos" style="display:none">
-      <div class="section-sub">Projetos</div>
+      <div class="section-sub">Pastas de projetos</div>
+      <div id="listaPastas"></div>
+      <div class="card card-dashed">
+        <div class="section-title">Criar pasta</div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="pastaNome" placeholder="Ex: Vivo Rio"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Descrição</label><input id="pastaDesc" placeholder="Opcional"/></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-outline" onclick="criarPasta()">+ Criar</button></div>
+        </div>
+      </div>
+      <div class="section-sub">Projetos sem pasta</div>
       <div id="listaProjetos"></div>
       <div class="card card-dashed">
         <div class="section-title">Criar projeto</div>
         <div class="row">
-          <div class="col"><label style="font-size:13px;color:#666">Nome</label><input id="projNome" placeholder="Ex: Clip Musical"/></div>
-          <div class="col"><label style="font-size:13px;color:#666">Cliente</label><input id="projCliente" placeholder="Ex: Empresa XYZ"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="projNome" placeholder="Ex: Clip Musical Março"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Cliente</label><input id="projCliente" placeholder="Ex: Empresa XYZ"/></div>
         </div>
         <div class="row">
-          <div class="col"><label style="font-size:13px;color:#666">Data</label><input id="projData" type="date"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data início</label><input id="projData" type="date"/></div>
+          <div class="col" id="projDataFimWrap" style="display:none"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data fim</label><input id="projDataFim" type="date"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Pasta (opcional)</label><select id="projPasta"><option value="">Sem pasta</option></select></div>
         </div>
-        <button class="btn btn-sm btn-outline" id="btnCriarProjeto" style="width:auto">+ Criar projeto</button>
+        <div class="toggle-row" style="margin-bottom:14px">
+          <input type="checkbox" id="projMultiDia" onchange="document.getElementById('projDataFimWrap').style.display=this.checked?'':'none'"/>
+          <label for="projMultiDia">Evento com mais de um dia</label>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="criarProjeto()">+ Criar projeto</button>
       </div>
     </div>
 
+    <!-- FREELANCERS -->
     <div id="tab-freelancers" style="display:none">
+      <div class="section-sub">Buscar freelancer</div>
+      <div class="search-bar"><input id="buscaFl" placeholder="Digite o nome..." oninput="buscarFreelancer()"/><button class="btn btn-sm btn-outline" onclick="limparBusca()">Limpar</button></div>
+      <div id="resultadoBusca" style="display:none"></div>
       <div class="section-sub">Freelancers cadastrados</div>
       <div id="listaFreelancers"></div>
       <div class="card card-dashed">
         <div class="section-title">Cadastrar freelancer</div>
         <div class="row">
-          <div class="col"><label style="font-size:13px;color:#666">Nome</label><input id="flNome" placeholder="Ex: João Silva"/></div>
-          <div class="col"><label style="font-size:13px;color:#666">Telefone</label><input id="flTel" placeholder="(21) 99999-9999"/></div>
-          <div class="col"><label style="font-size:13px;color:#666">Função</label><input id="flFuncao" placeholder="Ex: Cinegrafista"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="flNome" placeholder="Ex: João Silva"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Telefone</label><input id="flTel" placeholder="(21) 99999-9999"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">RG</label><input id="flRg" placeholder="Ex: 12.345.678-9"/></div>
         </div>
-        <button class="btn btn-sm btn-outline" id="btnCadastrarFl" style="width:auto">+ Cadastrar</button>
+        <div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Funções</label><div id="flFuncoesCheck" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:0.5px solid #d0d0c8;border-radius:8px;min-height:42px"></div></div>
+        <button class="btn btn-sm btn-outline" onclick="cadastrarFreelancer()">+ Cadastrar</button>
       </div>
-    </div><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" data-close="modalEq">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" id="btnSalvarEq" style="width:auto">Salvar</button><button class="btn btn-sm btn-outline" data-close="modalEq" style="width:auto">Cancelar</button></div></div></div>
-<div class="modal-bg" id="modalCat"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" data-close="modalCat">×</button></div><div class="field"><label>Nome</label><input id="editCatNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" id="btnSalvarCategoria" style="width:auto">Salvar</button><button class="btn btn-sm btn-outline" data-close="modalCat" style="width:auto">Cancelar</button></div></div></div>
+      <div class="section-sub">Funções</div>
+      <div class="tag-list" id="listaFuncoes"></div>
+      <div class="card card-dashed">
+        <div class="section-title">Adicionar função</div>
+        <div class="row">
+          <div class="col"><input id="funcaoNome" placeholder="Ex: Cinegrafista"/></div>
+          <div style="display:flex;align-items:center"><button class="btn btn-sm btn-outline" onclick="criarFuncao()">+ Adicionar</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOVIMENTAR -->
+    <div id="tab-movimentar" style="display:none">
+      <div class="two-col">
+        <div>
+          <div class="section-sub">Checklists de equipamentos</div>
+          <div id="listaChecklists"></div>
+          <div class="card card-dashed">
+            <div class="section-title">Criar checklist</div>
+            <div class="row">
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="checkNome" placeholder="Ex: Kit Show Principal"/></div>
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label><select id="checkProjeto"><option value="">Sem projeto</option></select></div>
+            </div>
+            <div style="font-size:13px;color:#666;margin-bottom:6px">Equipamentos e quantidades</div>
+            <div id="checkEquipamentosLista" style="max-height:260px;overflow-y:auto;border:0.5px solid #e0e0d8;border-radius:8px;padding:8px;margin-bottom:12px"></div>
+            <button class="btn btn-sm btn-outline" onclick="salvarChecklist()">+ Salvar checklist</button>
+          </div>
+        </div>
+        <div>
+          <div class="section-sub">Saída de equipamentos</div>
+          <div class="card">
+            <div class="row">
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label><select id="movProj"><option value="">Selecione...</option></select></div>
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Responsável</label><input id="movResp" placeholder="Nome"/></div>
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data</label><input id="movData" type="date"/></div>
+            </div>
+            <div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Observação (opcional)</label><input id="movObs" placeholder="Ex: Equipamentos para o show principal"/></div>
+            <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
+            <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:12px" id="movLista"></div>
+            <button class="btn btn-sm btn-outline" onclick="adicionarLinhaEq()" style="margin-bottom:12px">+ Adicionar equipamento</button><br/>
+            <button class="btn btn-sm btn-green" onclick="registrarMovLote()">✓ Registrar saída</button>
+          </div>
+          <div class="section-sub">Devolução de equipamentos</div>
+          <div class="card">
+            <div class="row">
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label><select id="devProj" onchange="carregarEqProjeto()"><option value="">Selecione...</option></select></div>
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Responsável</label><input id="devResp" placeholder="Nome"/></div>
+              <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data</label><input id="devData" type="date"/></div>
+            </div>
+            <div id="devLista" style="margin-bottom:12px"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-sm btn-outline" onclick="devolverTodos()">↩ Devolver todos</button>
+              <button class="btn btn-sm btn-green" onclick="registrarDevolucao()">✓ Registrar devolução</button>
+            </div>
+          </div>
+          <div class="section-sub">Consultar equipamentos por evento</div>
+          <div class="card">
+            <div class="row"><div class="col"><select id="consultaProj" onchange="consultarEqEvento()"><option value="">Selecione o projeto...</option></select></div></div>
+            <div id="consultaResultado"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="tab-historico" style="display:none">
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select id="histFiltroProjeto" onchange="renderHistorico()" style="width:auto;min-width:180px"><option value="">Todos os projetos</option></select>
+        <input id="histFiltroResp" placeholder="Filtrar por pessoa..." oninput="renderHistorico()" style="width:auto;min-width:180px;flex:1"/>
+        <button class="btn btn-sm btn-outline" onclick="limparFiltrosHist()">Limpar</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div><div style="font-weight:600;font-size:13px;color:#854f0b;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #faeeda">⬆ Saídas</div><div id="listaSaidas"></div></div>
+        <div><div style="font-weight:600;font-size:13px;color:#3b6d11;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #eaf3de">⬇ Entradas</div><div id="listaEntradas"></div></div>
+      </div>
+    </div>
+
+    <!-- CALENDÁRIO -->
+    <div id="tab-calendario" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <button class="btn btn-sm btn-outline" onclick="mudarMes(-1)">← Anterior</button>
+        <div id="calTitulo" style="font-size:18px;font-weight:600;color:#1a1a1a"></div>
+        <button class="btn btn-sm btn-outline" onclick="mudarMes(1)">Próximo →</button>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12px;color:#666;margin-bottom:10px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#e6f1fb;display:inline-block"></span>Projeto</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#eaf3de;display:inline-block"></span>Evento</span>
+      </div>
+      <div class="cal-head">
+        <div class="cal-head-cell">DOM</div><div class="cal-head-cell">SEG</div><div class="cal-head-cell">TER</div>
+        <div class="cal-head-cell">QUA</div><div class="cal-head-cell">QUI</div><div class="cal-head-cell">SEX</div><div class="cal-head-cell">SÁB</div>
+      </div>
+      <div id="calGrid" class="cal-grid"></div>
+    </div>
+
+    <!-- ORÇAMENTOS -->
+    <div id="tab-orcamentos" style="display:none">
+      <div id="listaOrcamentos"></div>
+      <div class="card card-dashed">
+        <div class="section-title">Criar orçamento</div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Título</label><input id="orcTitulo" placeholder="Ex: Cobertura de Evento"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Cliente</label><input id="orcCliente" placeholder="Ex: Empresa XYZ"/></div>
+        </div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Local</label><input id="orcLocal" placeholder="Ex: Rio de Janeiro, RJ"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data do evento</label><input id="orcDataEvento" type="date"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de diárias</label><input id="orcDiarias" type="number" min="1" value="1" oninput="atualizarSubtotal()"/></div>
+        </div>
+        <div class="row">
+          <div class="col" style="max-width:200px">
+            <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem comercial (%)</label>
+            <input id="orcMargem" type="number" min="0" max="500" value="40" oninput="atualizarSubtotal()" style="max-width:120px"/>
+          </div>
+        </div>
+        <div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Descrição do serviço</label><textarea id="orcDescricao" placeholder="Descreva o serviço..."></textarea></div>
+        <div class="field">
+          <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Importar checklist (opcional)</label>
+          <div style="display:flex;gap:8px"><select id="orcChecklist" style="flex:1"><option value="">Selecione um checklist...</option></select><button class="btn btn-sm btn-blue" onclick="importarChecklist()">Importar</button></div>
+        </div>
+        <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
+        <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="orcItensLista"></div>
+        <button class="btn btn-sm btn-outline" onclick="adicionarItemOrc()" style="margin-bottom:16px">+ Adicionar equipamento</button>
+        <div style="font-weight:500;font-size:14px;margin:8px 0 10px">Provedores de serviço</div>
+        <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="orcProvedoresLista"></div>
+        <button class="btn btn-sm btn-outline" onclick="adicionarProvedor()" style="margin-bottom:16px">+ Adicionar provedor</button>
+        <div class="orc-subtotal">
+          <div style="font-size:13px;color:#888;margin-bottom:4px">Equipamentos: <strong id="previewSubtotalEq">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:4px">Provedores: <strong id="previewSubtotalProv">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:4px;border-top:0.5px solid #d0d0c8;padding-top:8px">Subtotal: <strong id="previewSubtotal">R$ 0,00</strong></div>
+          <div style="font-size:13px;color:#888;margin-bottom:2px" id="previewDiariasRow">× <span id="previewDiariasNum">1</span> diária(s): <strong id="previewComDiarias">R$ 0,00</strong></div>
+          <div style="font-size:14px;color:#854f0b;margin-top:4px">+ <span id="previewMargemPct">40</span>% margem → <strong id="previewComMargem">R$ 0,00</strong></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-sm btn-purple" onclick="finalizarOrcamento()">✓ Finalizar orçamento</button></div>
+      </div>
+    </div>
+
+    <!-- FINANÇAS -->
+    <div id="tab-financas" style="display:none">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+        <select id="finMesFiltro" onchange="renderFinancas()" style="width:auto">
+          <option value="-1">Todos os meses</option>
+          <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+          <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+          <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+          <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+        </select>
+        <input id="finAnoFiltro" type="number" value="2026" oninput="renderFinancas()" style="width:82px"/>
+        <button class="btn btn-sm btn-outline" onclick="setFinMesAtual()">Mês atual</button>
+        <button class="btn btn-sm btn-outline" onclick="setFinTudo()">Tudo</button>
+        <button class="btn btn-sm btn-blue" onclick="gerarPDFResumoFinanceiro()">⬇ PDF do período</button>
+      </div>
+      <div class="fin-cards" id="finCards"></div>
+      <div class="two-col">
+        <div>
+          <div class="fin-section-header">
+            <div class="fin-section-title">Pagamentos a Freelancers</div>
+            <button class="btn btn-sm btn-outline" onclick="abrirModalPagFl()">+ Novo</button>
+          </div>
+          <div class="card" style="margin-bottom:12px;background:#f5f5f0">
+            <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Ver equipe de um projeto</label>
+            <select id="finProjTeamSel" onchange="mostrarEquipeProjetoFin()"><option value="">Selecione um projeto...</option></select>
+            <div id="equipeProjetoFinArea" style="margin-top:10px"></div>
+          </div>
+          <div id="filtroPagFlArea" class="filters">
+            <button class="filter-btn active" onclick="setFiltroPagFl('todos',this)">Todos</button>
+            <button class="filter-btn" onclick="setFiltroPagFl('pendente',this)">Pendente</button>
+            <button class="filter-btn" onclick="setFiltroPagFl('atrasado',this)">Atrasado</button>
+            <button class="filter-btn" onclick="setFiltroPagFl('pago',this)">Pago</button>
+          </div>
+          <div id="listaPagFl"></div>
+        </div>
+        <div>
+          <div class="fin-section-header">
+            <div class="fin-section-title">Receitas</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-blue" onclick="abrirImportarOrc()">📋 Orçamento</button>
+              <button class="btn btn-sm btn-outline" onclick="abrirModalReceita()">+ Nova</button>
+            </div>
+          </div>
+          <div id="filtroReceitaArea" class="filters">
+            <button class="filter-btn active" onclick="setFiltroReceita('todos',this)">Todas</button>
+            <button class="filter-btn" onclick="setFiltroReceita('prevista',this)">Previstas</button>
+            <button class="filter-btn" onclick="setFiltroReceita('recebida',this)">Recebidas</button>
+          </div>
+          <div id="listaReceitas"></div>
+        </div>
+      </div>
+      <div class="section-sub">📎 Notas fiscais e comprovantes por projeto</div>
+      <div class="card">
+        <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Selecione o projeto</label>
+        <select id="anexoProjSel" onchange="renderAnexosProjeto()"><option value="">Selecione um projeto...</option></select>
+        <div id="anexosProjetoArea" style="margin-top:12px"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="file" id="anexoArquivoInput" accept="image/*,application/pdf" style="flex:1;min-width:200px"/>
+          <button class="btn btn-sm btn-green" onclick="uploadAnexoProjeto()">⬆ Enviar arquivo</button>
+        </div>
+        <div style="font-size:11px;color:#999;margin-top:6px">Aceita fotos e PDFs (notas fiscais, recibos, comprovantes).</div>
+      </div>
+    </div>
+
+    <!-- USUÁRIOS -->
+    <div id="tab-usuarios" style="display:none">
+      <div class="card" style="margin-bottom:16px;background:#fff8dc;border-color:#b8860b"><div style="font-size:13px;color:#7a5c00">Apenas a conta suprema pode gerenciar usuários.</div></div>
+      <div class="card" style="margin-bottom:16px;background:#e6f1fb;border-color:#185fa5">
+        <div style="font-weight:500;margin-bottom:8px;color:#185fa5">Backup dos dados</div>
+        <div style="font-size:13px;color:#444;margin-bottom:10px">Baixe um arquivo JSON com todos os dados do sistema.</div>
+        <button class="btn btn-sm btn-blue" onclick="fazerBackup()">⬇ Baixar backup (JSON)</button>
+      </div>
+      <div id="listaUsuarios"></div>
+      <div class="card card-dashed" style="margin-top:16px">
+        <div class="section-title">Convidar novo usuário</div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nome</label><input id="novoUserNome" placeholder="Nome completo"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">E-mail</label><input id="novoUserEmail" type="email" placeholder="email@exemplo.com"/></div>
+        </div>
+        <div class="row">
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Senha inicial</label><input id="novoUserSenha" type="password" placeholder="Mínimo 6 caracteres"/></div>
+          <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Papel</label><select id="novoUserPapel"><option value="usuario">Usuário</option><option value="admin">Admin</option></select></div>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="criarUsuario()">+ Criar usuário</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAIS -->
+<div class="modal-bg" id="modalProj"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalProj')">×</button></div><div id="modalProjConteudo"></div><div style="display:flex;gap:8px;margin-top:1rem"><button class="btn btn-sm btn-blue" onclick="gerarPDFProjeto()">⬇ PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalProj')">Fechar</button></div></div></div>
+<div class="modal-bg" id="modalEditProj"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar projeto</div><button class="modal-close" onclick="fecharModal('modalEditProj')">×</button></div><div class="field"><label>Nome</label><input id="editProjNome"/></div><div class="field"><label>Cliente</label><input id="editProjCliente"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data início</label><input id="editProjData" type="date"/></div><div class="col" id="editProjDataFimWrap"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data fim</label><input id="editProjDataFim" type="date"/></div></div><div class="toggle-row" style="margin-bottom:12px"><input type="checkbox" id="editProjMultiDia" onchange="document.getElementById('editProjDataFimWrap').style.display=this.checked?'':'none'"/><label for="editProjMultiDia">Evento com mais de um dia</label></div><div class="field"><label>Pasta</label><select id="editProjPasta"><option value="">Sem pasta</option></select></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarProjeto()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditProj')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalEq"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar equipamento</div><button class="modal-close" onclick="fecharModal('modalEq')">×</button></div><div class="field"><label>Nome</label><input id="editEqNome"/></div><div class="field"><label>Categoria</label><select id="editEqCat"></select></div><div class="field"><label>Qtd total</label><input id="editEqQtd" type="number" min="1"/></div><div class="field"><label>Nº de série</label><input id="editEqSerie"/></div><div class="field" id="editEqPrecoBaseWrap" style="display:none"><label>Preço base (R$)</label><input id="editEqPrecoBase" type="number" min="0" step="0.01" value="0"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarEq()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEq')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalCat"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar categoria</div><button class="modal-close" onclick="fecharModal('modalCat')">×</button></div><div class="field"><label>Nome</label><input id="editCatNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarCategoria()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalCat')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalFl"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar freelancer</div><button class="modal-close" onclick="fecharModal('modalFl')">×</button></div><div class="field"><label>Nome</label><input id="editFlNome"/></div><div class="field"><label>Funções</label><div id="editFlFuncoesCheck" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:0.5px solid #d0d0c8;border-radius:8px;min-height:42px"></div></div><div class="field"><label>Telefone</label><input id="editFlTel"/></div><div class="field"><label>RG</label><input id="editFlRg"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarFreelancer()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFl')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalFuncao"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar função</div><button class="modal-close" onclick="fecharModal('modalFuncao')">×</button></div><div class="field"><label>Nome</label><input id="editFuncaoNome"/></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="salvarFuncao()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFuncao')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalFlProj"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalFlProjTitulo"></div><button class="modal-close" onclick="fecharModal('modalFlProj')">×</button></div><div id="modalFlProjConteudo"></div><div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFlProj')">Fechar</button></div></div></div>
+<div class="modal-bg" id="modalBuscaFl"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalBuscaFlTitulo"></div><button class="modal-close" onclick="fecharModal('modalBuscaFl')">×</button></div><div id="modalBuscaFlConteudo"></div><div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalBuscaFl')">Fechar</button></div></div></div>
+<div class="modal-bg" id="modalVerChecklist"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalVerCheckTitulo">Checklist</div><button class="modal-close" onclick="fecharModal('modalVerChecklist')">×</button></div><div id="modalVerCheckConteudo"></div><div style="margin-top:1rem"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalVerChecklist')">Fechar</button></div></div></div>
+<div class="modal-bg" id="modalEditChecklist"><div class="modal-box"><div class="modal-header"><div class="modal-title">Editar checklist</div><button class="modal-close" onclick="fecharModal('modalEditChecklist')">×</button></div><div class="field"><label>Nome</label><input id="editCheckNome"/></div><div class="field"><label>Projeto</label><select id="editCheckProjeto"><option value="">Sem projeto</option></select></div><div style="font-size:13px;color:#666;margin-bottom:6px">Equipamentos e quantidades</div><div id="editCheckEquipamentosLista" style="max-height:260px;overflow-y:auto;border:0.5px solid #e0e0d8;border-radius:8px;padding:8px;margin-bottom:12px"></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-green" onclick="salvarChecklistEditado()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditChecklist')">Cancelar</button></div></div></div>
+
+<div class="modal-bg" id="modalDesconto"><div class="modal-box">
+  <div class="modal-header"><div class="modal-title">Resumo e desconto</div><button class="modal-close" onclick="fecharModal('modalDesconto')">×</button></div>
+  <div id="descontoPreview" style="margin-bottom:16px"></div>
+  <div class="field"><label>Desconto sobre o valor com margem (%)</label><input id="descontoValor" type="number" min="0" max="100" value="0" oninput="atualizarPreviewDesconto()"/></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm btn-green" onclick="confirmarOrcamento(true)">Aplicar e salvar</button><button class="btn btn-sm btn-outline" onclick="confirmarOrcamento(false)">Salvar sem desconto</button></div>
+</div></div>
+
+<div class="modal-bg" id="modalVerOrc" style="display:none"><div class="modal-box">
+  <div class="modal-header"><div class="modal-title" id="modalVerOrcTitulo">Orçamento</div><button class="modal-close" onclick="fecharModal('modalVerOrc')">×</button></div>
+  <div id="modalVerOrcConteudo"></div>
+  <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
+    <button class="btn btn-sm btn-blue" onclick="gerarPDFOrcamento()">⬇ PDF Orçamento</button>
+    <button class="btn btn-sm btn-recibo" id="btnReciboModal">📄 Recibo</button>
+    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalVerOrc')">Fechar</button>
+  </div>
+</div></div>
+
+<div class="modal-bg" id="modalEditOrc"><div class="modal-box">
+  <div class="modal-header"><div class="modal-title">Editar orçamento</div><button class="modal-close" onclick="fecharModal('modalEditOrc')">×</button></div>
+  <div class="field"><label>Título</label><input id="editOrcTitulo"/></div>
+  <div class="field"><label>Cliente</label><input id="editOrcCliente"/></div>
+  <div class="field"><label>Local</label><input id="editOrcLocal"/></div>
+  <div class="row">
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data do evento</label><input id="editOrcDataEvento" type="date"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de diárias</label><input id="editOrcDiarias" type="number" min="1" value="1" oninput="atualizarSubtotalEdit()"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem (%)</label><input id="editOrcMargem" type="number" min="0" value="40" oninput="atualizarSubtotalEdit()"/></div>
+  </div>
+  <div class="field"><label>Descrição do serviço</label><textarea id="editOrcDescricao"></textarea></div>
+  <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
+  <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="editOrcItensLista"></div>
+  <button class="btn btn-sm btn-outline" onclick="adicionarItemOrcEdit()" style="margin-bottom:16px">+ Adicionar equipamento</button>
+  <div style="font-weight:500;font-size:14px;margin:8px 0 10px">Provedores</div>
+  <div style="border:0.5px solid #e0e0d8;border-radius:10px;overflow:hidden;margin-bottom:8px" id="editOrcProvedoresLista"></div>
+  <button class="btn btn-sm btn-outline" onclick="adicionarProvedorOrcEdit()" style="margin-bottom:16px">+ Adicionar provedor</button>
+  <div class="orc-subtotal">
+    <div style="font-size:13px;color:#888;margin-bottom:2px">Eq: <strong id="editPreviewSubtotalEq">R$ 0,00</strong> · Prov: <strong id="editPreviewSubtotalProv">R$ 0,00</strong></div>
+    <div style="font-size:13px;color:#888;margin-bottom:2px">Subtotal: <strong id="editPreviewSubtotal">R$ 0,00</strong></div>
+    <div style="font-size:14px;color:#854f0b">+ margem → Total: <strong id="editPreviewComMargem">R$ 0,00</strong></div>
+  </div>
+  <div class="field" style="margin-top:14px"><label>Desconto (%)</label><input id="editOrcDesconto" type="number" min="0" max="100" value="0" oninput="atualizarSubtotalEdit()"/></div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-sm btn-green" onclick="salvarOrcamentoEditado()">Salvar</button>
+    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalEditOrc')">Cancelar</button>
+  </div>
+</div></div>
+
+<div class="modal-bg" id="modalDia"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalDiaTitulo"></div><button class="modal-close" onclick="fecharModal('modalDia')">×</button></div><div id="modalDiaConteudo"></div><div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm btn-blue" onclick="abrirCriarProjetoCal(diaAtual)">+ Criar projeto</button><button class="btn btn-sm btn-outline" onclick="abrirFormEvento(diaAtual,null)">+ Adicionar evento</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalDia')">Fechar</button></div></div></div>
+<div class="modal-bg" id="modalCriarProjetoCal"><div class="modal-box"><div class="modal-header"><div class="modal-title">Novo projeto</div><button class="modal-close" onclick="fecharModal('modalCriarProjetoCal')">×</button></div><div class="field"><label>Nome</label><input id="calProjNome" placeholder="Ex: Clip Musical"/></div><div class="field"><label>Cliente</label><input id="calProjCliente" placeholder="Ex: Empresa XYZ"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data início</label><input id="calProjData" type="date"/></div><div class="col" id="calProjDataFimWrap" style="display:none"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data fim</label><input id="calProjDataFim" type="date"/></div></div><div class="toggle-row" style="margin-bottom:12px"><input type="checkbox" id="calProjMultiDia" onchange="document.getElementById('calProjDataFimWrap').style.display=this.checked?'':'none'"/><label for="calProjMultiDia">Evento com mais de um dia</label></div><div class="field"><label>Pasta (opcional)</label><select id="calProjPasta"><option value="">Sem pasta</option></select></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-green" onclick="criarProjetoDoCal()">+ Criar projeto</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalCriarProjetoCal')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalFormEvento"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalFormEventoTitulo">Evento</div><button class="modal-close" onclick="fecharModal('modalFormEvento')">×</button></div><input type="hidden" id="formEventoId"/><input type="hidden" id="formEventoData"/><div class="field"><label>Título do evento</label><input id="formEventoTitulo" placeholder="Ex: Show Vivo Rio"/></div><div class="field"><label>Observação (opcional)</label><textarea id="formEventoObs" style="min-height:55px"></textarea></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto vinculado</label><select id="formEventoProj"><option value="">Nenhum</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Checklist vinculado</label><select id="formEventoCheck"><option value="">Nenhum</option></select></div></div><div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:6px">Equipe do evento</label><div id="formEventoEquipe" style="border:0.5px solid #d0d0c8;border-radius:8px;padding:8px;max-height:200px;overflow-y:auto"></div></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm btn-green" onclick="salvarEvento()">Salvar</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalFormEvento')">Cancelar</button></div></div></div>
+<div class="modal-bg" id="modalResumoPasta"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalResumoPastaTitulo">Resumo mensal</div><button class="modal-close" onclick="fecharModal('modalResumoPasta')">×</button></div><p style="font-size:14px;margin-bottom:16px">Selecione o período para o resumo:</p><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Mês</label><select id="resumoMes"><option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option><option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option><option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option><option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Ano</label><input id="resumoAno" type="number" value="2026"/></div></div><input type="hidden" id="resumoPastaId"/><div style="display:flex;gap:8px"><button class="btn btn-sm btn-blue" onclick="gerarPDFResumoPasta()">⬇ Gerar PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalResumoPasta')">Cancelar</button></div></div></div>
+
+<!-- MODAIS FINANÇAS -->
+<div class="modal-bg" id="modalPagFl"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalPagFlTitulo">Novo Pagamento</div><button class="modal-close" onclick="fecharModal('modalPagFl')">×</button></div><input type="hidden" id="pagFlId"/><div class="field"><label>Freelancer</label><select id="pagFlFreelancer"></select></div><div class="field"><label>Projeto (opcional)</label><select id="pagFlProjeto"><option value="">Nenhum</option></select></div><div class="field"><label>Descrição</label><input id="pagFlDesc" placeholder="Ex: Cachê filmagem Rio"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor (R$)</label><input id="pagFlValor" type="number" min="0" step="0.01" placeholder="0,00"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="pagFlStatus"><option value="pendente">Pendente</option><option value="atrasado">Atrasado</option><option value="pago">Pago</option></select></div></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Vencimento</label><input id="pagFlVenc" type="date"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de pagamento</label><input id="pagFlDataPgto" type="date"/></div></div><div class="field"><label>Observação</label><input id="pagFlObs" placeholder="Opcional"/></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalPagFl')">Cancelar</button><button class="btn btn-sm btn-green" onclick="salvarPagFl()">Salvar</button></div></div></div>
+<div class="modal-bg" id="modalReceita"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalReceitaTitulo">Nova Receita</div><button class="modal-close" onclick="fecharModal('modalReceita')">×</button></div><input type="hidden" id="receitaId"/><div class="field"><label>Descrição</label><input id="receitaDesc" placeholder="Ex: Pagamento filmagem casamento"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor (R$)</label><input id="receitaValor" type="number" min="0" step="0.01" placeholder="0,00"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="receitaStatus"><option value="prevista">Prevista</option><option value="recebida">Recebida</option></select></div></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label><select id="receitaProjeto"><option value="">Nenhum</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de recebimento</label><input id="receitaData" type="date"/></div></div><div class="field"><label>Observação</label><input id="receitaObs" placeholder="Opcional"/></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalReceita')">Cancelar</button><button class="btn btn-sm btn-green" onclick="salvarReceita()">Salvar</button></div></div></div>
+<div class="modal-bg" id="modalImportarOrc"><div class="modal-box"><div class="modal-header"><div class="modal-title">Importar orçamento como receita</div><button class="modal-close" onclick="fecharModal('modalImportarOrc')">×</button></div><div class="field"><label>Selecione o orçamento</label><select id="importOrcSel" onchange="previewImportOrc()"><option value="">Selecione...</option></select></div><div id="importOrcPreview" style="background:#f5f5f0;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="importOrcStatus"><option value="prevista">Prevista</option><option value="recebida">Recebida</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de recebimento</label><input id="importOrcData" type="date"/></div></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalImportarOrc')">Cancelar</button><button class="btn btn-sm btn-green" onclick="confirmarImportarOrc()">Importar</button></div></div></div>
+
+<!-- MODAL CONFIRMAÇÃO -->
 <div class="modal-bg" id="modalConfirm"><div class="modal-box" style="max-width:380px">
+  <div class="modal-confirm-icon">🗑️</div>
+  <div style="text-align:center;margin-bottom:8px"><div class="modal-title" style="justify-content:center">Confirmar exclusão</div></div>
   <p id="modalConfirmMsg" style="font-size:14px;margin-bottom:20px;color:#555;text-align:center;line-height:1.6"></p>
   <div style="display:flex;gap:8px;justify-content:center">
-    <button class="btn btn-sm btn-danger" id="modalConfirmOk" style="width:auto;min-width:110px">Sim, excluir</button>
-    <button class="btn btn-sm btn-outline" data-close="modalConfirm" style="width:auto;min-width:90px">Cancelar</button>
+    <button class="btn btn-sm btn-danger" id="modalConfirmOk" style="min-width:110px">Sim, excluir</button>
+    <button class="btn btn-sm btn-outline" onclick="fecharModal('modalConfirm')" style="min-width:90px">Cancelar</button>
   </div>
 </div></div>
 
 <script>
-try{
-  var SUPA_URL="https://wikmeymvknuujbnwmfjx.supabase.co";
-  var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa21leW12a251dWpibndtZmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzI5MDEsImV4cCI6MjA5MTg0ODkwMX0.GaOJArnrhjsJ2gCs0dLNGvaLuIuekINW1VNfmdPdIgU";
+const SUPA_URL="https://wikmeymvknuujbnwmfjx.supabase.co";
+const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpa21leW12a251dWpibndtZmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzI5MDEsImV4cCI6MjA5MTg0ODkwMX0.GaOJArnrhjsJ2gCs0dLNGvaLuIuekINW1VNfmdPdIgU";
+const {createClient}=supabase;
+const sb=createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"takevision_auth"}});
 
-  if(typeof supabase === "undefined"){
-    throw new Error("Biblioteca do Supabase não carregou. Verifique sua internet.");
-  }
-  var sb = supabase.createClient(SUPA_URL, SUPA_KEY, {auth:{persistSession:true,autoRefreshToken:true,storageKey:"takevision_auth"}});
+let usuario=null,perfil=null,equipamentos=[],projetos=[],categorias=[],freelancers=[],funcoes=[],todasMovs=[],orcamentos=[],pastas=[],checklists=[],calEventos=[],filtroAtivo="Todas",modalProjAtual=null,orcAtual=null;
+let editEqId=null,editCatId=null,editFlId=null,editFuncaoId=null,editProjId=null,editCheckId=null;
+let linhasEq=[],orcLinhas=[],orcProvedoresLinhas=[],orcDadosTemp=null,editOrcId=null,editOrcLinhas=[],editOrcProvLinhas=[];
+let calAno=new Date().getFullYear(),calMes=new Date().getMonth(),diaAtual=null,logoDataUrl=null;
+let pagamentosFl=[],receitasList=[],filtroPagFl="todos",filtroReceita="todos",anexosList=[];
 
-  var modoLogin = true;
+const isSupremo=()=>perfil?.supremo===true;
+const isAdmin=()=>perfil?.papel==="admin"||isSupremo();
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const fmtDt=ds=>ds?new Date(ds+"T12:00:00").toLocaleDateString("pt-BR"):"—";
+const fmtRange=(ini,fim)=>fim&&fim!==ini?`${fmtDt(ini)} → ${fmtDt(fim)}`:fmtDt(ini);
 
-  function toggleAuthMode(){
-    modoLogin = !modoLogin;
-    document.getElementById("authSub").textContent = modoLogin ? "Entre com sua conta" : "Crie sua conta";
-    document.getElementById("toggleBtn").textContent = modoLogin ? "Não tem conta? Cadastre-se" : "Já tem conta? Entrar";
-    document.getElementById("nomeField").style.display = modoLogin ? "none" : "block";
-    document.getElementById("authBtn").textContent = modoLogin ? "Entrar" : "Cadastrar";
-  }
+function getMargem(id="orcMargem"){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?1.4:1+(v/100);}
+function calcTotalOrc(o){const itens=o.orcamento_itens||[];const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);const diarias=o.diarias||1,margem=o.margem!=null?1+(o.margem/100):1.4;const baseDiarias=sub*diarias,baseComMargem=baseDiarias*margem;const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;return{sub,diarias,margem,baseDiarias,baseComMargem,desc,total};}
+function abrirConfirm(msg,onOk){document.getElementById("modalConfirmMsg").textContent=msg;document.getElementById("modalConfirmOk").onclick=()=>{fecharModal("modalConfirm");onOk();};abrirModal("modalConfirm");}
 
-  async function handleAuth(){
-    var email = document.getElementById("emailInput").value.trim();
-    var senha = document.getElementById("senhaInput").value;
-    var msg = document.getElementById("authMsg");
-    var btn = document.getElementById("authBtn");
-    msg.innerHTML = "";
-    if(!email || !senha){ msg.innerHTML = '<div class="err">Preencha e-mail e senha.</div>'; return; }
-    btn.disabled = true; btn.textContent = "Aguarde...";
-    try{
-      if(modoLogin){
-        var r = await sb.auth.signInWithPassword({email:email, password:senha});
-        if(r.error){
-          msg.innerHTML = '<div class="err">' + (r.error.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : "Erro: " + r.error.message) + '</div>';
-        } else if(r.data && r.data.session){
-          await mostrarApp(r.data.session.user);
-        } else {
-          msg.innerHTML = '<div class="err">Login falhou.</div>';
-        }
-      } else {
-        var nome = document.getElementById("nomeInput").value.trim();
-        if(!nome){ msg.innerHTML = '<div class="err">Informe seu nome.</div>'; return; }
-        var r2 = await sb.auth.signUp({email:email, password:senha});
-        if(r2.error){ msg.innerHTML = '<div class="err">' + r2.error.message + '</div>'; return; }
-        if(r2.data && r2.data.user){
-          await sb.from("perfis").update({nome:nome}).eq("id", r2.data.user.id);
-          msg.innerHTML = '<div class="ok">Conta criada! Faça login.</div>';
-          modoLogin = true;
-          toggleAuthMode();
-        }
-      }
-    } catch(e){
-      msg.innerHTML = '<div class="err">Erro: ' + e.message + '</div>';
-    } finally {
-      btn.disabled = false;
-      btn.textContent = modoLogin ? "Entrar" : "Cadastrar";
-    }
-  }
-
-  document.getElementById("authBtn").addEventListener("click", handleAuth);
-  document.getElementById("toggleBtn").addEventListener("click", toggleAuthMode);
-
-  var usuario=null, equipamentos=[], categorias=[], filtroAtivo="Todas", editEqId=null, editCatId=null;
-
-  function brl(v){return"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
-  function esc(s){return(s||"").replace(/'/g,"\\'");}
-  function showMsg(txt,erro){var el=document.getElementById("appMsg");el.innerHTML='<div class="'+(erro?"err":"ok")+'">'+txt+'</div>';setTimeout(function(){el.innerHTML="";},3000);}
-  function abrirModal(id){var el=document.getElementById(id);if(el)el.style.display="flex";}
-  function fecharModal(id){var el=document.getElementById(id);if(el)el.style.display="none";}
-  function on(id,ev,fn){var el=document.getElementById(id);if(el)el.addEventListener(ev,fn);}
-  document.querySelectorAll('.modal-bg').forEach(function(m){ m.style.display = 'none'; });
-
-  document.querySelectorAll('[data-close]').forEach(function(btn){
-    btn.addEventListener('click', function(){ fecharModal(btn.getAttribute('data-close')); });
-  });
-  function abrirConfirm(msg,onOk){
-    document.getElementById("modalConfirmMsg").textContent=msg;
-    document.getElementById("modalConfirmOk").onclick=function(){fecharModal("modalConfirm");onOk();};
-    abrirModal("modalConfirm");
-  }
-
-  async function carregarEquipamentos(){var r=await sb.from("equipamentos").select("*").order("nome");equipamentos=r.data||[];}
-  async function carregarCategorias(){var r=await sb.from("categorias").select("*").order("nome");categorias=r.data||[];renderCategorias();}
-
-  function renderMetrics(){
-    var total=equipamentos.reduce(function(a,e){return a+e.qtd_total;},0);
-    var disp=equipamentos.reduce(function(a,e){return a+e.qtd_disponivel;},0);
-    document.getElementById("metricsArea").innerHTML='<div class="metric"><div class="metric-label">Total</div><div class="metric-value">'+total+'</div></div><div class="metric"><div class="metric-label" style="color:#3b6d11">Disponíveis</div><div class="metric-value" style="color:#3b6d11">'+disp+'</div></div><div class="metric"><div class="metric-label" style="color:#854f0b">Alocados</div><div class="metric-value" style="color:#854f0b">'+(total-disp)+'</div></div>';
-  }
-  function renderEquipamentos(){
-    var cats=["Todas"];
-    equipamentos.forEach(function(e){if(cats.indexOf(e.categoria)===-1)cats.push(e.categoria);});
-    document.getElementById("filtrosArea").innerHTML=cats.map(function(c){return '<button class="filter-btn'+(filtroAtivo===c?" active":"")+'" data-cat="'+c+'">'+c+'</button>';}).join("");
-    document.querySelectorAll("#filtrosArea .filter-btn").forEach(function(b){b.addEventListener("click",function(){filtroAtivo=b.getAttribute("data-cat");renderEquipamentos();});});
-    var busca=document.getElementById("buscaEq").value.toLowerCase();
-    var lista=filtroAtivo==="Todas"?equipamentos:equipamentos.filter(function(e){return e.categoria===filtroAtivo;});
-    if(busca)lista=lista.filter(function(e){return e.nome.toLowerCase().indexOf(busca)!==-1;});
-    document.getElementById("listaEquipamentos").innerHTML=lista.map(function(eq){
-      var aloc=eq.qtd_total-eq.qtd_disponivel,pct=Math.round((eq.qtd_disponivel/eq.qtd_total)*100);
-      var cor=eq.qtd_disponivel===0?"#e24b4a":(aloc>0?"#EF9F27":"#639922");
-      return '<div class="card"><div class="item-row"><div><div class="item-name">'+eq.nome+'</div><div class="item-sub">'+eq.categoria+' · Série: '+(eq.numero_serie||"—")+'</div></div><div class="actions"><span class="badge badge-ok">'+eq.qtd_disponivel+' disp.</span></div></div><div class="progress-wrap"><div class="progress-bar" style="width:'+pct+'%;background:'+cor+'"></div></div></div>';
-    }).join("")||'<div class="empty">Nenhum equipamento.</div>';
-  }
-  function renderGerenciarEquipamentos(){
-    document.getElementById("gerenciarEquipamentos").innerHTML=equipamentos.map(function(eq){
-      return '<div class="card"><div class="item-row"><div><div class="item-name">'+eq.nome+'</div><div class="item-sub">'+eq.categoria+' · Qtd: '+eq.qtd_total+'</div></div><div class="actions"><button class="btn btn-sm btn-edit" style="width:auto" data-editeq="'+eq.id+'">Editar</button><button class="btn btn-sm btn-danger" style="width:auto" data-delEq="'+eq.id+'">Excluir</button></div></div></div>';
-    }).join("")||'<div class="empty">Nenhum.</div>';
-    document.querySelectorAll("[data-editeq]").forEach(function(b){b.addEventListener("click",function(){abrirEditarEq(parseInt(b.getAttribute("data-editeq")));});});
-    document.querySelectorAll("[data-delEq]").forEach(function(b){b.addEventListener("click",function(){
-      var id=parseInt(b.getAttribute("data-delEq"));
-      var eq=equipamentos.find(function(e){return e.id===id;});
-      abrirConfirm('Excluir "'+esc(eq.nome)+'"?',function(){excluirEq(id);});
-    });});
-  }
-  function renderCategorias(){
-    document.getElementById("eqCat").innerHTML=categorias.map(function(c){return '<option value="'+c.nome+'">'+c.nome+'</option>';}).join("");
-    document.getElementById("editEqCat").innerHTML=categorias.map(function(c){return '<option value="'+c.nome+'">'+c.nome+'</option>';}).join("");
-    document.getElementById("listaCategorias").innerHTML=categorias.map(function(c){
-      return '<div class="tag-item">'+c.nome+'<button class="tag-x" data-editcat="'+c.id+'" style="color:#185fa5">✏</button><button class="tag-x" data-delcat="'+c.id+'">×</button></div>';
-    }).join("")||"<span style='color:#888;font-size:13px'>Nenhuma.</span>";
-    document.querySelectorAll("[data-editcat]").forEach(function(b){b.addEventListener("click",function(){
-      var id=parseInt(b.getAttribute("data-editcat"));
-      var c=categorias.find(function(x){return x.id===id;});
-      editCatId=id;document.getElementById("editCatNome").value=c.nome;abrirModal("modalCat");
-    });});
-    document.querySelectorAll("[data-delcat]").forEach(function(b){b.addEventListener("click",function(){
-      var id=parseInt(b.getAttribute("data-delcat"));
-      var c=categorias.find(function(x){return x.id===id;});
-      if(equipamentos.some(function(e){return e.categoria===c.nome;})){showMsg('"'+c.nome+'" está em uso.',true);return;}
-      abrirConfirm('Excluir a categoria "'+esc(c.nome)+'"?',async function(){
-        await sb.from("categorias").delete().eq("id",id);await carregarCategorias();showMsg("Categoria excluída.");
-      });
-    });});
-  }
-  function abrirEditarEq(id){
-    var eq=equipamentos.find(function(e){return e.id===id;});
-    editEqId=id;
-    document.getElementById("editEqNome").value=eq.nome;
-    document.getElementById("editEqCat").value=eq.categoria;
-    document.getElementById("editEqQtd").value=eq.qtd_total;
-    document.getElementById("editEqSerie").value=eq.numero_serie||"";
-    abrirModal("modalEq");
-  }
-  async function excluirEq(id){
-    var mr=await sb.from("movimentacoes").select("id").eq("equipamento_id",id).limit(1);
-    if(mr.data&&mr.data.length>0)await sb.from("movimentacoes").delete().eq("equipamento_id",id);
-    await sb.from("equipamentos").delete().eq("id",id);
-    await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
-    showMsg("Equipamento excluído.");
-  }
-
-  document.getElementById("buscaEq").addEventListener("input",renderEquipamentos);
-  document.getElementById("btnCadastrarEq").addEventListener("click", async function(){
-    var nome=document.getElementById("eqNome").value.trim();
-    var cat=document.getElementById("eqCat").value;
-    var qtd=parseInt(document.getElementById("eqQtd").value);
-    var serie=document.getElementById("eqSerie").value.trim();
-    if(!nome)return;
-    var r=await sb.from("equipamentos").insert({nome:nome,categoria:cat,qtd_total:qtd,qtd_disponivel:qtd,numero_serie:serie||null});
-    if(r.error){showMsg("Erro: "+r.error.message,true);return;}
-    document.getElementById("eqNome").value="";document.getElementById("eqSerie").value="";document.getElementById("eqQtd").value=1;
-    await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
-    showMsg("Equipamento adicionado!");
-  });
-  document.getElementById("btnSalvarEq").addEventListener("click", async function(){
-    var nome=document.getElementById("editEqNome").value.trim();
-    var categoria=document.getElementById("editEqCat").value;
-    var qtd_total=parseInt(document.getElementById("editEqQtd").value);
-    var numero_serie=document.getElementById("editEqSerie").value.trim()||null;
-    var eq=equipamentos.find(function(e){return e.id===editEqId;});
-    var qtd_disponivel=Math.max(0,eq.qtd_disponivel+(qtd_total-eq.qtd_total));
-    await sb.from("equipamentos").update({nome:nome,categoria:categoria,qtd_total:qtd_total,qtd_disponivel:qtd_disponivel,numero_serie:numero_serie}).eq("id",editEqId);
-    fecharModal("modalEq");
-    await carregarEquipamentos();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();
-    showMsg("Equipamento atualizado!");
-  });
-  document.getElementById("btnCriarCategoria").addEventListener("click", async function(){
-    var nome=document.getElementById("catNome").value.trim();if(!nome)return;
-    var r=await sb.from("categorias").insert({nome:nome});
-    if(r.error){showMsg("Categoria já existe.",true);return;}
-    document.getElementById("catNome").value="";
-    await carregarCategorias();showMsg("Categoria adicionada!");
-  });
-  document.getElementById("btnSalvarCategoria").addEventListener("click", async function(){
-    var nome=document.getElementById("editCatNome").value.trim();if(!nome)return;
-    await sb.from("categorias").update({nome:nome}).eq("id",editCatId);
-    fecharModal("modalCat");await carregarCategorias();showMsg("Categoria atualizada!");
-  });
-
-  document.getElementById("btnSair").addEventListener("click", async function(){await sb.auth.signOut();location.reload();});
-
-  var projetos=[], freelancers=[];
-
-  document.querySelectorAll(".tab").forEach(function(t){
-    t.addEventListener("click", function(){
-      document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});
-      t.classList.add("active");
-      var nome=t.getAttribute("data-tab");
-      ["estoque","projetos","freelancers","movimentar","historico","calendario","orcamentos","financas","usuarios"].forEach(function(n){
-        var d=document.getElementById("tab-"+n);
-        if(d)d.style.display=(n===nome)?"block":"none";
-      });
-      if(nome==="historico")renderHistorico();
-      if(nome==="movimentar")preencherSelectsMov();
-      if(nome==="calendario")renderCalendario();
-      if(nome==="orcamentos")renderOrcamentos();
-      if(nome==="financas")renderFinancas();
-      if(nome==="usuarios")renderUsuarios();
-    });
-  });
-
-  async function carregarProjetos(){var r=await sb.from("projetos").select("*").order("id");projetos=r.data||[];}
-  async function carregarFreelancers(){var r=await sb.from("freelancers").select("*").order("nome");freelancers=r.data||[];}
-
-  function renderProjetos(){
-    document.getElementById("listaProjetos").innerHTML=projetos.map(function(p){
-      var dt=p.data_projeto?new Date(p.data_projeto+"T12:00:00").toLocaleDateString("pt-BR"):"—";
-      return '<div class="card"><div class="item-row"><div><div class="item-name">'+p.nome+'</div><div class="item-sub">Cliente: '+(p.cliente||"—")+' · '+dt+'</div></div><div class="actions"><span class="badge '+(p.status==="ativo"?"badge-ok":"")+'">'+p.status+'</span><button class="btn btn-sm btn-danger" style="width:auto" data-delProj="'+p.id+'">Excluir</button></div></div></div>';
-    }).join("")||'<div class="empty">Nenhum projeto.</div>';
-    document.querySelectorAll("[data-delProj]").forEach(function(b){b.addEventListener("click",function(){
-      var id=parseInt(b.getAttribute("data-delProj"));
-      var p=projetos.find(function(x){return x.id===id;});
-      abrirConfirm('Excluir "'+esc(p.nome)+'"?',async function(){
-        await sb.from("projetos").delete().eq("id",id);await carregarProjetos();renderProjetos();showMsg("Projeto excluído.");
-      });
-    });});
-  }
-  function renderFreelancers(){
-    document.getElementById("listaFreelancers").innerHTML=freelancers.map(function(f){
-      return '<div class="card"><div class="item-row"><div><div class="item-name">'+f.nome+'</div><div class="item-sub">'+(f.funcao||"—")+' · Tel: '+(f.telefone||"—")+'</div></div><button class="btn btn-sm btn-danger" style="width:auto" data-delFl="'+f.id+'">Excluir</button></div></div>';
-    }).join("")||'<div class="empty">Nenhum freelancer.</div>';
-    document.querySelectorAll("[data-delFl]").forEach(function(b){b.addEventListener("click",function(){
-      var id=parseInt(b.getAttribute("data-delFl"));
-      var f=freelancers.find(function(x){return x.id===id;});
-      abrirConfirm('Excluir "'+esc(f.nome)+'"?',async function(){
-        await sb.from("freelancers").delete().eq("id",id);await carregarFreelancers();renderFreelancers();showMsg("Freelancer excluído.");
-      });
-    });});
-  }
-
-  document.getElementById("btnCriarProjeto").addEventListener("click", async function(){
-    var nome=document.getElementById("projNome").value.trim();
-    var cliente=document.getElementById("projCliente").value.trim();
-    var data=document.getElementById("projData").value||null;
-    if(!nome)return;
-    var r=await sb.from("projetos").insert({nome:nome,cliente:cliente||null,data_projeto:data});
-    if(r.error){showMsg("Erro: "+r.error.message,true);return;}
-    document.getElementById("projNome").value="";document.getElementById("projCliente").value="";
-    await carregarProjetos();renderProjetos();showMsg("Projeto criado!");
-  });
-  document.getElementById("btnCadastrarFl").addEventListener("click", async function(){
-    var nome=document.getElementById("flNome").value.trim();
-    var tel=document.getElementById("flTel").value.trim();
-    var funcao=document.getElementById("flFuncao").value.trim();
-    if(!nome)return;
-    var r=await sb.from("freelancers").insert({nome:nome,telefone:tel||null,funcao:funcao||null});
-    if(r.error){showMsg("Erro: "+r.error.message,true);return;}
-    document.getElementById("flNome").value="";document.getElementById("flTel").value="";document.getElementById("flFuncao").value="";
-    await carregarFreelancers();renderFreelancers();showMsg("Freelancer cadastrado!");
-  });
-
-  async function carregarTudo(){
-    await Promise.all([carregarEquipamentos(),carregarCategorias(),carregarProjetos(),carregarFreelancers(),carregarMovs(),carregarEventos(),carregarOrcamentos(),carregarPagFl(),carregarReceitas()]);
-    renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderProjetos();renderFreelancers();
-  }
-
-  // ── CALENDÁRIO ──
-  var calEventos=[], calAno=new Date().getFullYear(), calMes=new Date().getMonth();
-  var MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  async function carregarEventos(){var r=await sb.from("calendario_eventos").select("*").order("data");calEventos=r.data||[];}
-  function renderCalendario(){
-    var tEl=document.getElementById("calTitulo");if(!tEl)return;
-    tEl.textContent=MESES[calMes]+" "+calAno;
-    var primeiroDia=new Date(calAno,calMes,1).getDay(),diasNoMes=new Date(calAno,calMes+1,0).getDate();
-    var html="";
-    for(var i=0;i<primeiroDia;i++)html+='<div></div>';
-    for(var d=1;d<=diasNoMes;d++){
-      var ds=calAno+"-"+String(calMes+1).padStart(2,'0')+"-"+String(d).padStart(2,'0');
-      var evsD=calEventos.filter(function(e){return e.data===ds;});
-      html+='<div style="border:0.5px solid #e0e0d8;border-radius:6px;padding:4px;min-height:50px;font-size:11px"><div>'+d+'</div>'+evsD.map(function(e){return '<div style="background:#eaf3de;border-radius:3px;padding:1px 3px;margin-top:2px;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.titulo+'</div>';}).join("")+'</div>';
-    }
-    document.getElementById("calGrid").innerHTML=html;
-    var evsMes=calEventos.filter(function(e){var dt=new Date(e.data+"T12:00:00");return dt.getMonth()===calMes&&dt.getFullYear()===calAno;});
-    document.getElementById("listaEventos").innerHTML=evsMes.map(function(e){
-      var dt=new Date(e.data+"T12:00:00").toLocaleDateString("pt-BR");
-      return '<div class="card"><div class="item-row"><div><div class="item-name">'+e.titulo+'</div><div class="item-sub">'+dt+'</div></div><button class="btn btn-sm btn-danger" style="width:auto" data-delEv="'+e.id+'">Excluir</button></div></div>';
-    }).join("")||'<div class="empty">Nenhum evento neste mês.</div>';
-    document.querySelectorAll("[data-delEv]").forEach(function(b){b.addEventListener("click",async function(){
-      await sb.from("calendario_eventos").delete().eq("id",parseInt(b.getAttribute("data-delEv")));
-      await carregarEventos();renderCalendario();showMsg("Evento excluído.");
-    });});
-  }
-  on("btnMesAnt","click",function(){calMes--;if(calMes<0){calMes=11;calAno--;}renderCalendario();});
-  on("btnMesProx","click",function(){calMes++;if(calMes>11){calMes=0;calAno++;}renderCalendario();});
-  on("btnCriarEvento","click",async function(){
-    var titulo=document.getElementById("evTitulo").value.trim();
-    var data=document.getElementById("evData").value;
-    if(!titulo||!data){showMsg("Preencha título e data.",true);return;}
-    await sb.from("calendario_eventos").insert({titulo:titulo,data:data});
-    document.getElementById("evTitulo").value="";document.getElementById("evData").value="";
-    await carregarEventos();renderCalendario();showMsg("Evento criado!");
-  });
-
-  // ── ORÇAMENTOS ──
-  var orcamentos=[];
-  async function carregarOrcamentos(){var r=await sb.from("orcamentos").select("*");orcamentos=r.data||[];}
-  function renderOrcamentos(){
-    var el=document.getElementById("listaOrcamentos");if(!el)return;
-    el.innerHTML=orcamentos.map(function(o){
-      var margem=o.margem||0,valor=Number(o.valor||0),total=valor*(1+margem/100);
-      return '<div class="card"><div class="item-row"><div><div class="item-name">'+o.titulo+'</div><div class="item-sub">Cliente: '+(o.cliente||"—")+' · +'+margem+'%</div></div><div class="actions"><strong>'+brl(total)+'</strong><button class="btn btn-sm btn-danger" style="width:auto" data-delOrc="'+o.id+'">Excluir</button></div></div></div>';
-    }).join("")||'<div class="empty">Nenhum orçamento.</div>';
-    document.querySelectorAll("[data-delOrc]").forEach(function(b){b.addEventListener("click",async function(){
-      await sb.from("orcamentos").delete().eq("id",parseInt(b.getAttribute("data-delOrc")));
-      await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento excluído.");
-    });});
-  }
-  on("btnCriarOrc","click",async function(){
-    var titulo=document.getElementById("orcTitulo").value.trim();
-    var cliente=document.getElementById("orcCliente").value.trim();
-    var valor=parseFloat(document.getElementById("orcValor").value)||0;
-    var margem=parseFloat(document.getElementById("orcMargem").value)||0;
-    if(!titulo||!valor){showMsg("Preencha título e valor.",true);return;}
-    await sb.from("orcamentos").insert({titulo:titulo,cliente:cliente||null,valor:valor,margem:margem,criado_por:usuario.id});
-    document.getElementById("orcTitulo").value="";document.getElementById("orcCliente").value="";document.getElementById("orcValor").value="";document.getElementById("orcMargem").value=0;
-    await carregarOrcamentos();renderOrcamentos();showMsg("Orçamento criado!");
-  });
-
-  // ── FINANÇAS ──
-  var pagamentosFl=[], receitasList=[];
-  async function carregarPagFl(){var r=await sb.from("pagamentos_freelancer").select("*");pagamentosFl=r.data||[];}
-  async function carregarReceitas(){var r=await sb.from("receitas").select("*");receitasList=r.data||[];}
-  function renderFinancas(){
-    var pagSel=document.getElementById("pagFlSel");
-    if(pagSel)pagSel.innerHTML=freelancers.map(function(f){return '<option value="'+f.id+'">'+f.nome+'</option>';}).join("");
-    var totRec=receitasList.reduce(function(s,r){return s+Number(r.valor);},0);
-    var totPag=pagamentosFl.reduce(function(s,p){return s+Number(p.valor);},0);
-    document.getElementById("finCards").innerHTML='<div class="metric"><div class="metric-label" style="color:#3b6d11">Recebido</div><div class="metric-value" style="color:#3b6d11">'+brl(totRec)+'</div></div><div class="metric"><div class="metric-label" style="color:#854f0b">Pago</div><div class="metric-value" style="color:#854f0b">'+brl(totPag)+'</div></div><div class="metric"><div class="metric-label">Saldo</div><div class="metric-value">'+brl(totRec-totPag)+'</div></div>';
-    document.getElementById("listaPagFl").innerHTML=pagamentosFl.map(function(p){
-      var f=freelancers.find(function(x){return x.id===p.freelancer_id;});
-      return '<div class="card"><div class="item-row"><div>'+(f?f.nome:"—")+'</div><div class="actions"><strong>'+brl(p.valor)+'</strong><button class="btn btn-sm btn-danger" style="width:auto" data-delPag="'+p.id+'">×</button></div></div></div>';
-    }).join("")||'<div class="empty">Nenhum pagamento.</div>';
-    document.getElementById("listaReceitas").innerHTML=receitasList.map(function(r){
-      return '<div class="card"><div class="item-row"><div>'+r.descricao+'</div><div class="actions"><strong style="color:#3b6d11">'+brl(r.valor)+'</strong><button class="btn btn-sm btn-danger" style="width:auto" data-delRec="'+r.id+'">×</button></div></div></div>';
-    }).join("")||'<div class="empty">Nenhuma receita.</div>';
-    document.querySelectorAll("[data-delPag]").forEach(function(b){b.addEventListener("click",async function(){await sb.from("pagamentos_freelancer").delete().eq("id",parseInt(b.getAttribute("data-delPag")));await carregarPagFl();renderFinancas();});});
-    document.querySelectorAll("[data-delRec]").forEach(function(b){b.addEventListener("click",async function(){await sb.from("receitas").delete().eq("id",parseInt(b.getAttribute("data-delRec")));await carregarReceitas();renderFinancas();});});
-  }
-  on("btnNovoPagto","click",async function(){
-    var flId=parseInt(document.getElementById("pagFlSel").value);
-    var valor=parseFloat(document.getElementById("pagFlValor").value)||0;
-    if(!flId||!valor){showMsg("Preencha os campos.",true);return;}
-    await sb.from("pagamentos_freelancer").insert({freelancer_id:flId,valor:valor,status:"pendente"});
-    document.getElementById("pagFlValor").value="";
-    await carregarPagFl();renderFinancas();showMsg("Pagamento registrado!");
-  });
-  on("btnNovaReceita","click",async function(){
-    var desc=document.getElementById("receitaDesc").value.trim();
-    var valor=parseFloat(document.getElementById("receitaValor").value)||0;
-    if(!desc||!valor){showMsg("Preencha os campos.",true);return;}
-    await sb.from("receitas").insert({descricao:desc,valor:valor,status:"recebida"});
-    document.getElementById("receitaDesc").value="";document.getElementById("receitaValor").value="";
-    await carregarReceitas();renderFinancas();showMsg("Receita registrada!");
-  });
-
-  // ── USUÁRIOS ──
-  function renderUsuarios(){
-    sb.from("perfis").select("*").then(function(r){
-      var data=r.data||[];
-      document.getElementById("listaUsuarios").innerHTML=data.map(function(u){
-        return '<div class="card"><div class="item-row"><div>'+u.nome+'</div><span class="badge badge-ok">'+(u.papel||"usuario")+'</span></div></div>';
-      }).join("")||'<div class="empty">Nenhum usuário.</div>';
-    });
-  }
-
-  var todasMovs=[];
-  async function carregarMovs(){var r=await sb.from("movimentacoes").select("*,equipamentos(nome),projetos(nome)").order("criado_em",{ascending:false}).limit(200);todasMovs=r.data||[];}
-
-  function preencherSelectsMov(){
-    var movProjEl=document.getElementById("movProj"),devProjEl=document.getElementById("devProj"),movEqEl=document.getElementById("movEq"),movDataEl=document.getElementById("movData");
-    if(!movProjEl||!devProjEl||!movEqEl)return;
-    var opts=projetos.filter(function(p){return p.status==="ativo";}).map(function(p){return '<option value="'+p.id+'">'+p.nome+'</option>';}).join("");
-    movProjEl.innerHTML='<option value="">Selecione...</option>'+opts;
-    devProjEl.innerHTML='<option value="">Selecione...</option>'+opts;
-    movEqEl.innerHTML='<option value="">Selecione...</option>'+equipamentos.map(function(e){return '<option value="'+e.id+'">'+e.nome+' ('+e.qtd_disponivel+' disp.)</option>';}).join("");
-    if(movDataEl)movDataEl.value=new Date().toISOString().split("T")[0];
-  }
-
-  function renderHistorico(){
-    var el=document.getElementById("listaHistorico");
-    if(!el)return;
-    el.innerHTML=todasMovs.map(function(m){
-      return '<div class="card" style="margin-bottom:8px"><div class="item-name" style="font-size:14px">'+(m.equipamentos?m.equipamentos.nome:"—")+'</div><div class="item-sub">'+(m.projetos?m.projetos.nome:"—")+' · '+m.responsavel+' · '+m.data+' · '+m.tipo+' · ×'+m.quantidade+'</div></div>';
-    }).join("")||'<div class="empty">Nenhuma movimentação.</div>';
-  }
-
-  on("btnRegistrarSaida","click", async function(){
-    var projId=parseInt(document.getElementById("movProj").value);
-    var eqId=parseInt(document.getElementById("movEq").value);
-    var qtd=parseInt(document.getElementById("movQtd").value);
-    var resp=document.getElementById("movResp").value.trim();
-    var data=document.getElementById("movData").value;
-    if(!projId||!eqId||!resp){showMsg("Preencha todos os campos.",true);return;}
-    var eq=equipamentos.find(function(e){return e.id===eqId;});
-    if(eq.qtd_disponivel<qtd){showMsg("Quantidade insuficiente.",true);return;}
-    await sb.from("movimentacoes").insert({tipo:"saída",equipamento_id:eqId,projeto_id:projId,quantidade:qtd,responsavel:resp,data:data,criado_por:usuario.id});
-    await sb.from("equipamentos").update({qtd_disponivel:eq.qtd_disponivel-qtd}).eq("id",eqId);
-    await carregarEquipamentos();await carregarMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();preencherSelectsMov();
-    document.getElementById("movResp").value="";
-    showMsg("Saída registrada!");
-  });
-
-  async function carregarEqProjeto(){
-    var projId=parseInt(document.getElementById("devProj").value);
-    var lista=document.getElementById("devLista");
-    if(!projId){lista.innerHTML="";return;}
-    var r=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
-    var movs=r.data||[];
-    var alocMap={};
-    movs.forEach(function(m){if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
-    var eqsAloc=Object.keys(alocMap).map(function(id){return{eq:equipamentos.find(function(e){return e.id===parseInt(id);}),alocado:alocMap[id]};}).filter(function(x){return x.alocado>0&&x.eq;});
-    if(!eqsAloc.length){lista.innerHTML='<div class="empty">Nenhum equipamento alocado.</div>';return;}
-    lista.innerHTML=eqsAloc.map(function(x){return '<div class="item-row" style="padding:6px 0;border-bottom:0.5px solid #f1efe8"><span>'+x.eq.nome+'</span><span class="badge badge-warn">× '+x.alocado+'</span></div>';}).join("");
-  }
-  on("devProj","change",carregarEqProjeto);
-
-  on("btnDevolver","click", async function(){
-    var projId=parseInt(document.getElementById("devProj").value);
-    if(!projId){showMsg("Selecione um projeto.",true);return;}
-    var r=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",projId);
-    var movs=r.data||[];
-    var alocMap={};
-    movs.forEach(function(m){if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
-    var ids=Object.keys(alocMap).filter(function(id){return alocMap[id]>0;});
-    for(var i=0;i<ids.length;i++){
-      var eqId=parseInt(ids[i]),qtd=alocMap[ids[i]];
-      var eq=equipamentos.find(function(e){return e.id===eqId;});
-      await sb.from("movimentacoes").insert({tipo:"entrada",equipamento_id:eqId,projeto_id:projId,quantidade:qtd,responsavel:"Sistema",data:new Date().toISOString().split("T")[0],criado_por:usuario.id});
-      await sb.from("equipamentos").update({qtd_disponivel:Math.min(eq.qtd_total,eq.qtd_disponivel+qtd)}).eq("id",eqId);
-    }
-    await carregarEquipamentos();await carregarMovs();renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();preencherSelectsMov();
-    document.getElementById("devLista").innerHTML="";
-    showMsg("Devolução registrada!");
-  });
-
-  async function mostrarApp(user){
-    usuario=user;
-    document.getElementById("authScreen").style.display="none";
-    document.getElementById("appScreen").style.display="block";
-    document.getElementById("userNome").textContent=user.email;
-    await carregarTudo();
-  }
-
-  window.addEventListener("load", async function(){
-    var r = await sb.auth.getSession();
-    if(r.data && r.data.session && r.data.session.user){
-      await mostrarApp(r.data.session.user);
-    }
-  });
-
-}catch(_topErr){
-  var _d = document.createElement('div');
-  _d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#a32d2d;color:#fff;padding:16px;z-index:99999;font-family:monospace;font-size:13px;white-space:pre-wrap;';
-  _d.textContent = 'ERRO NA INICIALIZAÇÃO:\n' + _topErr.message;
-  document.body.appendChild(_d);
+async function carregarLogo(){if(logoDataUrl)return logoDataUrl;try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(r=>{const rd=new FileReader();rd.onloadend=()=>{logoDataUrl=rd.result;r(logoDataUrl);};rd.readAsDataURL(blob);});}catch(e){return null;}}
+async function adicionarHeaderPDF(doc,subtitulo,dtGerado){
+  const logo=await carregarLogo();const r=7,cx=14+r,cy=16;
+  if(logo){try{doc.addImage(logo,'PNG',14,9,14,14);}catch(e){_drawLens(doc,cx,cy,r);}}else{_drawLens(doc,cx,cy,r);}
+  doc.setDrawColor(80,80,80);doc.setLineWidth(0.5);doc.line(cx+r+4,cy-r*0.8,cx+r+4,cy+r*0.8);
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TAKEVISION",cx+r+8,cy+2);
+  let hy=27;
+  doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(15,15,15);doc.text("Take Vision Filmes LTDA",14,hy);hy+=4.5;
+  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(40,40,40);
+  doc.text("Rua Alvarães, 02/201 - Del Castilho - Rio de Janeiro - RJ - CEP 21.051-080",14,hy);hy+=4;
+  doc.text("CNPJ:  35.433.559/0001-90",14,hy);doc.text("Insc. Mun: 1.341.287-1",100,hy);hy+=4;
+  doc.text("Telefone: (21) 97037-1132",14,hy);doc.text("e-mail: edjr.barros@gmail.com",100,hy);hy+=4;
+  doc.setDrawColor(80,80,80);doc.setLineWidth(0.6);doc.line(14,hy,196,hy);hy+=4;
+  if(subtitulo||dtGerado){if(subtitulo){doc.setFont("helvetica","italic");doc.setFontSize(8);doc.setTextColor(100);doc.text(subtitulo,14,hy);}if(dtGerado){doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(100);doc.text(dtGerado,196,hy,{align:"right"});}hy+=6;}
+  return hy;
 }
-</script>
-</body>
-</html>
+function _drawLens(doc,cx,cy,r){doc.setFillColor(15,15,15);doc.circle(cx,cy,r,'F');doc.setDrawColor(255,255,255);doc.setLineWidth(r*0.28);for(let i=0;i<6;i++){const a1=(i*60-10)*Math.PI/180,a2=(i*60+45)*Math.PI/180;doc.line(cx+r*0.2*Math.cos(a1),cy+r*0.2*Math.sin(a1),cx+r*0.8*Math.cos(a2),cy+r*0.8*Math.sin(a2));}doc.setFillColor(15,15,15);doc.circle(cx,cy,r*0.28,'F');}
+function rodapePDF(doc,y){const fy=y+28;doc.setDrawColor(130,130,125);doc.setLineWidth(0.5);doc.line(14,fy,90,fy);doc.line(120,fy,196,fy);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(60,60,60);doc.text("Take Vision Imagem",52,fy+5,{align:"center"});doc.text("Assinatura do contratante",158,fy+5,{align:"center"});}
+
+let modoLogin=true;
+function toggleAuthMode(){modoLogin=!modoLogin;document.getElementById("authSub").textContent=modoLogin?"Entre com sua conta":"Crie sua conta";document.getElementById("toggleBtn").textContent=modoLogin?"Não tem conta? Cadastre-se":"Já tem conta? Entrar";document.getElementById("nomeField").style.display=modoLogin?"none":"block";document.getElementById("authBtn").textContent=modoLogin?"Entrar":"Cadastrar";}
+async function handleAuth(){
+  const email=document.getElementById("emailInput").value.trim(),senha=document.getElementById("senhaInput").value,nome=document.getElementById("nomeInput").value.trim();
+  const msg=document.getElementById("authMsg"),btn=document.getElementById("authBtn");
+  msg.innerHTML="";if(!email||!senha){msg.innerHTML='<div class="err">Preencha e-mail e senha.</div>';return;}
+  btn.disabled=true;btn.textContent="Aguarde...";
+  try{if(modoLogin){const {data,error}=await sb.auth.signInWithPassword({email,password:senha});if(error)msg.innerHTML=`<div class="err">${error.message==="Invalid login credentials"?"E-mail ou senha incorretos.":"Erro: "+error.message}</div>`;else if(data?.session)await iniciarApp(data.session.user);else msg.innerHTML='<div class="err">Login falhou.</div>';}
+  else{if(!nome){msg.innerHTML='<div class="err">Informe seu nome.</div>';return;}const {data,error}=await sb.auth.signUp({email,password:senha});if(error){msg.innerHTML=`<div class="err">${error.message}</div>`;return;}if(data?.user){await sb.from("perfis").update({nome}).eq("id",data.user.id);msg.innerHTML='<div class="ok">Conta criada! Faça login.</div>';modoLogin=true;toggleAuthMode();}}}
+  catch(e){msg.innerHTML=`<div class="err">Erro: ${e.message}</div>`;}
+  finally{btn.disabled=false;btn.textContent=modoLogin?"Entrar":"Cadastrar";}
+}
+async function iniciarApp(user){
+  usuario=user;const {data:p}=await sb.from("perfis").select("*").eq("id",user.id).single();
+  perfil=p||{id:user.id,nome:user.email,papel:"usuario",supremo:false};
+  if(!p)await sb.from("perfis").insert({id:user.id,nome:user.email,papel:"usuario",supremo:false});
+  document.getElementById("authScreen").style.display="none";document.getElementById("appScreen").style.display="block";
+  document.getElementById("userNome").textContent=perfil.nome||user.email;
+  if(isSupremo()){document.getElementById("userPapel").innerHTML='<span class="supremo-badge">★ Supremo</span>';document.getElementById("tabUsuarios").style.display="inline-block";document.getElementById("tabOrcamentos").style.display="inline-block";document.getElementById("tabFinancas").style.display="inline-block";const n=new Date();const mEl=document.getElementById("finMesFiltro"),aEl=document.getElementById("finAnoFiltro");if(mEl)mEl.value=n.getMonth();if(aEl)aEl.value=n.getFullYear();}
+  else if(isAdmin())document.getElementById("userPapel").innerHTML='<span class="admin-badge">Admin</span>';
+  const hoje=new Date().toISOString().split("T")[0];
+  ["movData","devData","projData"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoje;});
+  document.getElementById("resumoMes").value=new Date().getMonth();
+  document.getElementById("resumoAno").value=new Date().getFullYear();
+  await carregarTudo();iniciarMovLista();iniciarOrcLista();renderCalendario();
+  if(isSupremo()){["eqPrecoBaseWrap","editEqPrecoBaseWrap"].forEach(id=>{const w=document.getElementById(id);if(w)w.style.display="";});}
+  carregarLogo();
+}
+async function sair(){await sb.auth.signOut();location.reload();}
+window.addEventListener("load",async()=>{const {data:{session}}=await sb.auth.getSession();if(session?.user)await iniciarApp(session.user);});
+
+async function carregarTudo(){
+  const loads=[carregarEquipamentos(),carregarProjetos(),carregarCategorias(),carregarFreelancers(),carregarFuncoes(),carregarTodasMovs(),carregarOrcamentos(),carregarPastas(),carregarChecklists(),carregarCalEventos()];
+  if(isSupremo())loads.push(carregarPagamentosFl(),carregarReceitas());
+  await Promise.all(loads);
+  renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderPastas();renderFreelancers();renderHistorico();renderOrcamentos();renderChecklists();renderCalendario();
+  preencherSelects();preencherSelectHistorico();preencherSelectChecklists();
+  if(isSupremo()){carregarUsuarios();renderFinancas();}
+}
+async function carregarEquipamentos(){const {data}=await sb.from("equipamentos").select("*").order("nome");equipamentos=data||[];}
+async function carregarProjetos(){const {data}=await sb.from("projetos").select("*").order("id");projetos=data||[];}
+async function carregarCategorias(){const {data}=await sb.from("categorias").select("*").order("nome");categorias=data||[];renderCategorias();}
+async function carregarFreelancers(){const {data}=await sb.from("freelancers").select("*,freelancer_funcoes(funcao)").order("nome");freelancers=(data||[]).map(f=>({...f,funcoes_lista:(f.freelancer_funcoes||[]).map(x=>x.funcao)}));}
+async function carregarFuncoes(){const {data}=await sb.from("funcoes").select("*").order("nome");funcoes=data||[];renderFuncoes();}
+async function carregarTodasMovs(){const {data}=await sb.from("movimentacoes").select("*,equipamentos(nome),projetos(nome)").order("criado_em",{ascending:false}).limit(300);todasMovs=data||[];}
+async function carregarOrcamentos(){if(!isSupremo())return;const {data}=await sb.from("orcamentos").select("*,orcamento_itens(*)").order("criado_em",{ascending:false});orcamentos=data||[];}
+async function carregarPastas(){const {data}=await sb.from("pastas_projeto").select("*").order("nome");pastas=data||[];}
+async function carregarChecklists(){const {data}=await sb.from("checklists").select("*,checklist_itens(*)").order("criado_em",{ascending:false});checklists=data||[];}
+async function carregarCalEventos(){const {data}=await sb.from("calendario_eventos").select("*").order("data");calEventos=data||[];}
+async function carregarPagamentosFl(){if(!isSupremo())return;const {data}=await sb.from("pagamentos_freelancer").select("*").order("criado_em",{ascending:false});pagamentosFl=data||[];}
+async function carregarReceitas(){if(!isSupremo())return;const {data}=await sb.from("receitas").select("*").order("criado_em",{ascending:false});receitasList=data||[];}
+async function carregarAnexos(projId){const {data,error}=await sb.from("anexos_financeiros").select("*").eq("projeto_id",projId).order("criado_em",{ascending:false});if(error){console.error(error);return[];}return data||[];}
+
+function abrirModal(id){const el=document.getElementById(id);if(el)el.style.display="flex";}
+function fecharModal(id){const el=document.getElementById(id);if(el)el.style.display="none";}
+function esc(s){return(s||"").replace(/'/g,"\\'");}
+function brl(v){return"R$ "+Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function showMsg(txt,erro=false){const el=document.getElementById("appMsg");el.innerHTML=`<div class="${erro?"err":"ok"}">${txt}</div>`;setTimeout(()=>el.innerHTML="",3500);}
+function projNoDia(p,ds){if(!p.data_projeto)return false;const fim=p.data_fim||p.data_projeto;return ds>=p.data_projeto&&ds<=fim;}
+function mudarTab(nome,el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");
+  ["estoque","projetos","freelancers","movimentar","historico","calendario","orcamentos","financas","usuarios"].forEach(t=>{const div=document.getElementById("tab-"+t);if(div)div.style.display=t===nome?"block":"none";});
+  if(nome==="historico")renderHistorico();if(nome==="usuarios")carregarUsuarios();
+  if(nome==="orcamentos"){renderOrcamentos();preencherSelectChecklists();}
+  if(nome==="movimentar")renderChecklists();if(nome==="calendario")renderCalendario();if(nome==="financas")renderFinancas();
+}
+
+// ── FINANÇAS ──────────────────────────────────────────
+function inPeriodo(dateStr,mes,ano){if(mes===-1)return true;if(!dateStr)return false;const d=new Date(dateStr+"T12:00:00");return d.getMonth()===mes&&d.getFullYear()===ano;}
+function getFinPeriodo(){const m=parseInt(document.getElementById("finMesFiltro")?.value??"-1"),a=parseInt(document.getElementById("finAnoFiltro")?.value??new Date().getFullYear());return{mes:m,ano:a};}
+function setFinMesAtual(){const n=new Date();const mEl=document.getElementById("finMesFiltro"),aEl=document.getElementById("finAnoFiltro");if(mEl)mEl.value=n.getMonth();if(aEl)aEl.value=n.getFullYear();renderFinancas();}
+function setFinTudo(){const mEl=document.getElementById("finMesFiltro");if(mEl)mEl.value=-1;renderFinancas();}
+function setFiltroPagFl(f,el){filtroPagFl=f;document.querySelectorAll("#filtroPagFlArea .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");const {mes,ano}=getFinPeriodo();renderPagFl(mes,ano);}
+function setFiltroReceita(f,el){filtroReceita=f;document.querySelectorAll("#filtroReceitaArea .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");const {mes,ano}=getFinPeriodo();renderReceitasFin(mes,ano);}
+
+function preencherSelectFinProj(){
+  ["finProjTeamSel","anexoProjSel"].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const val=sel.value;
+    sel.innerHTML='<option value="">Selecione um projeto...</option>'+projetos.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+    sel.value=val;
+  });
+}
+async function mostrarEquipeProjetoFin(){
+  const projId=document.getElementById("finProjTeamSel").value;
+  const area=document.getElementById("equipeProjetoFinArea");
+  if(!projId){area.innerHTML="";return;}
+  const {data:links}=await sb.from("projeto_freelancers").select("freelancer_id").eq("projeto_id",projId);
+  const equipe=(links||[]).map(l=>freelancers.find(f=>f.id===l.freelancer_id)).filter(Boolean);
+  if(!equipe.length){area.innerHTML='<div style="font-size:13px;color:#888">Nenhum freelancer vinculado a este projeto.</div>';return;}
+  area.innerHTML=equipe.map(f=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid #e0e0d8;font-size:13px">
+      <span>${f.nome} <span style="color:#888;font-size:12px">· ${(f.funcoes_lista||[]).join(", ")||"—"}</span></span>
+      <button class="btn btn-sm btn-outline" onclick="abrirModalPagFlComProjeto(${f.id},${projId})">+ Pagamento</button>
+    </div>`).join("");
+}
+function abrirModalPagFlComProjeto(flId,projId){
+  abrirModalPagFl();
+  setTimeout(()=>{document.getElementById("pagFlFreelancer").value=flId;document.getElementById("pagFlProjeto").value=projId;},10);
+}
+
+// ── ANEXOS (notas fiscais / comprovantes por projeto) ─
+async function renderAnexosProjeto(){
+  const projId=document.getElementById("anexoProjSel").value;
+  const area=document.getElementById("anexosProjetoArea");
+  if(!projId){area.innerHTML="";return;}
+  area.innerHTML='<div style="font-size:13px;color:#888">Carregando...</div>';
+  anexosList=await carregarAnexos(projId);
+  if(!anexosList.length){area.innerHTML='<div class="empty" style="padding:1rem 0">Nenhum arquivo anexado ainda.</div>';return;}
+  area.innerHTML=anexosList.map(a=>{
+    const icone=a.tipo&&a.tipo.startsWith("image")?"🖼️":"📄";
+    return `<div class="anexo-item"><span>${icone}</span><a href="${a.url}" target="_blank" rel="noopener">${a.nome_arquivo}</a><span style="font-size:11px;color:#999">${fmtDt(a.criado_em?.split("T")[0])}</span><button class="btn btn-sm btn-danger" style="padding:3px 9px" onclick="abrirConfirm('Excluir este arquivo?',()=>excluirAnexo(${a.id}))">×</button></div>`;
+  }).join("");
+}
+async function uploadAnexoProjeto(){
+  const projId=document.getElementById("anexoProjSel").value;
+  const input=document.getElementById("anexoArquivoInput");
+  const file=input.files[0];
+  if(!projId){showMsg("Selecione um projeto primeiro.",true);return;}
+  if(!file){showMsg("Selecione um arquivo.",true);return;}
+  showMsg("Enviando arquivo...");
+  const ext=file.name.split('.').pop();
+  const path=`projeto_${projId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+  const {data:upData,error:upErr}=await sb.storage.from('comprovantes').upload(path,file,{cacheControl:'3600',upsert:false});
+  if(upErr){showMsg("Erro no upload: "+upErr.message,true);return;}
+  const {data:urlData}=sb.storage.from('comprovantes').getPublicUrl(path);
+  const {error:insErr}=await sb.from("anexos_financeiros").insert({projeto_id:parseInt(projId),nome_arquivo:file.name,url:urlData.publicUrl,tipo:file.type});
+  if(insErr){showMsg("Erro ao salvar referência: "+insErr.message,true);return;}
+  input.value="";
+  await renderAnexosProjeto();
+  showMsg("Arquivo enviado com sucesso!");
+}
+async function excluirAnexo(id){
+  const anexo=anexosList.find(a=>a.id===id);
+  await sb.from("anexos_financeiros").delete().eq("id",id);
+  if(anexo){
+    try{
+      const path=anexo.url.split('/comprovantes/')[1];
+      if(path)await sb.storage.from('comprovantes').remove([path]);
+    }catch(e){console.warn("Não foi possível remover do storage:",e);}
+  }
+  await renderAnexosProjeto();
+  showMsg("Arquivo excluído.");
+}
+
+async function gerarPDFResumoFinanceiro(){
+  const {mes,ano}=getFinPeriodo();
+  const periodoLabel=mes===-1?"Todo o período":`${MESES[mes]} ${ano}`;
+  const recRec=receitasList.filter(r=>r.status==="recebida"&&inPeriodo(r.data_recebimento,mes,ano));
+  const recPrev=receitasList.filter(r=>r.status==="prevista");
+  const pgPago=pagamentosFl.filter(p=>p.status==="pago"&&inPeriodo(p.data_pagamento,mes,ano));
+  const pgPend=pagamentosFl.filter(p=>p.status!=="pago");
+  const totRec=recRec.reduce((s,r)=>s+Number(r.valor),0);
+  const totPrev=recPrev.reduce((s,r)=>s+Number(r.valor),0);
+  const totPago=pgPago.reduce((s,p)=>s+Number(p.valor),0);
+  const totPend=pgPend.reduce((s,p)=>s+Number(p.valor),0);
+  const saldo=totRec-totPago;
+  const flN=id=>freelancers.find(f=>f.id===id)?.nome||"—";
+  const projN=id=>projetos.find(p=>p.id===id)?.nome||"";
+  const {jsPDF}=window.jspdf,doc=new jsPDF();
+  let y=await adicionarHeaderPDF(doc,"Resumo Financeiro",`Gerado em ${new Date().toLocaleString("pt-BR")}`);
+  doc.setFont("helvetica","bold");doc.setFontSize(14);doc.setTextColor(15,15,15);doc.text(`Período: ${periodoLabel}`,14,y);y+=10;
+  doc.setFillColor(245,245,242);doc.rect(14,y,182,32,'F');
+  const colW=182/2;
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(80,80,80);
+  doc.text("Recebido",20,y+7);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(30,110,30);doc.text(brl(totRec),20,y+15);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(80,80,80);doc.text("Previsto",20+colW,y+7);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(20,80,150);doc.text(brl(totPrev),20+colW,y+15);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(80,80,80);doc.text("Pago a freelancers",20,y+24);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(140,80,10);doc.text(brl(totPago),20,y+31);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(80,80,80);doc.text("A pagar",20+colW,y+24);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(180,40,40);doc.text(brl(totPend),20+colW,y+31);
+  y+=36;
+  doc.setDrawColor(150);doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=7;
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Saldo do período",14,y);doc.setTextColor(saldo>=0?30:180,saldo>=0?110:40,saldo>=0?30:40);doc.text(brl(saldo),196,y,{align:"right"});y+=10;
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Receitas recebidas",14,y);y+=6;doc.setDrawColor(220);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
+  if(recRec.length){recRec.forEach(r=>{if(y>270){doc.addPage();y=20;}doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(20,20,20);doc.text(r.descricao,16,y,{maxWidth:120});doc.setTextColor(100);doc.text(r.data_recebimento?fmtDt(r.data_recebimento):"—",145,y);doc.setFont("helvetica","bold");doc.setTextColor(30,110,30);doc.text(brl(r.valor),196,y,{align:"right"});y+=6;});}
+  else{doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(150);doc.text("Nenhuma receita recebida no período.",16,y);y+=6;}
+  y+=6;if(y>250){doc.addPage();y=20;}
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Pagamentos a freelancers (pagos)",14,y);y+=6;doc.setDrawColor(220);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
+  if(pgPago.length){pgPago.forEach(p=>{if(y>270){doc.addPage();y=20;}doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(20,20,20);doc.text(`${flN(p.freelancer_id)}${projN(p.projeto_id)?" — "+projN(p.projeto_id):""}`,16,y,{maxWidth:120});doc.setTextColor(100);doc.text(p.data_pagamento?fmtDt(p.data_pagamento):"—",145,y);doc.setFont("helvetica","bold");doc.setTextColor(140,80,10);doc.text(brl(p.valor),196,y,{align:"right"});y+=6;});}
+  else{doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(150);doc.text("Nenhum pagamento no período.",16,y);y+=6;}
+  y+=6;if(y>250){doc.addPage();y=20;}
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Pagamentos pendentes/atrasados",14,y);y+=6;doc.setDrawColor(220);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
+  if(pgPend.length){pgPend.forEach(p=>{if(y>270){doc.addPage();y=20;}doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(20,20,20);doc.text(`${flN(p.freelancer_id)}${projN(p.projeto_id)?" — "+projN(p.projeto_id):""}`,16,y,{maxWidth:100});doc.setTextColor(p.status==="atrasado"?180:150,p.status==="atrasado"?40:110,40);doc.text(p.status==="atrasado"?"Atrasado":"Pendente",140,y);doc.setFont("helvetica","bold");doc.setTextColor(180,40,40);doc.text(brl(p.valor),196,y,{align:"right"});y+=6;});}
+  else{doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(150);doc.text("Nenhum pagamento pendente.",16,y);y+=6;}
+  doc.save(`Resumo-Financeiro-${periodoLabel.replace(/\s+/g,"-")}.pdf`);
+}
+
+function renderFinancas(){
+  if(!isSupremo())return;
+  preencherSelectFinProj();
+  const {mes,ano}=getFinPeriodo();
+  const recRec=receitasList.filter(r=>r.status==="recebida"&&inPeriodo(r.data_recebimento,mes,ano));
+  const recPrev=receitasList.filter(r=>r.status==="prevista");
+  const pgPago=pagamentosFl.filter(p=>p.status==="pago"&&inPeriodo(p.data_pagamento,mes,ano));
+  const pgPend=pagamentosFl.filter(p=>p.status!=="pago");
+  const totRec=recRec.reduce((s,r)=>s+Number(r.valor),0);
+  const totPrev=recPrev.reduce((s,r)=>s+Number(r.valor),0);
+  const totPago=pgPago.reduce((s,p)=>s+Number(p.valor),0);
+  const totPend=pgPend.reduce((s,p)=>s+Number(p.valor),0);
+  const saldo=totRec-totPago;
+  const card=(label,val,cor,sub)=>`<div class="metric" style="border-color:${cor}20"><div class="metric-label" style="color:${cor}">${label}</div><div class="metric-value" style="color:${cor};font-size:17px">${brl(val)}</div><div style="font-size:11px;color:#aaa;margin-top:4px">${sub}</div></div>`;
+  document.getElementById("finCards").innerHTML=
+    card("💰 Recebido",totRec,"#3b6d11",mes===-1?"total":"no mês")+
+    card("📥 Previsto",totPrev,"#185fa5","aguardando")+
+    card("💸 Pago freelancers",totPago,"#854f0b",mes===-1?"total":"no mês")+
+    card("⏳ A pagar",totPend,"#e24b4a","pendente/atrasado")+
+    `<div class="metric" style="border-color:${saldo>=0?"#97c45920":"#f0959520"}"><div class="metric-label" style="color:${saldo>=0?"#3b6d11":"#a32d2d"}">📊 Saldo</div><div class="metric-value" style="color:${saldo>=0?"#3b6d11":"#a32d2d"};font-size:17px">${brl(saldo)}</div><div style="font-size:11px;color:#aaa;margin-top:4px">recebido − pago</div></div>`;
+  renderPagFl(mes,ano);
+  renderReceitasFin(mes,ano);
+}
+
+function renderPagFl(mes,ano){
+  const flN=id=>freelancers.find(f=>f.id===id)?.nome||"—";
+  const projN=id=>projetos.find(p=>p.id===id)?.nome||"";
+  let data=pagamentosFl;
+  if(mes!==-1)data=data.filter(p=>{const ref=p.data_pagamento||p.data_vencimento||p.criado_em?.split("T")[0];return inPeriodo(ref,mes,ano);});
+  if(filtroPagFl!=="todos")data=data.filter(p=>p.status===filtroPagFl);
+  const bdg={pago:'<span class="badge badge-ok">Pago</span>',atrasado:'<span class="badge badge-danger">Atrasado</span>',pendente:'<span class="badge badge-warn">Pendente</span>'};
+  document.getElementById("listaPagFl").innerHTML=data.length?data.map(p=>`
+    <div class="card" style="margin-bottom:8px;padding:.75rem 1rem">
+      <div class="item-row">
+        <div>
+          <div class="item-name" style="font-size:14px">${flN(p.freelancer_id)}</div>
+          <div class="item-sub">${p.descricao||""}${projN(p.projeto_id)?" · "+projN(p.projeto_id):""}</div>
+          <div class="item-sub">${p.data_vencimento?"Vence: "+fmtDt(p.data_vencimento):""}${p.data_pagamento?" · Pago: "+fmtDt(p.data_pagamento):""}</div>
+        </div>
+        <div class="actions">
+          <strong style="font-size:14px">${brl(p.valor)}</strong>
+          ${bdg[p.status]||""}
+          ${p.status!=="pago"?`<button class="btn btn-sm btn-green" onclick="marcarPagoFl(${p.id})">✓ Pago</button>`:""}
+          <button class="btn btn-sm btn-edit" onclick="abrirModalPagFl(${p.id})">✏</button>
+          <button class="btn btn-sm btn-danger" onclick="abrirConfirm('Excluir este pagamento?',()=>excluirPagFl(${p.id}))">✕</button>
+        </div>
+      </div>
+    </div>`).join(""):'<div class="empty">Nenhum pagamento encontrado.</div>';
+}
+
+function renderReceitasFin(mes,ano){
+  const projN=id=>projetos.find(p=>p.id===id)?.nome||"";
+  let data=receitasList;
+  if(mes!==-1)data=data.filter(r=>{const ref=r.data_recebimento||r.criado_em?.split("T")[0];return inPeriodo(ref,mes,ano);});
+  if(filtroReceita!=="todos")data=data.filter(r=>r.status===filtroReceita);
+  document.getElementById("listaReceitas").innerHTML=data.length?data.map(r=>`
+    <div class="card" style="margin-bottom:8px;padding:.75rem 1rem;border-left:3px solid ${r.status==="recebida"?"#97c459":"#6bb3e8"}">
+      <div class="item-row">
+        <div>
+          <div class="item-name" style="font-size:14px">${r.descricao}</div>
+          <div class="item-sub">${projN(r.projeto_id)?projN(r.projeto_id)+" · ":""}${r.data_recebimento?fmtDt(r.data_recebimento):""}</div>
+          ${r.observacao?`<div class="item-sub">${r.observacao}</div>`:""}
+        </div>
+        <div class="actions">
+          <strong style="font-size:14px;color:#3b6d11">${brl(r.valor)}</strong>
+          <span class="badge ${r.status==="recebida"?"badge-ok":"badge-info"}">${r.status==="recebida"?"Recebida":"Prevista"}</span>
+          ${r.status!=="recebida"?`<button class="btn btn-sm btn-green" onclick="marcarRecebida(${r.id})">✓ Recebida</button>`:""}
+          <button class="btn btn-sm btn-edit" onclick="abrirModalReceita(${r.id})">✏</button>
+          <button class="btn btn-sm btn-danger" onclick="abrirConfirm('Excluir esta receita?',()=>excluirReceita(${r.id}))">✕</button>
+        </div>
+      </div>
+    </div>`).join(""):'<div class="empty">Nenhuma receita encontrada.</div>';
+}
+
+function abrirModalPagFl(id=null){const p=id?pagamentosFl.find(x=>x.id===id):null;document.getElementById("modalPagFlTitulo").textContent=p?"Editar Pagamento":"Novo Pagamento";document.getElementById("pagFlId").value=id||"";document.getElementById("pagFlFreelancer").innerHTML=freelancers.map(f=>`<option value="${f.id}" ${p?.freelancer_id===f.id?"selected":""}>${f.nome}</option>`).join("");document.getElementById("pagFlProjeto").innerHTML='<option value="">Nenhum</option>'+projetos.map(pj=>`<option value="${pj.id}" ${p?.projeto_id===pj.id?"selected":""}>${pj.nome}</option>`).join("");document.getElementById("pagFlDesc").value=p?.descricao||"";document.getElementById("pagFlValor").value=p?.valor||"";document.getElementById("pagFlStatus").value=p?.status||"pendente";document.getElementById("pagFlVenc").value=p?.data_vencimento||"";document.getElementById("pagFlDataPgto").value=p?.data_pagamento||"";document.getElementById("pagFlObs").value=p?.observacao||"";abrirModal("modalPagFl");}
+async function salvarPagFl(){const id=document.getElementById("pagFlId").value,fl=document.getElementById("pagFlFreelancer").value,val=parseFloat(document.getElementById("pagFlValor").value)||0;if(!fl||!val){showMsg("Informe freelancer e valor.",true);return;}const payload={freelancer_id:parseInt(fl),projeto_id:document.getElementById("pagFlProjeto").value?parseInt(document.getElementById("pagFlProjeto").value):null,descricao:document.getElementById("pagFlDesc").value.trim()||null,valor:val,status:document.getElementById("pagFlStatus").value,data_vencimento:document.getElementById("pagFlVenc").value||null,data_pagamento:document.getElementById("pagFlDataPgto").value||null,observacao:document.getElementById("pagFlObs").value.trim()||null};const {error}=id?await sb.from("pagamentos_freelancer").update(payload).eq("id",id):await sb.from("pagamentos_freelancer").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalPagFl");await carregarPagamentosFl();renderFinancas();showMsg(id?"Pagamento atualizado!":"Pagamento registrado!");}
+async function marcarPagoFl(id){await sb.from("pagamentos_freelancer").update({status:"pago",data_pagamento:new Date().toISOString().split("T")[0]}).eq("id",id);await carregarPagamentosFl();renderFinancas();showMsg("Marcado como pago!");}
+async function excluirPagFl(id){await sb.from("pagamentos_freelancer").delete().eq("id",id);await carregarPagamentosFl();renderFinancas();showMsg("Pagamento excluído.");}
+function abrirModalReceita(id=null){const r=id?receitasList.find(x=>x.id===id):null;document.getElementById("modalReceitaTitulo").textContent=r?"Editar Receita":"Nova Receita";document.getElementById("receitaId").value=id||"";document.getElementById("receitaDesc").value=r?.descricao||"";document.getElementById("receitaValor").value=r?.valor||"";document.getElementById("receitaStatus").value=r?.status||"prevista";document.getElementById("receitaProjeto").innerHTML='<option value="">Nenhum</option>'+projetos.map(p=>`<option value="${p.id}" ${r?.projeto_id===p.id?"selected":""}>${p.nome}</option>`).join("");document.getElementById("receitaData").value=r?.data_recebimento||"";document.getElementById("receitaObs").value=r?.observacao||"";abrirModal("modalReceita");}
+async function salvarReceita(){const id=document.getElementById("receitaId").value,desc=document.getElementById("receitaDesc").value.trim(),val=parseFloat(document.getElementById("receitaValor").value)||0;if(!desc||!val){showMsg("Informe descrição e valor.",true);return;}const payload={descricao:desc,valor:val,status:document.getElementById("receitaStatus").value,projeto_id:document.getElementById("receitaProjeto").value?parseInt(document.getElementById("receitaProjeto").value):null,data_recebimento:document.getElementById("receitaData").value||null,observacao:document.getElementById("receitaObs").value.trim()||null};const {error}=id?await sb.from("receitas").update(payload).eq("id",id):await sb.from("receitas").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalReceita");await carregarReceitas();renderFinancas();showMsg(id?"Receita atualizada!":"Receita registrada!");}
+async function marcarRecebida(id){await sb.from("receitas").update({status:"recebida",data_recebimento:new Date().toISOString().split("T")[0]}).eq("id",id);await carregarReceitas();renderFinancas();showMsg("Marcada como recebida!");}
+async function excluirReceita(id){await sb.from("receitas").delete().eq("id",id);await carregarReceitas();renderFinancas();showMsg("Receita excluída.");}
+function abrirImportarOrc(){document.getElementById("importOrcSel").innerHTML='<option value="">Selecione...</option>'+orcamentos.map(o=>{const {total}=calcTotalOrc(o);return `<option value="${o.id}">${o.titulo} — ${brl(total)}</option>`;}).join("");document.getElementById("importOrcPreview").style.display="none";document.getElementById("importOrcData").value=new Date().toISOString().split("T")[0];abrirModal("modalImportarOrc");}
+function previewImportOrc(){const id=document.getElementById("importOrcSel").value,prev=document.getElementById("importOrcPreview");if(!id){prev.style.display="none";return;}const o=orcamentos.find(x=>x.id==id);if(!o){prev.style.display="none";return;}const {total}=calcTotalOrc(o);prev.style.display="block";prev.innerHTML=`<strong>${o.titulo}</strong><br>Cliente: ${o.cliente||"—"} · Valor final: <strong style="color:#3b6d11">${brl(total)}</strong>${o.data_evento?`<br>Evento: ${fmtDt(o.data_evento)}`:""}`;} 
+async function confirmarImportarOrc(){const id=document.getElementById("importOrcSel").value;if(!id){showMsg("Selecione um orçamento.",true);return;}const o=orcamentos.find(x=>x.id==id);if(!o)return;const {total}=calcTotalOrc(o);const jaImport=receitasList.some(r=>r.orcamento_id==id);if(jaImport&&!confirm("Este orçamento já foi importado. Importar novamente?"))return;const payload={descricao:`Orçamento: ${o.titulo}`,valor:total,status:document.getElementById("importOrcStatus").value,orcamento_id:parseInt(id),projeto_id:null,data_recebimento:document.getElementById("importOrcData").value||null,observacao:`Cliente: ${o.cliente||"—"}`};const {error}=await sb.from("receitas").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalImportarOrc");await carregarReceitas();renderFinancas();showMsg("Orçamento importado como receita!");}
+
+// ── CALENDÁRIO ────────────────────────────────────────
+function mudarMes(d){calMes+=d;if(calMes>11){calMes=0;calAno++;}else if(calMes<0){calMes=11;calAno--;}renderCalendario();}
+function renderCalendario(){const titulo=document.getElementById("calTitulo");if(!titulo)return;titulo.textContent=`${MESES[calMes]} ${calAno}`;const grid=document.getElementById("calGrid");if(!grid)return;const primeiroDia=new Date(calAno,calMes,1).getDay(),diasNoMes=new Date(calAno,calMes+1,0).getDate();const hoje=new Date(),hd=hoje.getDate(),hm=hoje.getMonth(),ha=hoje.getFullYear();let html="";for(let i=0;i<primeiroDia;i++)html+=`<div class="cal-day cal-empty"></div>`;for(let d=1;d<=diasNoMes;d++){const ds=`${calAno}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const isH=d===hd&&calMes===hm&&calAno===ha;const projsD=projetos.filter(p=>projNoDia(p,ds)),calEvsD=calEventos.filter(e=>e.data===ds);let evHtml=projsD.slice(0,2).map(p=>{const isRange=p.data_fim&&p.data_fim!==p.data_projeto;const prefix=isRange?(p.data_projeto===ds?"▶ ":(p.data_fim===ds?"◀ ":"─ ")):"";return `<div class="cal-ev cal-ev-proj" title="${p.nome}"><span>${prefix}${p.nome}</span><div class="cal-ev-actions"><button class="cal-ev-action-btn" style="color:#185fa5" onclick="event.stopPropagation();fecharModal('modalDia');abrirEditarProjeto(${p.id})">✏</button></div></div>`;}).join("");evHtml+=calEvsD.slice(0,2).map(e=>`<div class="cal-ev cal-ev-cal" title="${e.titulo}"><span>${e.titulo}</span><div class="cal-ev-actions"><button class="cal-ev-action-btn" onclick="event.stopPropagation();abrirFormEvento('${ds}',${e.id})">✏</button><button class="cal-ev-action-btn" style="color:#a32d2d" onclick="event.stopPropagation();confirmarExcluirEvento(${e.id})">×</button></div></div>`).join("");const mais=projsD.length+calEvsD.length-4;if(mais>0)evHtml+=`<div style="font-size:9px;color:#888">+${mais} mais</div>`;html+=`<div class="cal-day${isH?" cal-day-hoje":""}" onclick="abrirDia('${ds}')"><div class="cal-day-num">${d}</div>${evHtml}</div>`;}grid.innerHTML=html;}
+function confirmarExcluirEvento(id){const ev=calEventos.find(e=>e.id===id);abrirConfirm(`Excluir o evento "${ev?.titulo||"este evento"}"?`,()=>excluirEvento(id));}
+function abrirCriarProjetoCal(ds){fecharModal("modalDia");document.getElementById("calProjNome").value="";document.getElementById("calProjCliente").value="";document.getElementById("calProjData").value=ds||"";document.getElementById("calProjDataFim").value="";document.getElementById("calProjMultiDia").checked=false;document.getElementById("calProjDataFimWrap").style.display="none";const sel=document.getElementById("calProjPasta");sel.innerHTML='<option value="">Sem pasta</option>'+pastas.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");abrirModal("modalCriarProjetoCal");}
+async function criarProjetoDoCal(){const nome=document.getElementById("calProjNome").value.trim();if(!nome){showMsg("Informe o nome.",true);return;}const cliente=document.getElementById("calProjCliente").value.trim()||null,data_projeto=document.getElementById("calProjData").value||null,data_fim=document.getElementById("calProjMultiDia").checked?(document.getElementById("calProjDataFim").value||null):null,pasta_id=document.getElementById("calProjPasta").value||null;const {error}=await sb.from("projetos").insert({nome,cliente,data_projeto,data_fim,pasta_id:pasta_id?parseInt(pasta_id):null});if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalCriarProjetoCal");await carregarProjetos();renderPastas();preencherSelects();preencherSelectHistorico();renderCalendario();showMsg("Projeto criado!");if(data_projeto){diaAtual=data_projeto;setTimeout(()=>abrirDia(data_projeto),300);}}
+async function abrirDia(ds){
+  diaAtual=ds;const [a,m,d]=ds.split('-');
+  const projsD=projetos.filter(p=>projNoDia(p,ds)),calEvsD=calEventos.filter(e=>e.data===ds);
+  let html="";
+  if(projsD.length){html+=`<div style="font-weight:600;font-size:13px;color:#185fa5;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid #d4e9f7">📁 Projetos</div>`;projsD.forEach(p=>{html+=`<div class="card" style="margin-bottom:6px;border-color:#d4e9f7"><div class="item-row"><div><div class="item-name">${p.nome}</div><div class="item-sub">Cliente: ${p.cliente||"—"} · ${fmtRange(p.data_projeto,p.data_fim)}</div></div><div class="actions">${p.status==="ativo"?`<button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirEditarProjeto(${p.id})">Editar</button>`:`<span class="badge badge-gray">encerrado</span>`}<button class="btn btn-sm btn-outline" onclick="abrirModalProjeto(${p.id})">Ver</button><button class="btn btn-sm btn-danger" onclick="fecharModal('modalDia');abrirConfirm('Excluir &quot;${esc(p.nome)}&quot;?',()=>excluirProjeto(${p.id}))">Excluir</button></div></div></div>`;});}
+  if(calEvsD.length){html+=`<div style="font-weight:600;font-size:13px;color:#3b6d11;margin:${projsD.length?'14px':0} 0 8px;padding-bottom:4px;border-bottom:0.5px solid #c8e6c9">📅 Eventos</div>`;calEvsD.forEach(e=>{const cl=checklists.find(c=>c.id===e.checklist_id),proj=projetos.find(p=>p.id===e.projeto_id);html+=`<div class="card" style="margin-bottom:6px;border-color:#c8e6c9"><div class="item-row"><div><div class="item-name">${e.titulo}</div>${e.observacao?`<div class="item-sub">Obs: ${e.observacao}</div>`:""}${proj?`<div class="item-sub">Projeto: ${proj.nome}</div>`:""}${cl?`<div class="item-sub">Checklist: ${cl.nome}</div>`:""}</div><div class="actions"><button class="btn btn-sm btn-edit" onclick="fecharModal('modalDia');abrirFormEvento('${ds}',${e.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="fecharModal('modalDia');confirmarExcluirEvento(${e.id})">Excluir</button></div></div></div>`;});}
+  if(!projsD.length&&!calEvsD.length)html='<div class="empty">Nenhum projeto ou evento neste dia.</div>';
+  document.getElementById("modalDiaTitulo").textContent=`${d}/${m}/${a}`;document.getElementById("modalDiaConteudo").innerHTML=html;abrirModal("modalDia");
+}
+async function abrirFormEvento(ds,eventoId){fecharModal("modalDia");const ev=eventoId?calEventos.find(e=>e.id===eventoId):null;document.getElementById("formEventoId").value=eventoId||"";document.getElementById("formEventoData").value=ds;document.getElementById("formEventoTitulo").value=ev?.titulo||"";document.getElementById("formEventoObs").value=ev?.observacao||"";document.getElementById("modalFormEventoTitulo").textContent=eventoId?"Editar evento":"Novo evento";document.getElementById("formEventoProj").innerHTML='<option value="">Nenhum</option>'+projetos.map(p=>`<option value="${p.id}" ${ev?.projeto_id===p.id?"selected":""}>${p.nome}</option>`).join("");document.getElementById("formEventoCheck").innerHTML='<option value="">Nenhum</option>'+checklists.map(c=>`<option value="${c.id}" ${ev?.checklist_id===c.id?"selected":""}>${c.nome}</option>`).join("");let equipeExistente=[];if(eventoId){const {data}=await sb.from("calendario_equipe").select("*").eq("evento_id",eventoId);equipeExistente=data||[];}const equipeMap=new Map(equipeExistente.map(e=>[e.freelancer_id,e.funcao_no_evento]));document.getElementById("formEventoEquipe").innerHTML=freelancers.map(f=>{const checked=equipeMap.has(f.id),funcao=equipeMap.get(f.id)||(f.funcoes_lista||[])[0]||"";return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid #f1efe8"><input type="checkbox" id="calfl-${f.id}" value="${f.id}" ${checked?"checked":""} style="width:auto"/><label for="calfl-${f.id}" style="flex:1;font-size:13px">${f.nome}</label><input id="calfunc-${f.id}" type="text" value="${funcao}" placeholder="Função" style="width:120px;font-size:12px;padding:4px 8px"/></div>`;}).join("")||'<div style="color:#888;font-size:13px">Nenhum freelancer cadastrado.</div>';abrirModal("modalFormEvento");}
+async function salvarEvento(){const idStr=document.getElementById("formEventoId").value,ds=document.getElementById("formEventoData").value,titulo=document.getElementById("formEventoTitulo").value.trim();if(!titulo){showMsg("Informe o título do evento.",true);return;}const obs=document.getElementById("formEventoObs").value.trim(),projId=document.getElementById("formEventoProj").value||null,checkId=document.getElementById("formEventoCheck").value||null;let eventoId=idStr?parseInt(idStr):null;if(eventoId){await sb.from("calendario_eventos").update({titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).eq("id",eventoId);await sb.from("calendario_equipe").delete().eq("evento_id",eventoId);}else{const {data:ev,error}=await sb.from("calendario_eventos").insert({data:ds,titulo,observacao:obs||null,projeto_id:projId?parseInt(projId):null,checklist_id:checkId?parseInt(checkId):null}).select().single();if(error){showMsg("Erro: "+error.message,true);return;}eventoId=ev.id;}const cbs=document.querySelectorAll("#formEventoEquipe input[type=checkbox]:checked");const equipe=Array.from(cbs).map(cb=>({evento_id:eventoId,freelancer_id:parseInt(cb.value),funcao_no_evento:document.getElementById(`calfunc-${cb.value}`)?.value||null}));if(equipe.length)await sb.from("calendario_equipe").insert(equipe);fecharModal("modalFormEvento");await carregarCalEventos();renderCalendario();showMsg("Evento salvo!");diaAtual=ds;setTimeout(()=>abrirDia(ds),300);}
+async function excluirEvento(id){await sb.from("calendario_equipe").delete().eq("evento_id",id);await sb.from("calendario_eventos").delete().eq("id",id);await carregarCalEventos();renderCalendario();fecharModal("modalDia");showMsg("Evento excluído.");}
+function abrirResumoPasta(pid){const p=pastas.find(x=>x.id===pid);document.getElementById("modalResumoPastaTitulo").textContent=`Resumo mensal — ${p.nome}`;document.getElementById("resumoPastaId").value=pid;document.getElementById("resumoMes").value=new Date().getMonth();document.getElementById("resumoAno").value=new Date().getFullYear();abrirModal("modalResumoPasta");}
+async function gerarPDFResumoPasta(){const pid=parseInt(document.getElementById("resu
