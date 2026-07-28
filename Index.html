@@ -354,7 +354,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
         <div class="row">
           <div class="col" style="max-width:200px">
             <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem comercial (%)</label>
-            <input id="orcMargem" type="number" min="0" max="500" value="40" oninput="atualizarSubtotal()" style="max-width:120px"/>
+            <input id="orcMargem" type="number" min="0" max="500" value="0" oninput="atualizarSubtotal()" style="max-width:120px"/>
           </div>
         </div>
         <div class="field"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Descrição do serviço</label><textarea id="orcDescricao" placeholder="Descreva o serviço..."></textarea></div>
@@ -505,7 +505,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
   <div class="row">
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data do evento</label><input id="editOrcDataEvento" type="date"/></div>
     <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Nº de diárias</label><input id="editOrcDiarias" type="number" min="1" value="1" oninput="atualizarSubtotalEdit()"/></div>
-    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem (%)</label><input id="editOrcMargem" type="number" min="0" value="40" oninput="atualizarSubtotalEdit()"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Margem (%)</label><input id="editOrcMargem" type="number" min="0" value="0" oninput="atualizarSubtotalEdit()"/></div>
   </div>
   <div class="field"><label>Descrição do serviço</label><textarea id="editOrcDescricao"></textarea></div>
   <div style="font-weight:500;font-size:14px;margin-bottom:10px">Equipamentos</div>
@@ -565,17 +565,16 @@ const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agos
 const fmtDt=ds=>ds?new Date(ds+"T12:00:00").toLocaleDateString("pt-BR"):"—";
 const fmtRange=(ini,fim)=>fim&&fim!==ini?`${fmtDt(ini)} → ${fmtDt(fim)}`:fmtDt(ini);
 
-function getMargem(id="orcMargem"){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?1.4:1+(v/100);}
-function calcTotalOrc(o){const itens=o.orcamento_itens||[];const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);const diarias=o.diarias||1,margem=o.margem!=null?1+(o.margem/100):1.4;const baseDiarias=sub*diarias,baseComMargem=baseDiarias*margem;const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;return{sub,diarias,margem,baseDiarias,baseComMargem,desc,total};}
+function getMargem(id="orcMargem"){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?1:1+(v/100);}
+function calcTotalOrc(o){const itens=o.orcamento_itens||[];const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);const diarias=o.diarias||1,margem=o.margem!=null?1+(o.margem/100):1;const baseDiarias=sub*diarias,baseComMargem=baseDiarias*margem;const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;return{sub,diarias,margem,baseDiarias,baseComMargem,desc,total};}
 function abrirConfirm(msg,onOk){document.getElementById("modalConfirmMsg").textContent=msg;document.getElementById("modalConfirmOk").onclick=()=>{fecharModal("modalConfirm");onOk();};abrirModal("modalConfirm");}
 
 async function carregarLogo(){if(logoDataUrl)return logoDataUrl;try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(r=>{const rd=new FileReader();rd.onloadend=()=>{logoDataUrl=rd.result;r(logoDataUrl);};rd.readAsDataURL(blob);});}catch(e){return null;}}
 async function adicionarHeaderPDF(doc,subtitulo,dtGerado){
-  const logo=await carregarLogo();const r=7,cx=14+r,cy=16;
-  if(logo){try{doc.addImage(logo,'PNG',14,9,14,14);}catch(e){_drawLens(doc,cx,cy,r);}}else{_drawLens(doc,cx,cy,r);}
-  doc.setDrawColor(80,80,80);doc.setLineWidth(0.5);doc.line(cx+r+4,cy-r*0.8,cx+r+4,cy+r*0.8);
-  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(15,15,15);doc.text("TAKEVISION",cx+r+8,cy+2);
-  let hy=27;
+  const logo=await carregarLogo();
+  const logoSize=26, logoX=14, logoY=6;
+  if(logo){try{doc.addImage(logo,'PNG',logoX,logoY,logoSize,logoSize);}catch(e){_drawLens(doc,logoX+logoSize/2,logoY+logoSize/2,11);}}else{_drawLens(doc,logoX+logoSize/2,logoY+logoSize/2,11);}
+  let hy=38;
   doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(15,15,15);doc.text("Take Vision Filmes LTDA",14,hy);hy+=4.5;
   doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(40,40,40);
   doc.text("Rua Alvarães, 02/201 - Del Castilho - Rio de Janeiro - RJ - CEP 21.051-080",14,hy);hy+=4;
