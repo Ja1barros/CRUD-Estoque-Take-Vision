@@ -970,7 +970,8 @@ function atualizarSubtotal(){
   const diarias=Math.max(1,parseInt(document.getElementById("orcDiarias")?.value)||1);
   const margemMult=getMargem("orcMargem");
   const comDiarias=sub*diarias,comMargem=comDiarias*margemMult;
-  const margemPct=parseFloat(document.getElementById("orcMargem")?.value)||40;
+  const margemRaw=parseFloat(document.getElementById("orcMargem")?.value);
+  const margemPct=isNaN(margemRaw)?40:margemRaw;
   const eEq=document.getElementById("previewSubtotalEq"),eProv=document.getElementById("previewSubtotalProv");
   const eSub=document.getElementById("previewSubtotal"),eDn=document.getElementById("previewDiariasNum");
   const eDrow=document.getElementById("previewDiariasRow"),eCD=document.getElementById("previewComDiarias");
@@ -985,7 +986,8 @@ function finalizarOrcamento(){
   const titulo=document.getElementById("orcTitulo").value.trim();if(!titulo){showMsg("Informe o título.",true);return;}
   const eq=calcSubtotalEq(),prov=calcSubtotalProv(),sub=eq+prov;
   const diarias=Math.max(1,parseInt(document.getElementById("orcDiarias")?.value)||1);
-  const margemPct=parseFloat(document.getElementById("orcMargem")?.value)||40;
+  const margemRaw=parseFloat(document.getElementById("orcMargem")?.value);
+  const margemPct=isNaN(margemRaw)?40:margemRaw;
   const margemMult=1+(margemPct/100);
   const baseDiarias=sub*diarias,baseComMargem=baseDiarias*margemMult;
   orcDadosTemp={titulo,cliente:document.getElementById("orcCliente").value.trim(),local:document.getElementById("orcLocal").value.trim(),descricao:document.getElementById("orcDescricao").value.trim(),data_evento:document.getElementById("orcDataEvento")?.value||null,diarias,margem:margemPct,sub,baseDiarias,baseComMargem};
@@ -1003,7 +1005,8 @@ function atualizarPreviewDesconto(){
 async function confirmarOrcamento(comDesconto){
   const pct=comDesconto?parseFloat(document.getElementById("descontoValor").value)||0:0;
   const {titulo,cliente,local,descricao,data_evento,diarias,margem}=orcDadosTemp;
-  const {data:orc,error}=await sb.from("orcamentos").insert({titulo,cliente:cliente||null,local:local||null,descricao_servico:descricao||null,desconto:pct,diarias:diarias||1,margem:margem||40,data_evento:data_evento||null,criado_por:usuario.id}).select().single();
+  const margemFinal=(margem===null||margem===undefined||isNaN(margem))?40:margem;
+  const {data:orc,error}=await sb.from("orcamentos").insert({titulo,cliente:cliente||null,local:local||null,descricao_servico:descricao||null,desconto:pct,diarias:diarias||1,margem:margemFinal,data_evento:data_evento||null,criado_por:usuario.id}).select().single();
   if(error){showMsg("Erro: "+error.message,true);return;}
   const itensEq=orcLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-desc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-qtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-preco-${id}`)?.value)||0,tipo:"equipamento"})).filter(i=>i.descricao);
   const itensProv=orcProvedoresLinhas.map(id=>({orcamento_id:orc.id,descricao:document.getElementById(`orc-pfunc-${id}`)?.value||"",quantidade:parseInt(document.getElementById(`orc-pqtd-${id}`)?.value)||1,preco_unitario:parseFloat(document.getElementById(`orc-ppreco-${id}`)?.value)||0,tipo:"provedor"})).filter(i=>i.descricao);
@@ -1082,7 +1085,8 @@ function atualizarSubtotalEdit(){
   const prov=editOrcProvLinhas.reduce((s,id)=>{const q=parseFloat(document.getElementById(`edit-orc-pqtd-${id}`)?.value)||0,p=parseFloat(document.getElementById(`edit-orc-ppreco-${id}`)?.value)||0;return s+q*p;},0);
   const sub=eq+prov;
   const diarias=Math.max(1,parseInt(document.getElementById("editOrcDiarias")?.value)||1);
-  const margemPct=parseFloat(document.getElementById("editOrcMargem")?.value)||40;
+  const margemRaw=parseFloat(document.getElementById("editOrcMargem")?.value);
+  const margemPct=isNaN(margemRaw)?40:margemRaw;
   const margemMult=1+(margemPct/100);
   const baseComMargem=sub*diarias*margemMult;
   const pct=parseFloat(document.getElementById("editOrcDesconto")?.value)||0;
@@ -1100,7 +1104,8 @@ async function salvarOrcamentoEditado(){
   const desconto=parseFloat(document.getElementById("editOrcDesconto").value)||0;
   const data_evento=document.getElementById("editOrcDataEvento")?.value||null;
   const diarias=Math.max(1,parseInt(document.getElementById("editOrcDiarias")?.value)||1);
-  const margem=parseFloat(document.getElementById("editOrcMargem")?.value)||40;
+  const margemRaw=parseFloat(document.getElementById("editOrcMargem")?.value);
+  const margem=isNaN(margemRaw)?40:margemRaw;
   const {error}=await sb.from("orcamentos").update({titulo,cliente,local,descricao_servico,desconto,data_evento,diarias,margem}).eq("id",editOrcId);
   if(error){showMsg("Erro: "+error.message,true);return;}
   await sb.from("orcamento_itens").delete().eq("orcamento_id",editOrcId);
