@@ -90,7 +90,7 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 .toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .toggle-row input[type=checkbox]{width:auto;cursor:pointer}
 .toggle-row label{font-size:13px;color:#555;cursor:pointer}
-.fin-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.5rem}
+.fin-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
 .fin-section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .fin-section-title{font-size:13px;font-weight:600;color:#444;text-transform:uppercase;letter-spacing:.4px}
 .anexo-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border:0.5px solid #e0e0d8;border-radius:8px;margin-bottom:6px;font-size:13px}
@@ -430,6 +430,17 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
           <div id="listaReceitas"></div>
         </div>
       </div>
+      <div class="section-sub">🧾 Despesas extras</div>
+      <div class="fin-section-header">
+        <div class="fin-section-title">Despesas avulsas (material, manutenção, etc.)</div>
+        <button class="btn btn-sm btn-outline" onclick="abrirModalDespesa()">+ Nova despesa</button>
+      </div>
+      <div id="filtroDespesaArea" class="filters">
+        <button class="filter-btn active" onclick="setFiltroDespesa('todos',this)">Todas</button>
+        <button class="filter-btn" onclick="setFiltroDespesa('pendente',this)">Pendentes</button>
+        <button class="filter-btn" onclick="setFiltroDespesa('paga',this)">Pagas</button>
+      </div>
+      <div id="listaDespesas"></div>
       <div class="section-sub">📎 Notas fiscais e comprovantes por projeto</div>
       <div class="card">
         <label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Selecione o projeto</label>
@@ -536,6 +547,8 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <div class="modal-bg" id="modalReceita"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalReceitaTitulo">Nova Receita</div><button class="modal-close" onclick="fecharModal('modalReceita')">×</button></div><input type="hidden" id="receitaId"/><div class="field"><label>Descrição</label><input id="receitaDesc" placeholder="Ex: Pagamento filmagem casamento"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor (R$)</label><input id="receitaValor" type="number" min="0" step="0.01" placeholder="0,00"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="receitaStatus"><option value="prevista">Prevista</option><option value="recebida">Recebida</option></select></div></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label><select id="receitaProjeto"><option value="">Nenhum</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de recebimento</label><input id="receitaData" type="date"/></div></div><div class="field"><label>Observação</label><input id="receitaObs" placeholder="Opcional"/></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalReceita')">Cancelar</button><button class="btn btn-sm btn-green" onclick="salvarReceita()">Salvar</button></div></div></div>
 <div class="modal-bg" id="modalImportarOrc"><div class="modal-box"><div class="modal-header"><div class="modal-title">Importar orçamento como receita</div><button class="modal-close" onclick="fecharModal('modalImportarOrc')">×</button></div><div class="field"><label>Selecione o orçamento</label><select id="importOrcSel" onchange="previewImportOrc()"><option value="">Selecione...</option></select></div><div id="importOrcPreview" style="background:#f5f5f0;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="importOrcStatus"><option value="prevista">Prevista</option><option value="recebida">Recebida</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de recebimento</label><input id="importOrcData" type="date"/></div></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalImportarOrc')">Cancelar</button><button class="btn btn-sm btn-green" onclick="confirmarImportarOrc()">Importar</button></div></div></div>
 
+<div class="modal-bg" id="modalDespesa"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalDespesaTitulo">Nova Despesa</div><button class="modal-close" onclick="fecharModal('modalDespesa')">×</button></div><input type="hidden" id="despesaId"/><div class="field"><label>Descrição</label><input id="despesaDesc" placeholder="Ex: Kit de fitas isolantes"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor (R$)</label><input id="despesaValor" type="number" min="0" step="0.01" placeholder="0,00"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Categoria</label><input id="despesaCategoria" placeholder="Ex: Material, Manutenção"/></div></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data</label><input id="despesaData" type="date"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="despesaStatus"><option value="paga">Paga</option><option value="pendente">Pendente</option></select></div></div><div class="field"><label>Projeto (opcional)</label><select id="despesaProjeto"><option value="">Nenhum</option></select></div><div class="field"><label>Observação</label><input id="despesaObs" placeholder="Opcional"/></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalDespesa')">Cancelar</button><button class="btn btn-sm btn-green" onclick="salvarDespesa()">Salvar</button></div></div></div>
+
 <!-- MODAL CONFIRMAÇÃO -->
 <div class="modal-bg" id="modalConfirm"><div class="modal-box" style="max-width:380px">
   <div class="modal-confirm-icon">🗑️</div>
@@ -557,7 +570,7 @@ let usuario=null,perfil=null,equipamentos=[],projetos=[],categorias=[],freelance
 let editEqId=null,editCatId=null,editFlId=null,editFuncaoId=null,editProjId=null,editCheckId=null;
 let linhasEq=[],orcLinhas=[],orcProvedoresLinhas=[],orcDadosTemp=null,editOrcId=null,editOrcLinhas=[],editOrcProvLinhas=[];
 let calAno=new Date().getFullYear(),calMes=new Date().getMonth(),diaAtual=null,logoDataUrl=null;
-let pagamentosFl=[],receitasList=[],filtroPagFl="todos",filtroReceita="todos",anexosList=[];
+let pagamentosFl=[],receitasList=[],filtroPagFl="todos",filtroReceita="todos",anexosList=[],despesasList=[],filtroDespesa="todos";
 
 const isSupremo=()=>perfil?.supremo===true;
 const isAdmin=()=>perfil?.papel==="admin"||isSupremo();
@@ -620,7 +633,7 @@ window.addEventListener("load",async()=>{const {data:{session}}=await sb.auth.ge
 
 async function carregarTudo(){
   const loads=[carregarEquipamentos(),carregarProjetos(),carregarCategorias(),carregarFreelancers(),carregarFuncoes(),carregarTodasMovs(),carregarOrcamentos(),carregarPastas(),carregarChecklists(),carregarCalEventos()];
-  if(isSupremo())loads.push(carregarPagamentosFl(),carregarReceitas());
+  if(isSupremo())loads.push(carregarPagamentosFl(),carregarReceitas(),carregarDespesas());
   await Promise.all(loads);
   renderMetrics();renderEquipamentos();renderGerenciarEquipamentos();renderPastas();renderFreelancers();renderHistorico();renderOrcamentos();renderChecklists();renderCalendario();
   preencherSelects();preencherSelectHistorico();preencherSelectChecklists();
@@ -638,6 +651,7 @@ async function carregarChecklists(){const {data}=await sb.from("checklists").sel
 async function carregarCalEventos(){const {data}=await sb.from("calendario_eventos").select("*").order("data");calEventos=data||[];}
 async function carregarPagamentosFl(){if(!isSupremo())return;const {data}=await sb.from("pagamentos_freelancer").select("*").order("criado_em",{ascending:false});pagamentosFl=data||[];}
 async function carregarReceitas(){if(!isSupremo())return;const {data}=await sb.from("receitas").select("*").order("criado_em",{ascending:false});receitasList=data||[];}
+async function carregarDespesas(){if(!isSupremo())return;const {data}=await sb.from("despesas").select("*").order("criado_em",{ascending:false});despesasList=data||[];}
 async function carregarAnexos(projId){const {data,error}=await sb.from("anexos_financeiros").select("*").eq("projeto_id",projId).order("criado_em",{ascending:false});if(error){console.error(error);return[];}return data||[];}
 
 function abrirModal(id){const el=document.getElementById(id);if(el)el.style.display="flex";}
@@ -743,7 +757,10 @@ async function gerarPDFResumoFinanceiro(){
   const totPrev=recPrev.reduce((s,r)=>s+Number(r.valor),0);
   const totPago=pgPago.reduce((s,p)=>s+Number(p.valor),0);
   const totPend=pgPend.reduce((s,p)=>s+Number(p.valor),0);
-  const saldo=totRec-totPago;
+  const despPagas=despesasList.filter(d=>d.status==="paga"&&inPeriodo(d.data_despesa,mes,ano));
+  const despPend=despesasList.filter(d=>d.status!=="paga");
+  const totDesp=despPagas.reduce((s,d)=>s+Number(d.valor),0);
+  const saldo=totRec-totPago-totDesp;
   const flN=id=>freelancers.find(f=>f.id===id)?.nome||"—";
   const projN=id=>projetos.find(p=>p.id===id)?.nome||"";
   const {jsPDF}=window.jspdf,doc=new jsPDF();
@@ -757,6 +774,7 @@ async function gerarPDFResumoFinanceiro(){
   doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(80,80,80);doc.text("Pago a freelancers",20,y+24);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(140,80,10);doc.text(brl(totPago),20,y+31);
   doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(80,80,80);doc.text("A pagar",20+colW,y+24);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(180,40,40);doc.text(brl(totPend),20+colW,y+31);
   y+=36;
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(80,80,80);doc.text("Despesas extras (pagas):",14,y);doc.setFont("helvetica","bold");doc.setTextColor(140,40,90);doc.text(brl(totDesp),196,y,{align:"right"});y+=7;
   doc.setDrawColor(150);doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=7;
   doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Saldo do período",14,y);doc.setTextColor(saldo>=0?30:180,saldo>=0?110:40,saldo>=0?30:40);doc.text(brl(saldo),196,y,{align:"right"});y+=10;
   doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Receitas recebidas",14,y);y+=6;doc.setDrawColor(220);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
@@ -770,6 +788,10 @@ async function gerarPDFResumoFinanceiro(){
   doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Pagamentos pendentes/atrasados",14,y);y+=6;doc.setDrawColor(220);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
   if(pgPend.length){pgPend.forEach(p=>{if(y>270){doc.addPage();y=20;}doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(20,20,20);doc.text(`${flN(p.freelancer_id)}${projN(p.projeto_id)?" — "+projN(p.projeto_id):""}`,16,y,{maxWidth:100});doc.setTextColor(p.status==="atrasado"?180:150,p.status==="atrasado"?40:110,40);doc.text(p.status==="atrasado"?"Atrasado":"Pendente",140,y);doc.setFont("helvetica","bold");doc.setTextColor(180,40,40);doc.text(brl(p.valor),196,y,{align:"right"});y+=6;});}
   else{doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(150);doc.text("Nenhum pagamento pendente.",16,y);y+=6;}
+  y+=6;if(y>250){doc.addPage();y=20;}
+  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(15,15,15);doc.text("Despesas extras",14,y);y+=6;doc.setDrawColor(220);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=5;
+  if(despPagas.length||despPend.length){[...despPagas,...despPend].forEach(d=>{if(y>270){doc.addPage();y=20;}doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(20,20,20);doc.text(`${d.descricao}${d.categoria?" ("+d.categoria+")":""}`,16,y,{maxWidth:110});doc.setTextColor(d.status==="paga"?100:150,d.status==="paga"?100:110,d.status==="paga"?100:40);doc.text(d.status==="paga"?(d.data_despesa?fmtDt(d.data_despesa):"Paga"):"Pendente",140,y);doc.setFont("helvetica","bold");doc.setTextColor(140,40,90);doc.text(brl(d.valor),196,y,{align:"right"});y+=6;});}
+  else{doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(150);doc.text("Nenhuma despesa registrada.",16,y);y+=6;}
   doc.save(`Resumo-Financeiro-${periodoLabel.replace(/\s+/g,"-")}.pdf`);
 }
 
@@ -785,16 +807,22 @@ function renderFinancas(){
   const totPrev=recPrev.reduce((s,r)=>s+Number(r.valor),0);
   const totPago=pgPago.reduce((s,p)=>s+Number(p.valor),0);
   const totPend=pgPend.reduce((s,p)=>s+Number(p.valor),0);
-  const saldo=totRec-totPago;
+  const despPagas=despesasList.filter(d=>d.status==="paga"&&inPeriodo(d.data_despesa,mes,ano));
+  const despPend=despesasList.filter(d=>d.status!=="paga");
+  const totDesp=despPagas.reduce((s,d)=>s+Number(d.valor),0);
+  const totDespPend=despPend.reduce((s,d)=>s+Number(d.valor),0);
+  const saldo=totRec-totPago-totDesp;
   const card=(label,val,cor,sub)=>`<div class="metric" style="border-color:${cor}20"><div class="metric-label" style="color:${cor}">${label}</div><div class="metric-value" style="color:${cor};font-size:17px">${brl(val)}</div><div style="font-size:11px;color:#aaa;margin-top:4px">${sub}</div></div>`;
   document.getElementById("finCards").innerHTML=
     card("💰 Recebido",totRec,"#3b6d11",mes===-1?"total":"no mês")+
     card("📥 Previsto",totPrev,"#185fa5","aguardando")+
     card("💸 Pago freelancers",totPago,"#854f0b",mes===-1?"total":"no mês")+
     card("⏳ A pagar",totPend,"#e24b4a","pendente/atrasado")+
-    `<div class="metric" style="border-color:${saldo>=0?"#97c45920":"#f0959520"}"><div class="metric-label" style="color:${saldo>=0?"#3b6d11":"#a32d2d"}">📊 Saldo</div><div class="metric-value" style="color:${saldo>=0?"#3b6d11":"#a32d2d"};font-size:17px">${brl(saldo)}</div><div style="font-size:11px;color:#aaa;margin-top:4px">recebido − pago</div></div>`;
+    card("🧾 Despesas extras",totDesp,"#b0356b",totDespPend>0?`+ ${brl(totDespPend)} pendente`:(mes===-1?"total":"no mês"))+
+    `<div class="metric" style="border-color:${saldo>=0?"#97c45920":"#f0959520"}"><div class="metric-label" style="color:${saldo>=0?"#3b6d11":"#a32d2d"}">📊 Saldo</div><div class="metric-value" style="color:${saldo>=0?"#3b6d11":"#a32d2d"};font-size:17px">${brl(saldo)}</div><div style="font-size:11px;color:#aaa;margin-top:4px">recebido − pagamentos − despesas</div></div>`;
   renderPagFl(mes,ano);
   renderReceitasFin(mes,ano);
+  renderDespesasFin(mes,ano);
 }
 
 function renderPagFl(mes,ano){
@@ -855,6 +883,37 @@ function abrirModalReceita(id=null){const r=id?receitasList.find(x=>x.id===id):n
 async function salvarReceita(){const id=document.getElementById("receitaId").value,desc=document.getElementById("receitaDesc").value.trim(),val=parseFloat(document.getElementById("receitaValor").value)||0;if(!desc||!val){showMsg("Informe descrição e valor.",true);return;}const payload={descricao:desc,valor:val,status:document.getElementById("receitaStatus").value,projeto_id:document.getElementById("receitaProjeto").value?parseInt(document.getElementById("receitaProjeto").value):null,data_recebimento:document.getElementById("receitaData").value||null,observacao:document.getElementById("receitaObs").value.trim()||null};const {error}=id?await sb.from("receitas").update(payload).eq("id",id):await sb.from("receitas").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalReceita");await carregarReceitas();renderFinancas();showMsg(id?"Receita atualizada!":"Receita registrada!");}
 async function marcarRecebida(id){await sb.from("receitas").update({status:"recebida",data_recebimento:new Date().toISOString().split("T")[0]}).eq("id",id);await carregarReceitas();renderFinancas();showMsg("Marcada como recebida!");}
 async function excluirReceita(id){await sb.from("receitas").delete().eq("id",id);await carregarReceitas();renderFinancas();showMsg("Receita excluída.");}
+
+// ── DESPESAS EXTRAS ───────────────────────────────────
+function setFiltroDespesa(f,el){filtroDespesa=f;document.querySelectorAll("#filtroDespesaArea .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");const {mes,ano}=getFinPeriodo();renderDespesasFin(mes,ano);}
+function renderDespesasFin(mes,ano){
+  const el=document.getElementById("listaDespesas");if(!el)return;
+  const projN=id=>projetos.find(p=>p.id===id)?.nome||"";
+  let data=despesasList;
+  if(mes!==-1)data=data.filter(d=>{const ref=d.data_despesa||d.criado_em?.split("T")[0];return inPeriodo(ref,mes,ano);});
+  if(filtroDespesa!=="todos")data=data.filter(d=>d.status===filtroDespesa);
+  el.innerHTML=data.length?data.map(d=>`
+    <div class="card" style="margin-bottom:8px;padding:.75rem 1rem;border-left:3px solid ${d.status==="paga"?"#b0356b":"#f5a623"}">
+      <div class="item-row">
+        <div>
+          <div class="item-name" style="font-size:14px">${d.descricao}</div>
+          <div class="item-sub">${d.categoria?d.categoria+" · ":""}${projN(d.projeto_id)?projN(d.projeto_id)+" · ":""}${d.data_despesa?fmtDt(d.data_despesa):""}</div>
+          ${d.observacao?`<div class="item-sub">${d.observacao}</div>`:""}
+        </div>
+        <div class="actions">
+          <strong style="font-size:14px;color:#b0356b">− ${brl(d.valor)}</strong>
+          <span class="badge ${d.status==="paga"?"badge-ok":"badge-warn"}">${d.status==="paga"?"Paga":"Pendente"}</span>
+          ${d.status!=="paga"?`<button class="btn btn-sm btn-green" onclick="marcarDespesaPaga(${d.id})">✓ Paga</button>`:""}
+          <button class="btn btn-sm btn-edit" onclick="abrirModalDespesa(${d.id})">✏</button>
+          <button class="btn btn-sm btn-danger" onclick="abrirConfirm('Excluir esta despesa?',()=>excluirDespesa(${d.id}))">✕</button>
+        </div>
+      </div>
+    </div>`).join(""):'<div class="empty">Nenhuma despesa registrada.</div>';
+}
+function abrirModalDespesa(id=null){const d=id?despesasList.find(x=>x.id===id):null;document.getElementById("modalDespesaTitulo").textContent=d?"Editar Despesa":"Nova Despesa";document.getElementById("despesaId").value=id||"";document.getElementById("despesaDesc").value=d?.descricao||"";document.getElementById("despesaValor").value=d?.valor||"";document.getElementById("despesaCategoria").value=d?.categoria||"";document.getElementById("despesaStatus").value=d?.status||"paga";document.getElementById("despesaProjeto").innerHTML='<option value="">Nenhum</option>'+projetos.map(p=>`<option value="${p.id}" ${d?.projeto_id===p.id?"selected":""}>${p.nome}</option>`).join("");document.getElementById("despesaData").value=d?.data_despesa||new Date().toISOString().split("T")[0];document.getElementById("despesaObs").value=d?.observacao||"";abrirModal("modalDespesa");}
+async function salvarDespesa(){const id=document.getElementById("despesaId").value,desc=document.getElementById("despesaDesc").value.trim(),val=parseFloat(document.getElementById("despesaValor").value)||0;if(!desc||!val){showMsg("Informe descrição e valor.",true);return;}const payload={descricao:desc,valor:val,categoria:document.getElementById("despesaCategoria").value.trim()||null,status:document.getElementById("despesaStatus").value,projeto_id:document.getElementById("despesaProjeto").value?parseInt(document.getElementById("despesaProjeto").value):null,data_despesa:document.getElementById("despesaData").value||null,observacao:document.getElementById("despesaObs").value.trim()||null};const {error}=id?await sb.from("despesas").update(payload).eq("id",id):await sb.from("despesas").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalDespesa");await carregarDespesas();renderFinancas();showMsg(id?"Despesa atualizada!":"Despesa registrada!");}
+async function marcarDespesaPaga(id){const d=despesasList.find(x=>x.id===id);await sb.from("despesas").update({status:"paga",data_despesa:d?.data_despesa||new Date().toISOString().split("T")[0]}).eq("id",id);await carregarDespesas();renderFinancas();showMsg("Despesa marcada como paga!");}
+async function excluirDespesa(id){await sb.from("despesas").delete().eq("id",id);await carregarDespesas();renderFinancas();showMsg("Despesa excluída.");}
 function abrirImportarOrc(){document.getElementById("importOrcSel").innerHTML='<option value="">Selecione...</option>'+orcamentos.map(o=>{const {total}=calcTotalOrc(o);return `<option value="${o.id}">${o.titulo} — ${brl(total)}</option>`;}).join("");document.getElementById("importOrcPreview").style.display="none";document.getElementById("importOrcData").value=new Date().toISOString().split("T")[0];abrirModal("modalImportarOrc");}
 function previewImportOrc(){const id=document.getElementById("importOrcSel").value,prev=document.getElementById("importOrcPreview");if(!id){prev.style.display="none";return;}const o=orcamentos.find(x=>x.id==id);if(!o){prev.style.display="none";return;}const {total}=calcTotalOrc(o);prev.style.display="block";prev.innerHTML=`<strong>${o.titulo}</strong><br>Cliente: ${o.cliente||"—"} · Valor final: <strong style="color:#3b6d11">${brl(total)}</strong>${o.data_evento?`<br>Evento: ${fmtDt(o.data_evento)}`:""}`;} 
 async function confirmarImportarOrc(){const id=document.getElementById("importOrcSel").value;if(!id){showMsg("Selecione um orçamento.",true);return;}const o=orcamentos.find(x=>x.id==id);if(!o)return;const {total}=calcTotalOrc(o);const jaImport=receitasList.some(r=>r.orcamento_id==id);if(jaImport&&!confirm("Este orçamento já foi importado. Importar novamente?"))return;const payload={descricao:`Orçamento: ${o.titulo}`,valor:total,status:document.getElementById("importOrcStatus").value,orcamento_id:parseInt(id),projeto_id:null,data_recebimento:document.getElementById("importOrcData").value||null,observacao:`Cliente: ${o.cliente||"—"}`};const {error}=await sb.from("receitas").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalImportarOrc");await carregarReceitas();renderFinancas();showMsg("Orçamento importado como receita!");}
@@ -1275,7 +1334,7 @@ async function gerarPDFRecibo(orcId){
 }
 
 // ── BACKUP ────────────────────────────────────────────
-async function fazerBackup(){showMsg("Gerando backup...");const tables=["equipamentos","projetos","categorias","freelancers","funcoes","movimentacoes","orcamentos","orcamento_itens","pastas_projeto","projeto_freelancers","checklists","checklist_itens","calendario_eventos","calendario_equipe","pagamentos_freelancer","receitas","anexos_financeiros"];const results=await Promise.all(tables.map(t=>sb.from(t).select("*")));const backup={gerado_em:new Date().toISOString()};tables.forEach((t,i)=>backup[t]=results[i].data);const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`backup-takevision-${new Date().toISOString().split("T")[0]}.json`;a.click();URL.revokeObjectURL(url);showMsg("Backup gerado!");}
+async function fazerBackup(){showMsg("Gerando backup...");const tables=["equipamentos","projetos","categorias","freelancers","funcoes","movimentacoes","orcamentos","orcamento_itens","pastas_projeto","projeto_freelancers","checklists","checklist_itens","calendario_eventos","calendario_equipe","pagamentos_freelancer","receitas","despesas","anexos_financeiros"];const results=await Promise.all(tables.map(t=>sb.from(t).select("*")));const backup={gerado_em:new Date().toISOString()};tables.forEach((t,i)=>backup[t]=results[i].data);const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`backup-takevision-${new Date().toISOString().split("T")[0]}.json`;a.click();URL.revokeObjectURL(url);showMsg("Backup gerado!");}
 
 // ── USUÁRIOS ──────────────────────────────────────────
 async function carregarUsuarios(){const {data}=await sb.from("perfis").select("*").order("criado_em");document.getElementById("listaUsuarios").innerHTML=(data||[]).map(u=>`<div class="card"><div class="item-row"><div><div class="item-name">${u.nome}</div><div class="item-sub">${u.id}</div></div><div class="actions"><span class="badge ${u.supremo?"badge-purple":u.papel==="admin"?"admin-badge":"badge-gray"}">${u.supremo?"★ Supremo":u.papel}</span>${!u.supremo?`<button class="btn btn-sm btn-outline" onclick="alterarPapel('${u.id}','${u.papel}')">${u.papel==="admin"?"→ Usuário":"→ Admin"}</button><button class="btn btn-sm btn-danger" onclick="abrirConfirm('Remover acesso de &quot;${u.nome}&quot;?',()=>bloquearUsuario('${u.id}'))">Remover acesso</button>`:"(conta suprema)"}</div></div></div>`).join("")||'<div class="empty">Nenhum usuário.</div>';}
