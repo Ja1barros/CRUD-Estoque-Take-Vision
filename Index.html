@@ -1375,6 +1375,34 @@ async function carregarUsuarios(){const {data}=await sb.from("perfis").select("*
 async function alterarPapel(id,papelAtual){const novo=papelAtual==="admin"?"usuario":"admin";const {error}=await sb.from("perfis").update({papel:novo}).eq("id",id);if(error){showMsg("Erro: "+error.message,true);return;}await carregarUsuarios();showMsg("Papel atualizado!");}
 async function bloquearUsuario(id){await sb.from("perfis").update({papel:"bloqueado"}).eq("id",id);carregarUsuarios();showMsg("Acesso removido.");}
 async function criarUsuario(){if(!isSupremo()){showMsg("Apenas a conta suprema pode criar usuários.",true);return;}const nome=document.getElementById("novoUserNome").value.trim(),email=document.getElementById("novoUserEmail").value.trim(),senha=document.getElementById("novoUserSenha").value,papel=document.getElementById("novoUserPapel").value;if(!nome||!email||!senha){showMsg("Preencha todos os campos.",true);return;}if(senha.length<6){showMsg("Senha mínima 6 caracteres.",true);return;}const {data,error}=await sb.auth.signUp({email,password:senha});if(error){showMsg("Erro: "+error.message,true);return;}if(data?.user){await sb.from("perfis").update({nome,papel}).eq("id",data.user.id);document.getElementById("novoUserNome").value="";document.getElementById("novoUserEmail").value="";document.getElementById("novoUserSenha").value="";await carregarUsuarios();showMsg(`Usuário "${nome}" criado!`);}}
+async function salvarPagFl(){
+  const id=document.getElementById("pagFlId").value;
+  const fl=document.getElementById("pagFlFreelancer").value;
+  const val=parseFloat(document.getElementById("pagFlValor").value)||0;
+  if(!fl||!val){showMsg("Informe freelancer e valor.",true);return;}
+  const diaria=parseFloat(document.getElementById("pagFlDiaria").value)||null;
+  const qtdD=parseInt(document.getElementById("pagFlQtdDiarias").value)||1;
+  const payload={
+    freelancer_id:parseInt(fl),
+    projeto_id:document.getElementById("pagFlProjeto").value?parseInt(document.getElementById("pagFlProjeto").value):null,
+    descricao:document.getElementById("pagFlDesc").value.trim()||null,
+    valor:val,
+    valor_diaria:diaria,
+    diarias:qtdD,
+    status:document.getElementById("pagFlStatus").value,
+    data_vencimento:document.getElementById("pagFlVenc").value||null,
+    data_pagamento:document.getElementById("pagFlDataPgto").value||null,
+    observacao:document.getElementById("pagFlObs").value.trim()||null
+  };
+  const {error}=id
+    ? await sb.from("pagamentos_freelancer").update(payload).eq("id",id)
+    : await sb.from("pagamentos_freelancer").insert(payload);
+  if(error){showMsg("Erro: "+error.message,true);return;}
+  fecharModal("modalPagFl");
+  await carregarPagamentosFl();
+  renderFinancas();
+  showMsg(id?"Pagamento atualizado!":"Pagamento registrado!");
+}
 </script>
 </body>
 </html>
