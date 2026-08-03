@@ -543,7 +543,15 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
 <div class="modal-bg" id="modalResumoPasta"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalResumoPastaTitulo">Resumo mensal</div><button class="modal-close" onclick="fecharModal('modalResumoPasta')">×</button></div><p style="font-size:14px;margin-bottom:16px">Selecione o período para o resumo:</p><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Mês</label><select id="resumoMes"><option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option><option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option><option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option><option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Ano</label><input id="resumoAno" type="number" value="2026"/></div></div><input type="hidden" id="resumoPastaId"/><div style="display:flex;gap:8px"><button class="btn btn-sm btn-blue" onclick="gerarPDFResumoPasta()">⬇ Gerar PDF</button><button class="btn btn-sm btn-outline" onclick="fecharModal('modalResumoPasta')">Cancelar</button></div></div></div>
 
 <!-- MODAIS FINANÇAS -->
-<div class="modal-bg" id="modalPagFl"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalPagFlTitulo">Novo Pagamento</div><button class="modal-close" onclick="fecharModal('modalPagFl')">×</button></div><input type="hidden" id="pagFlId"/><div class="field"><label>Freelancer</label><select id="pagFlFreelancer"></select></div><div class="field"><label>Projeto (opcional)</label><select id="pagFlProjeto"><option value="">Nenhum</option></select></div><div class="field"><label>Descrição</label><input id="pagFlDesc" placeholder="Ex: Cachê filmagem Rio"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor (R$)</label><input id="pagFlValor" type="number" min="0" step="0.01" placeholder="0,00"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="pagFlStatus"><option value="pendente">Pendente</option><option value="atrasado">Atrasado</option><option value="pago">Pago</option></select></div></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Vencimento</label><input id="pagFlVenc" type="date"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de pagamento</label><input id="pagFlDataPgto" type="date"/></div></div><div class="field"><label>Observação</label><input id="pagFlObs" placeholder="Opcional"/></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalPagFl')">Cancelar</button><button class="btn btn-sm btn-green" onclick="salvarPagFl()">Salvar</button></div></div></div>
+  <div class="row">
+  <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor da diária (R$)</label><input id="pagFlDiaria" type="number" min="0" step="0.01" placeholder="0,00" oninput="calcPagFlTotal()"/></div>
+  <div style="width:90px"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Diárias</label><input id="pagFlQtdDiarias" type="number" min="1" value="1" oninput="calcPagFlTotal()"/></div>
+</div>
+<div class="row">
+  <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor total (R$)</label><input id="pagFlValor" type="number" min="0" step="0.01" placeholder="0,00"/></div>
+  <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="pagFlStatus"><option value="pendente">Pendente</option><option value="atrasado">Atrasado</option><option value="pago">Pago</option></select></div>
+</div>
+<div id="pagFlPreview" style="font-size:12px;color:#639922;margin:-6px 0 12px;display:none"></div>
 <div class="modal-bg" id="modalReceita"><div class="modal-box"><div class="modal-header"><div class="modal-title" id="modalReceitaTitulo">Nova Receita</div><button class="modal-close" onclick="fecharModal('modalReceita')">×</button></div><input type="hidden" id="receitaId"/><div class="field"><label>Descrição</label><input id="receitaDesc" placeholder="Ex: Pagamento filmagem casamento"/></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Valor (R$)</label><input id="receitaValor" type="number" min="0" step="0.01" placeholder="0,00"/></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="receitaStatus"><option value="prevista">Prevista</option><option value="recebida">Recebida</option></select></div></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Projeto</label><select id="receitaProjeto"><option value="">Nenhum</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de recebimento</label><input id="receitaData" type="date"/></div></div><div class="field"><label>Observação</label><input id="receitaObs" placeholder="Opcional"/></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalReceita')">Cancelar</button><button class="btn btn-sm btn-green" onclick="salvarReceita()">Salvar</button></div></div></div>
 <div class="modal-bg" id="modalImportarOrc"><div class="modal-box"><div class="modal-header"><div class="modal-title">Importar orçamento como receita</div><button class="modal-close" onclick="fecharModal('modalImportarOrc')">×</button></div><div class="field"><label>Selecione o orçamento</label><select id="importOrcSel" onchange="previewImportOrc()"><option value="">Selecione...</option></select></div><div id="importOrcPreview" style="background:#f5f5f0;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div><div class="row"><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Status</label><select id="importOrcStatus"><option value="prevista">Prevista</option><option value="recebida">Recebida</option></select></div><div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Data de recebimento</label><input id="importOrcData" type="date"/></div></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm btn-outline" onclick="fecharModal('modalImportarOrc')">Cancelar</button><button class="btn btn-sm btn-green" onclick="confirmarImportarOrc()">Importar</button></div></div></div>
 
@@ -559,6 +567,29 @@ header{background:#fff;border-bottom:0.5px solid #e0e0d8;padding:0 1.5rem;displa
     <button class="btn btn-sm btn-outline" onclick="fecharModal('modalConfirm')" style="min-width:90px">Cancelar</button>
   </div>
 </div></div>
+
+<div class="modal-bg" id="modalDadosCliente"><div class="modal-box">
+  <div class="modal-header"><div class="modal-title">Dados do cliente (opcional)</div><button class="modal-close" onclick="fecharModal('modalDadosCliente')">×</button></div>
+  <p style="font-size:13px;color:#888;margin-bottom:14px">Preencha o que tiver. Campos vazios não aparecem no recibo.</p>
+  <input type="hidden" id="dcOrcId"/>
+  <div class="field"><label>Razão social / Nome</label><input id="dcNome" placeholder="Deixe vazio p/ usar o cliente do orçamento"/></div>
+  <div class="field"><label>Endereço</label><input id="dcEndereco" placeholder="Rua, número"/></div>
+  <div class="row">
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Bairro</label><input id="dcBairro"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">Município</label><input id="dcMunicipio"/></div>
+    <div style="width:70px"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">UF</label><input id="dcUF" maxlength="2"/></div>
+  </div>
+  <div class="row">
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">CEP</label><input id="dcCEP"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">CNPJ</label><input id="dcCNPJ"/></div>
+    <div class="col"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px">I.E.</label><input id="dcIE"/></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-sm btn-green" onclick="confirmarDadosCliente()">Gerar recibo</button>
+    <button class="btn btn-sm btn-outline" onclick="confirmarDadosCliente(true)">Gerar sem preencher</button>
+  </div>
+</div></div>  
+  
 
 <script>
 const SUPA_URL="https://wikmeymvknuujbnwmfjx.supabase.co";
@@ -581,7 +612,18 @@ const fmtRange=(ini,fim)=>fim&&fim!==ini?`${fmtDt(ini)} → ${fmtDt(fim)}`:fmtDt
 function getMargem(id="orcMargem"){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?1:1+(v/100);}
 function calcTotalOrc(o){const itens=o.orcamento_itens||[];const sub=itens.reduce((s,i)=>s+i.quantidade*i.preco_unitario,0);const diarias=o.diarias||1,margem=o.margem!=null?1+(o.margem/100):1;const baseDiarias=sub*diarias,baseComMargem=baseDiarias*margem;const desc=baseComMargem*((o.desconto||0)/100),total=baseComMargem-desc;return{sub,diarias,margem,baseDiarias,baseComMargem,desc,total};}
 function abrirConfirm(msg,onOk){document.getElementById("modalConfirmMsg").textContent=msg;document.getElementById("modalConfirmOk").onclick=()=>{fecharModal("modalConfirm");onOk();};abrirModal("modalConfirm");}
-
+function calcPagFlTotal(){
+  var dEl=document.getElementById("pagFlDiaria"), qEl=document.getElementById("pagFlQtdDiarias");
+  var vEl=document.getElementById("pagFlValor"), pEl=document.getElementById("pagFlPreview");
+  var diaria=parseFloat(dEl?dEl.value:0)||0;
+  var qtd=parseInt(qEl?qEl.value:1)||1;
+  if(diaria>0){
+    var total=diaria*qtd;
+    if(vEl)vEl.value=total.toFixed(2);
+    if(pEl){pEl.style.display="block";pEl.textContent=brl(diaria)+" × "+qtd+" diária"+(qtd>1?"s":"")+" = "+brl(total);}
+  } else if(pEl){pEl.style.display="none";}
+}
+  
 async function carregarLogo(){if(logoDataUrl)return logoDataUrl;try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(r=>{const rd=new FileReader();rd.onloadend=()=>{logoDataUrl=rd.result;r(logoDataUrl);};rd.readAsDataURL(blob);});}catch(e){return null;}}
 async function adicionarHeaderPDF(doc,subtitulo,dtGerado){
   const logo=await carregarLogo();
@@ -837,7 +879,7 @@ function renderPagFl(mes,ano){
       <div class="item-row">
         <div>
           <div class="item-name" style="font-size:14px">${flN(p.freelancer_id)}</div>
-          <div class="item-sub">${p.descricao||""}${projN(p.projeto_id)?" · "+projN(p.projeto_id):""}</div>
+          <div class="item-sub">${p.descricao||""}${projN(p.projeto_id)?" · "+projN(p.projeto_id):""}${p.diarias>1&&p.valor_diaria?" · "+brl(p.valor_diaria)+" × "+p.diarias+"d":""}</div>
           <div class="item-sub">${p.data_vencimento?"Vence: "+fmtDt(p.data_vencimento):""}${p.data_pagamento?" · Pago: "+fmtDt(p.data_pagamento):""}</div>
         </div>
         <div class="actions">
@@ -875,15 +917,7 @@ function renderReceitasFin(mes,ano){
     </div>`).join(""):'<div class="empty">Nenhuma receita encontrada.</div>';
 }
 
-function abrirModalPagFl(id=null){const p=id?pagamentosFl.find(x=>x.id===id):null;document.getElementById("modalPagFlTitulo").textContent=p?"Editar Pagamento":"Novo Pagamento";document.getElementById("pagFlId").value=id||"";document.getElementById("pagFlFreelancer").innerHTML=freelancers.map(f=>`<option value="${f.id}" ${p?.freelancer_id===f.id?"selected":""}>${f.nome}</option>`).join("");document.getElementById("pagFlProjeto").innerHTML='<option value="">Nenhum</option>'+projetos.map(pj=>`<option value="${pj.id}" ${p?.projeto_id===pj.id?"selected":""}>${pj.nome}</option>`).join("");document.getElementById("pagFlDesc").value=p?.descricao||"";document.getElementById("pagFlValor").value=p?.valor||"";document.getElementById("pagFlStatus").value=p?.status||"pendente";document.getElementById("pagFlVenc").value=p?.data_vencimento||"";document.getElementById("pagFlDataPgto").value=p?.data_pagamento||"";document.getElementById("pagFlObs").value=p?.observacao||"";abrirModal("modalPagFl");}
-async function salvarPagFl(){const id=document.getElementById("pagFlId").value,fl=document.getElementById("pagFlFreelancer").value,val=parseFloat(document.getElementById("pagFlValor").value)||0;if(!fl||!val){showMsg("Informe freelancer e valor.",true);return;}const payload={freelancer_id:parseInt(fl),projeto_id:document.getElementById("pagFlProjeto").value?parseInt(document.getElementById("pagFlProjeto").value):null,descricao:document.getElementById("pagFlDesc").value.trim()||null,valor:val,status:document.getElementById("pagFlStatus").value,data_vencimento:document.getElementById("pagFlVenc").value||null,data_pagamento:document.getElementById("pagFlDataPgto").value||null,observacao:document.getElementById("pagFlObs").value.trim()||null};const {error}=id?await sb.from("pagamentos_freelancer").update(payload).eq("id",id):await sb.from("pagamentos_freelancer").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalPagFl");await carregarPagamentosFl();renderFinancas();showMsg(id?"Pagamento atualizado!":"Pagamento registrado!");}
-async function marcarPagoFl(id){await sb.from("pagamentos_freelancer").update({status:"pago",data_pagamento:new Date().toISOString().split("T")[0]}).eq("id",id);await carregarPagamentosFl();renderFinancas();showMsg("Marcado como pago!");}
-async function excluirPagFl(id){await sb.from("pagamentos_freelancer").delete().eq("id",id);await carregarPagamentosFl();renderFinancas();showMsg("Pagamento excluído.");}
-function abrirModalReceita(id=null){const r=id?receitasList.find(x=>x.id===id):null;document.getElementById("modalReceitaTitulo").textContent=r?"Editar Receita":"Nova Receita";document.getElementById("receitaId").value=id||"";document.getElementById("receitaDesc").value=r?.descricao||"";document.getElementById("receitaValor").value=r?.valor||"";document.getElementById("receitaStatus").value=r?.status||"prevista";document.getElementById("receitaProjeto").innerHTML='<option value="">Nenhum</option>'+projetos.map(p=>`<option value="${p.id}" ${r?.projeto_id===p.id?"selected":""}>${p.nome}</option>`).join("");document.getElementById("receitaData").value=r?.data_recebimento||"";document.getElementById("receitaObs").value=r?.observacao||"";abrirModal("modalReceita");}
-async function salvarReceita(){const id=document.getElementById("receitaId").value,desc=document.getElementById("receitaDesc").value.trim(),val=parseFloat(document.getElementById("receitaValor").value)||0;if(!desc||!val){showMsg("Informe descrição e valor.",true);return;}const payload={descricao:desc,valor:val,status:document.getElementById("receitaStatus").value,projeto_id:document.getElementById("receitaProjeto").value?parseInt(document.getElementById("receitaProjeto").value):null,data_recebimento:document.getElementById("receitaData").value||null,observacao:document.getElementById("receitaObs").value.trim()||null};const {error}=id?await sb.from("receitas").update(payload).eq("id",id):await sb.from("receitas").insert(payload);if(error){showMsg("Erro: "+error.message,true);return;}fecharModal("modalReceita");await carregarReceitas();renderFinancas();showMsg(id?"Receita atualizada!":"Receita registrada!");}
-async function marcarRecebida(id){await sb.from("receitas").update({status:"recebida",data_recebimento:new Date().toISOString().split("T")[0]}).eq("id",id);await carregarReceitas();renderFinancas();showMsg("Marcada como recebida!");}
-async function excluirReceita(id){await sb.from("receitas").delete().eq("id",id);await carregarReceitas();renderFinancas();showMsg("Receita excluída.");}
-
+function abrirModalPagFl(id=null){const p=id?pagamentosFl.find(x=>x.id===id):null;document.getElementById("modalPagFlTitulo").textContent=p?"Editar Pagamento":"Novo Pagamento";document.getElementById("pagFlId").value=id||"";document.getElementById("pagFlFreelancer").innerHTML=freelancers.map(f=>`<option value="${f.id}" ${p?.freelancer_id===f.id?"selected":""}>${f.nome}</option>`).join("");document.getElementById("pagFlProjeto").innerHTML='<option value="">Nenhum</option>'+projetos.map(pj=>`<option value="${pj.id}" ${p?.projeto_id===pj.id?"selected":""}>${pj.nome}</option>`).join("");document.getElementById("pagFlDesc").value=p?.descricao||"";document.getElementById("pagFlValor").value=p?.valor||"";document.getElementById("pagFlDiaria").value=p?.valor_diaria||"";document.getElementById("pagFlQtdDiarias").value=p?.diarias||1;document.getElementById("pagFlStatus").value=p?.status||"pendente";document.getElementById("pagFlVenc").value=p?.data_vencimento||"";document.getElementById("pagFlDataPgto").value=p?.data_pagamento||"";document.getElementById("pagFlObs").value=p?.observacao||"";calcPagFlTotal();abrirModal("modalPagFl");}
 // ── DESPESAS EXTRAS ───────────────────────────────────
 function setFiltroDespesa(f,el){filtroDespesa=f;document.querySelectorAll("#filtroDespesaArea .filter-btn").forEach(b=>b.classList.remove("active"));el.classList.add("active");const {mes,ano}=getFinPeriodo();renderDespesasFin(mes,ano);}
 function renderDespesasFin(mes,ano){
