@@ -627,9 +627,11 @@ function calcPagFlTotal(){
 async function carregarLogo(){if(logoDataUrl)return logoDataUrl;try{const res=await fetch('/logo.png');if(!res.ok)return null;const blob=await res.blob();return new Promise(r=>{const rd=new FileReader();rd.onloadend=()=>{logoDataUrl=rd.result;r(logoDataUrl);};rd.readAsDataURL(blob);});}catch(e){return null;}}
 async function adicionarHeaderPDF(doc,subtitulo,dtGerado){
   const logo=await carregarLogo();
-  const logoSize=45, logoX=14, logoY=6;
-  if(logo){try{doc.addImage(logo,'PNG',logoX,logoY,logoSize,logoSize);}catch(e){_drawLens(doc,logoX+logoSize/2,logoY+logoSize/2,18);}}else{_drawLens(doc,logoX+logoSize/2,logoY+logoSize/2,18);}
-  let hy=58;
+  const logoH=16;
+  const logoW=logoH*(800/206); // mantém a proporção real da imagem (800x206)
+  const logoX=14, logoY=6;
+  if(logo){try{doc.addImage(logo,'PNG',logoX,logoY,logoW,logoH);}catch(e){_drawLens(doc,logoX+logoH/2,logoY+logoH/2,logoH/2);}}else{_drawLens(doc,logoX+logoH/2,logoY+logoH/2,logoH/2);}
+  let hy=logoY+logoH+8;
   doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(15,15,15);doc.text("Take Vision Filmes LTDA",14,hy);hy+=4.5;
   doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(40,40,40);
   doc.text("Rua Alvarães, 02/201 - Del Castilho - Rio de Janeiro - RJ - CEP 21.051-080",14,hy);hy+=4;
