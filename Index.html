@@ -1115,8 +1115,9 @@ async function gerarPDFProjeto(){
   doc.setFont("helvetica","bold");doc.setFontSize(14);doc.setTextColor(15,15,15);doc.text(proj.nome,14,y);y+=7;
   doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(80,80,80);
   doc.text(`Cliente: ${proj.cliente||"—"}`,14,y);y+=6;
-  doc.text(`Data: ${fmtRange(proj.data_projeto,proj.data_fim)}    Status: ${proj.status}`,14,y);y+=12;
+  doc.text(`Data: ${fmtRange(proj.data_projeto,proj.data_fim)}    Status: ${proj.status}`,14,y);y+=10;
 
+  // ── Equipe ──
   const {data:links}=await sb.from("projeto_freelancers").select("*").eq("projeto_id",proj.id);
   const vinc=(links||[]).map(l=>{const f=freelancers.find(x=>x.id===l.freelancer_id);return f?{...f,_funcaoProjeto:l.funcao}:null;}).filter(Boolean);
   doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipe",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
@@ -1127,25 +1128,9 @@ async function gerarPDFProjeto(){
       y+=7;if(y>265){doc.addPage();y=20;}
     });
   }else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}
-  y+=4;
+  y+=6;
 
-  const {data:movs}=await sb.from("movimentacoes").select("equipamento_id,quantidade,tipo").eq("projeto_id",proj.id);
-  const alocMap={};
-  (movs||[]).forEach(m=>{if(!alocMap[m.equipamento_id])alocMap[m.equipamento_id]=0;alocMap[m.equipamento_id]+=(m.tipo==="saída"?m.quantidade:-m.quantidade);});
-  const eqsAloc=Object.entries(alocMap).filter(([,q])=>q>0).map(([id,q])=>({eq:equipamentos.find(e=>e.id===parseInt(id)),qtd:q})).filter(x=>x.eq);
-
-  if(y>250){doc.addPage();y=20;}
-  doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Equipamentos Retirados",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
-  if(eqsAloc.length){
-    eqsAloc.forEach(({eq,qtd})=>{
-      doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(0);doc.text(eq.nome,16,y);
-      doc.setTextColor(120);doc.text(`× ${qtd}`,150,y);
-      y+=7;if(y>265){doc.addPage();y=20;}
-    });
-  }else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}
-  y+=4;
-
-  // ── Checklists vinculados (formatado) ──
+  // ── Checklists de Equipamentos ──
   const checklistsDoProjeto = checklists.filter(c => c.projeto_id === proj.id);
   if(checklistsDoProjeto.length){
     if(y>245){doc.addPage();y=20;}
@@ -1153,27 +1138,27 @@ async function gerarPDFProjeto(){
 
     checklistsDoProjeto.forEach(c=>{
       const itens=c.checklist_itens||[];
-      const boxH=8+Math.max(itens.length,1)*6+4;
+      const boxH=7+Math.max(itens.length,1)*6;
       if(y+boxH>270){doc.addPage();y=20;}
 
-      // Cabeçalho da caixinha do checklist
       doc.setFillColor(242,242,240);
       doc.rect(14,y,182,7,'F');
       doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(15,15,15);
       doc.text(c.nome,17,y+5);
       y+=7;
 
-      // Corpo com borda
       const bodyStart=y;
       if(itens.length){
-        itens.forEach(i=>{
+        itens.forEach((i,idx)=>{
           if(y>270){doc.addPage();y=20;}
           doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(40,40,40);
           doc.text(i.equipamento_nome,20,y+4.3);
           doc.setFont("helvetica","bold");doc.setTextColor(90,90,90);
           doc.text(`× ${i.quantidade||1}`,190,y+4.3,{align:"right"});
-          doc.setDrawColor(230,230,225);doc.setLineWidth(0.2);
-          doc.line(14,y+6,196,y+6);
+          if(idx<itens.length-1){
+            doc.setDrawColor(230,230,225);doc.setLineWidth(0.2);
+            doc.line(14,y+6,196,y+6);
+          }
           y+=6;
         });
       } else {
@@ -1183,7 +1168,7 @@ async function gerarPDFProjeto(){
       }
       doc.setDrawColor(200,200,195);doc.setLineWidth(0.4);
       doc.rect(14,bodyStart,182,y-bodyStart);
-      y+=6;
+      y+=8;
     });
   }
 
