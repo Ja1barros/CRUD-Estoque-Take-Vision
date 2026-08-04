@@ -1130,16 +1130,18 @@ async function gerarPDFProjeto(){
   }else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}
   y+=6;
 
-  // ── Checklists de Equipamentos ──
+// ── Checklists de Equipamentos ──
   const checklistsDoProjeto = checklists.filter(c => c.projeto_id === proj.id);
   if(checklistsDoProjeto.length){
-    if(y>245){doc.addPage();y=20;}
-    doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Checklists de Equipamentos",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
+    doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Checklists de Equipamentos",14,y);y+=6;
+    doc.setDrawColor(220);doc.setLineWidth(0.3);doc.line(14,y,196,y);y+=6;
 
     checklistsDoProjeto.forEach(c=>{
       const itens=c.checklist_itens||[];
       const boxH=7+Math.max(itens.length,1)*6;
-      if(y+boxH>270){doc.addPage();y=20;}
+
+      // só quebra a página se a caixa realmente não couber
+      if(y+boxH>280){doc.addPage();y=20;}
 
       doc.setFillColor(242,242,240);
       doc.rect(14,y,182,7,'F');
@@ -1150,7 +1152,7 @@ async function gerarPDFProjeto(){
       const bodyStart=y;
       if(itens.length){
         itens.forEach((i,idx)=>{
-          if(y>270){doc.addPage();y=20;}
+          if(y>285){doc.addPage();y=20;}
           doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(40,40,40);
           doc.text(i.equipamento_nome,20,y+4.3);
           doc.setFont("helvetica","bold");doc.setTextColor(90,90,90);
