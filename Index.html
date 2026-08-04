@@ -1145,27 +1145,45 @@ async function gerarPDFProjeto(){
   }else{doc.setFontSize(11);doc.setTextColor(150);doc.text("Nenhum.",16,y);y+=7;}
   y+=4;
 
-  // ── Checklists vinculados (nova seção) ──
+  // ── Checklists vinculados (formatado) ──
   const checklistsDoProjeto = checklists.filter(c => c.projeto_id === proj.id);
   if(checklistsDoProjeto.length){
-    if(y>250){doc.addPage();y=20;}
+    if(y>245){doc.addPage();y=20;}
     doc.setTextColor(0);doc.setFontSize(13);doc.setFont("helvetica","bold");doc.text("Checklists de Equipamentos",14,y);y+=6;doc.setDrawColor(220);doc.line(14,y,196,y);y+=6;
+
     checklistsDoProjeto.forEach(c=>{
-      if(y>260){doc.addPage();y=20;}
-      doc.setFontSize(11);doc.setFont("helvetica","bold");doc.setTextColor(0);doc.text(`📋 ${c.nome}`,16,y);y+=6;
       const itens=c.checklist_itens||[];
+      const boxH=8+Math.max(itens.length,1)*6+4;
+      if(y+boxH>270){doc.addPage();y=20;}
+
+      // Cabeçalho da caixinha do checklist
+      doc.setFillColor(242,242,240);
+      doc.rect(14,y,182,7,'F');
+      doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(15,15,15);
+      doc.text(c.nome,17,y+5);
+      y+=7;
+
+      // Corpo com borda
+      const bodyStart=y;
       if(itens.length){
         itens.forEach(i=>{
-          if(y>265){doc.addPage();y=20;}
-          doc.setFontSize(10);doc.setFont("helvetica","normal");doc.setTextColor(80);
-          doc.text(`• ${i.equipamento_nome}`,20,y);
-          doc.setTextColor(120);doc.text(`× ${i.quantidade||1}`,150,y);
-          y+=5.5;
+          if(y>270){doc.addPage();y=20;}
+          doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(40,40,40);
+          doc.text(i.equipamento_nome,20,y+4.3);
+          doc.setFont("helvetica","bold");doc.setTextColor(90,90,90);
+          doc.text(`× ${i.quantidade||1}`,190,y+4.3,{align:"right"});
+          doc.setDrawColor(230,230,225);doc.setLineWidth(0.2);
+          doc.line(14,y+6,196,y+6);
+          y+=6;
         });
-      }else{
-        doc.setFontSize(10);doc.setTextColor(150);doc.text("Nenhum item.",20,y);y+=5.5;
+      } else {
+        doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(150);
+        doc.text("Nenhum item.",20,y+4.3);
+        y+=6;
       }
-      y+=4;
+      doc.setDrawColor(200,200,195);doc.setLineWidth(0.4);
+      doc.rect(14,bodyStart,182,y-bodyStart);
+      y+=6;
     });
   }
 
