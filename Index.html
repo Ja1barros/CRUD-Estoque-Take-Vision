@@ -894,7 +894,10 @@ function renderPagFl(mes,ano){
   const flN=id=>freelancers.find(f=>f.id===id)?.nome||"—";
   const projN=id=>projetos.find(p=>p.id===id)?.nome||"";
   let data=pagamentosFl;
-  if(mes!==-1)data=data.filter(p=>{const ref=p.data_pagamento||p.data_vencimento||p.criado_em?.split("T")[0];return inPeriodo(ref,mes,ano);});
+  if(mes!==-1)data=data.filter(p=>{
+  if(p.status!=="pago")return true; // pendente/atrasado sempre aparece, não importa o mês
+  return inPeriodo(p.data_pagamento,mes,ano);
+});
   if(filtroPagFl!=="todos")data=data.filter(p=>p.status===filtroPagFl);
   const bdg={pago:'<span class="badge badge-ok">Pago</span>',atrasado:'<span class="badge badge-danger">Atrasado</span>',pendente:'<span class="badge badge-warn">Pendente</span>'};
   document.getElementById("listaPagFl").innerHTML=data.length?data.map(p=>`
@@ -919,7 +922,10 @@ function renderPagFl(mes,ano){
 function renderReceitasFin(mes,ano){
   const projN=id=>projetos.find(p=>p.id===id)?.nome||"";
   let data=receitasList;
-  if(mes!==-1)data=data.filter(r=>{const ref=r.data_recebimento||r.criado_em?.split("T")[0];return inPeriodo(ref,mes,ano);});
+  if(mes!==-1)data=data.filter(r=>{
+  if(r.status!=="recebida")return true; // previsto sempre aparece, não importa o mês
+  return inPeriodo(r.data_recebimento,mes,ano);
+});
   if(filtroReceita!=="todos")data=data.filter(r=>r.status===filtroReceita);
   document.getElementById("listaReceitas").innerHTML=data.length?data.map(r=>`
     <div class="card" style="margin-bottom:8px;padding:.75rem 1rem;border-left:3px solid ${r.status==="recebida"?"#97c459":"#6bb3e8"}">
